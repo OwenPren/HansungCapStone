@@ -5,25 +5,25 @@ using UnityEngine.SceneManagement;
 
 public class MenuController : MonoBehaviour
 {
-    public GameObject menuPanel;    // ¸Þ´º ÆÐ³ÎÀ» ÂüÁ¶
+    public GameObject menuPanel;    // ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     // Start is called before the first frame update
     void Start()
     {
-        menuPanel.SetActive(false); // Ã³À½¿¡´Â ¸Þ´º ÆÐ³ÎÀ» ¼û±è
+        menuPanel.SetActive(false); // Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
 
     public void ToggleMenu()
     {
-        menuPanel.SetActive(!menuPanel.activeSelf);     // ¹öÆ° Å¬¸¯ ½Ã ¸Þ´º ÆÐ³Î Ç¥½Ã/¼û±â±â
+        menuPanel.SetActive(!menuPanel.activeSelf);     // ï¿½ï¿½Æ° Å¬ï¿½ï¿½ ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½Ð³ï¿½ Ç¥ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½
     }
     public void ExitGame()
     {
-        Application.Quit(); // °ÔÀÓ Á¾·á
+        Application.Quit(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     }
     public void ResetGame()
     {
-        SceneManager.LoadScene("LoadingScene");     // Ã¹ ¹øÂ° ¾ÀÀ¸·Î ÀÌµ¿
+        SceneManager.LoadScene("LoadingScene");     // Ã¹ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
     }
 
     public void AdjustGameMusic(float volume)
@@ -31,7 +31,7 @@ public class MenuController : MonoBehaviour
         AudioSource audioSource = FindObjectOfType<AudioSource>();
         if (audioSource != null)
         {
-            audioSource.volume = volume; // À½¾Ç º¼·ý Á¶Àý
+            audioSource.volume = volume; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         }
     }
 }
