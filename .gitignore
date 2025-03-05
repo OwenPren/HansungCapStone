@@ -71,3 +71,8 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Using UTF-8 encoding
+*.cs text eol=lf encoding=UTF-8
+*.meta text eol=lf encoding=UTF-8
+*.unity text eol=lf encoding=UTF-8

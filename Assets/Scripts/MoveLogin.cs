@@ -8,6 +8,7 @@ public class MoveLogin : MonoBehaviour
     public void SceneChange()
     {
         SceneManager.LoadScene("LogInScene");
+        
     }
 
 }
