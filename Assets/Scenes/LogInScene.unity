@@ -205,8 +205,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 939663282}
-        m_TargetAssemblyTypeName: MoveLobby, Assembly-CSharp
+      - m_Target: {fileID: 939663284}
+        m_TargetAssemblyTypeName: MoveSelectCharacter, Assembly-CSharp
         m_MethodName: OnLogInButtonClicked
         m_Mode: 1
         m_Arguments:
@@ -1793,7 +1793,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 939663283}
-  - component: {fileID: 939663282}
+  - component: {fileID: 939663284}
   m_Layer: 0
   m_Name: Log In Click
   m_TagString: Untagged
@@ -1801,18 +1801,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &939663282
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 939663281}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4bc7a694770a9004ab0ad04b2e83d955, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &939663283
 Transform:
   m_ObjectHideFlags: 0
@@ -1828,6 +1816,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &939663284
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 939663281}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ec960819a6ddc4468c1fe54e6641ba9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1075564803
 GameObject:
   m_ObjectHideFlags: 0
