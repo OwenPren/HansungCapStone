@@ -9,6 +9,18 @@ EditorBuildSettings:
     path: Assets/Scenes/LoadingScene.unity
     guid: 2b937c62414183c40b5113d2d4d1dd60
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/Scenes/LogInScene.unity
+    guid: c7eda116817ca8c4da0b13051f1745c3
+  - enabled: 1
+    path: Assets/Scenes/SignUpScene.unity
+    guid: d7f4f40931775e94086396fd6767bb23
+  - enabled: 1
+    path: Assets/Scenes/SelectCharacter.unity
+    guid: 1d9332aae0a19cc4cb8a93960bc8d19f
+  - enabled: 1
+    path: Assets/Scenes/LobbyScene.unity
+    guid: 894b730d8ee15c54b888935554bd3e16
+  - enabled: 1
+    path: Assets/Scenes/GameScene.unity
+    guid: 958027623cba4b349a3302b82d7740ac
   m_configObjects: {}
