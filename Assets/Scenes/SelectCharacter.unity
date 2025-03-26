@@ -681,6 +681,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 420082733}
   m_CullTransparentMesh: 1
+--- !u!1 &456828323
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 456828325}
+  - component: {fileID: 456828326}
+  m_Layer: 0
+  m_Name: SelectClick
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &456828325
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 456828323}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 639.5, y: 311.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &456828326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 456828323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4bc7a694770a9004ab0ad04b2e83d955, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &668617222
 GameObject:
   m_ObjectHideFlags: 0
@@ -1201,9 +1245,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1503464021}
-        m_TargetAssemblyTypeName: CharacterSelection, Assembly-CSharp
-        m_MethodName: OnDone
+      - m_Target: {fileID: 456828326}
+        m_TargetAssemblyTypeName: MoveLobby, Assembly-CSharp
+        m_MethodName: OnSelectButtonClicked
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1421,6 +1465,7 @@ MonoBehaviour:
   - {fileID: 256830829}
   - {fileID: 668617224}
   - {fileID: 379862318}
+  characterNames: []
 --- !u!4 &1503464022
 Transform:
   m_ObjectHideFlags: 0
@@ -1552,3 +1597,4 @@ SceneRoots:
   - {fileID: 1724678838}
   - {fileID: 243586828}
   - {fileID: 1503464022}
+  - {fileID: 456828325}

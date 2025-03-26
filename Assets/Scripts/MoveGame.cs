@@ -1,13 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine;
 
-public class MoveLobby : MonoBehaviour
+public class MoveGame : MonoBehaviour
 {
     public void OnSelectButtonClicked()
     {
-        SceneManager.LoadScene("LobbyScene");
-
+        SceneManager.LoadScene("GameScene");
     }
 }
