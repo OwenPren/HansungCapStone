@@ -177,6 +177,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1455227981}
   - component: {fileID: 1455227980}
+  - component: {fileID: 1455227982}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -196,7 +197,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1e9c4de227e040bead0518af7975a70, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeLimit: 60
   gameStartEvent: {fileID: 11400000, guid: 9b27721f1aac94268822429d20017e30, type: 2}
+  _State: 0
+  _Timer: 60
 --- !u!4 &1455227981
 Transform:
   m_ObjectHideFlags: 0
@@ -212,6 +216,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1455227982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455227979}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 431058247
+  ObjectInterest: 1
+  Flags: 262145
+  NestedObjects: []
+  NetworkedBehaviours:
+  - {fileID: 1455227980}
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &1800490627
 GameObject:
   m_ObjectHideFlags: 0

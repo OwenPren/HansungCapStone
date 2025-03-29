@@ -58,11 +58,13 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Round Ended");
     }
 
-    private void Start()
+
+    public override void Spawned()
     {
+        if (!Runner.IsServer) return;
+
         State = GameState.Wating;
         Debug.Log("Game Started");
-        if (!Runner.IsServer) return;
 
         Debug.Log("Thread Raise");
         gameStartEvent.Raise();
