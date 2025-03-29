@@ -5,6 +5,7 @@ using UnityEngine;
 
 public enum GameState
 {
+    Wating, // 게임 시작 대기중
     InProgress, // 라운드 진행중
     Started, // 라운드 시작
     Ended, // 라운드 종료
@@ -59,6 +60,7 @@ public class GameManager : NetworkBehaviour
 
     private void Start()
     {
+        State = GameState.Wating;
         Debug.Log("Game Started");
         if (!Runner.IsServer) return;
 
