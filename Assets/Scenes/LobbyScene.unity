@@ -528,7 +528,7 @@ MonoBehaviour:
       - m_Target: {fileID: 529629552}
         m_TargetAssemblyTypeName: PlayerSpawner, Assembly-CSharp
         m_MethodName: StartClientMode
-        m_Mode: 5
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -739,7 +739,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   targetSceneIndex: 5
-  roomCodeField: {fileID: 0}
+  roomCodeField: {fileID: 921508068}
   _playerPrefab:
     RawGuidValue: e3965746328aaec4bb210329d4cd7c5e
 --- !u!4 &529629553

@@ -26,7 +26,7 @@ public class GameManager : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        //클라이언트 제외외
+        //클라이언트 제외
         if (!Runner.IsServer) return;
 
         switch (State)
