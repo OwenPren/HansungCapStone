@@ -5,7 +5,12 @@ public static class APIUrls
     public static string EventGenerationAssistantID => "asst_WwO0WtgWWrkGpvYgv51TBFcr"; 
 
     //Thread API url
-    public static string CreateThreadURL => "https://api.openai.com/v1/assistants";
+    public static string CreateThreadURL => "https://api.openai.com/v1/threads";
+
+    public static string DeleteThreadUrl(string thread_id)
+    {
+        return $"https://api.openai.com/v1/threads/{thread_id}";
+    }
 
     //Message API url
     public static string CreateMessageUrl(string thread_id)

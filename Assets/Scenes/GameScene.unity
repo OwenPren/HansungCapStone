@@ -153,6 +153,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gameStartEvent: {fileID: 11400000, guid: 9b27721f1aac94268822429d20017e30, type: 2}
+  roundStartEvent: {fileID: 11400000, guid: 595207132bbe746958d724f65c96883a, type: 2}
+  gameEndEvent: {fileID: 11400000, guid: 0e46c835d960f4dca9af9f2eb44a137a, type: 2}
   apiManager: {fileID: 138433107}
 --- !u!4 &138433106
 Transform:
@@ -181,7 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3708cddf723a3d84ba485acae4e9d067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: 
+  apiKey: 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
 --- !u!1 &1455227979
 GameObject:
   m_ObjectHideFlags: 0
@@ -214,6 +216,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   timeLimit: 60
   gameStartEvent: {fileID: 11400000, guid: 9b27721f1aac94268822429d20017e30, type: 2}
+  roundStartEvent: {fileID: 11400000, guid: 595207132bbe746958d724f65c96883a, type: 2}
+  gameEndEvent: {fileID: 11400000, guid: 0e46c835d960f4dca9af9f2eb44a137a, type: 2}
   _State: 0
   _Timer: 60
 --- !u!4 &1455227981

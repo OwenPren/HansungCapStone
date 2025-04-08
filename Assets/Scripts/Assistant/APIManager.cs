@@ -63,5 +63,22 @@ public class APIManager : MonoBehaviour
             onError?.Invoke(request.error + " | " + request.downloadHandler.text);
         }
     }
+
+    public IEnumerator DeleteRequest(string url, Action<string> onSuccess, Action<string> onError = null)
+    {
+        UnityWebRequest request = UnityWebRequest.Delete(url);
+        SetCommonHeadersWithoutContentType(request);
+
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            onSuccess?.Invoke(request.downloadHandler.text);
+        }
+        else
+        {
+            onError?.Invoke(request.error + " | " + request.downloadHandler.text);
+        }
+    }
 }
 
