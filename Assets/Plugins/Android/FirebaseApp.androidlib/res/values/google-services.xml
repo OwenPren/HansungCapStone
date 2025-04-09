@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:keep="@string/gcm_defaultSenderId,@string/google_storage_bucket,@string/project_id,@string/google_api_key,@string/google_crash_reporting_api_key,@string/google_app_id">
+  <string name="gcm_defaultSenderId" translatable="false">217016848457</string>
+  <string name="google_storage_bucket" translatable="false">hansungcapstone-f65fb.firebasestorage.app</string>
+  <string name="project_id" translatable="false">hansungcapstone-f65fb</string>
+  <string name="google_api_key" translatable="false">AIzaSyCbm-bcsk4mI5AplT7j0y8bCjTE1x6E9-4</string>
+  <string name="google_crash_reporting_api_key" translatable="false">AIzaSyCbm-bcsk4mI5AplT7j0y8bCjTE1x6E9-4</string>
+  <string name="google_app_id" translatable="false">1:217016848457:android:dbd3d0b49a9166b1f96f98</string>
+</resources>
