@@ -84,7 +84,7 @@ public class GameManager : NetworkBehaviour
         State = GameState.InProgress;
         Timer = timeLimit;
 
-        roundStartEvent.Raise();
+        roundStartEvent.Raise(this);
     }
 
     void EndRound()
