@@ -65,6 +65,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    void GenerateSituation()
+    {
+        // 여기를 ChatAssistant 연결하여 상황 부여 받을 예정
+        // currentSituation = 한 대형 IT 회사가 신형 소프트웨어 기술을 발표했다.";
+    }
+
     void StartGame()
     {
         //게임 시작 로직 구현 필요
@@ -102,6 +108,12 @@ public class GameManager : NetworkBehaviour
         {
             State = GameState.Started;
         }
+    }
+
+    void EvaluateRound()
+    {
+        // 여기에서 수익 반영, 순위 계산 등 수행
+        Debug.Log("라운드 결과 평가 시작");
     }
 
     public override void Spawned()
