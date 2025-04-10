@@ -104,6 +104,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    void EvaluateRound()
+    {
+        // 여기에서 수익 반영, 순위 계산 등 수행
+        Debug.Log("라운드 결과 평가 시작");
+    }
+
     public override void Spawned()
     {
         if (!Runner.IsServer) return;

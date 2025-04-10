@@ -6,6 +6,20 @@ using Newtonsoft.Json.Linq;
 using System.Security.Principal;
 using System;
 
+public enum SectorType
+{
+    Energy,
+    Technology,
+    Finance,
+    Healthcare,
+    ConsumerDiscretionary,
+    ConsumerStaples,
+    Telecom,
+    Industrials,
+    Materials,
+    RealEstate
+}
+
 public class AssistantManager : MonoBehaviour
 {
     public GameStartEventSO gameStartEvent;
@@ -13,6 +27,8 @@ public class AssistantManager : MonoBehaviour
     public GameEndEventSO gameEndEvent;
 
     public APIManager apiManager;
+
+    [SerializeField] private float retrieveWaitTime = 2.0f;
 
     private bool IsThread = false;
     private string threadID = "";
@@ -69,6 +85,8 @@ public class AssistantManager : MonoBehaviour
         messageID = "";
         runStatus = "";
         functionCallID = "";
+        functionCallArguments = null;
+        runInProgress = false;
     }
 
     private IEnumerator GenerationEvent()
@@ -77,16 +95,35 @@ public class AssistantManager : MonoBehaviour
         // specialEventInfo: 현재 활성화된 특별 이벤트 정보 (없으면 빈 문자열)
         // generateSpecialEvent: 이번 라운드에 특별 이벤트를 생성할지 여부
         // generateUnexpectedEvent: 이번 라운드에 예기치 않은 이벤트를 포함할지 여부
-        // numberOfEventsToGenerate: 생성할 일반 이벤트의 수
+        // eventSectors: 생성할 일반 이벤트의 분야 (랜덤하게 1~3개 선택됨)
+        
+        // 랜덤으로 1~3개 분야 선택
+        int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
+        SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
+        List<SectorType> sectorsList = new List<SectorType>(allSectors);
+        
+        // Fisher-Yates 셔플
+        for (int i = sectorsList.Count - 1; i > 0; i--) {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            SectorType temp = sectorsList[i];
+            sectorsList[i] = sectorsList[j];
+            sectorsList[j] = temp;
+        }
+        
+        List<SectorType> chosenSectors = sectorsList.GetRange(0, numberOfSectors);
+        JArray eventSectorsArray = new JArray();
+        foreach (var sector in chosenSectors) {
+            eventSectorsArray.Add(sector.ToString());
+        }
         
         JObject inputParameters = new JObject
         {
             ["specialEventInfo"] = "",            // 특별 이벤트 정보 (없을 경우 빈 문자열)
             ["generateSpecialEvent"] = false,       // 특별 이벤트 생성 여부
             ["generateUnexpectedEvent"] = false,    // 예기치 않은 이벤트 포함 여부
-            ["numberOfEventsToGenerate"] = 3         // 생성할 일반 이벤트 수
+            ["eventSectors"] = eventSectorsArray      // 생성할 사건 분야 리스트
         };
-
+        
         JObject toolChoiceObject = new JObject
         {
             ["type"] = "function",
@@ -95,7 +132,7 @@ public class AssistantManager : MonoBehaviour
                 ["name"] = "generate_event_titles_and_descriptions"
             }
         };
-
+        
         // 어시스턴트에게 이벤트 생성 요청 (입력 값은 JSON 문자열로 변환되어 전송됨)
         yield return StartCoroutine(GenarationRoutine("user", inputParameters.ToString(), APIUrls.EventGenerationAssistantID, toolChoiceObject));
     }
@@ -383,7 +420,7 @@ public class AssistantManager : MonoBehaviour
             else
             {
                 Debug.Log("Current Run Status: " + runStatus);
-                yield return new WaitForSeconds(3.0f);
+                yield return new WaitForSeconds(retrieveWaitTime);
             }
         }
     }
