@@ -25,6 +25,7 @@ public class AssistantManager : MonoBehaviour
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
     public GameEndEventSO gameEndEvent;
+    public FunctionCallArgumentsEvents functionCallArgumentsEvents;
 
     public APIManager apiManager;
 
@@ -395,6 +396,11 @@ public class AssistantManager : MonoBehaviour
                                             functionCallArguments = new JObject();
                                         }
                                         Debug.Log("Function Call Arguments: " + functionCallArguments.ToString());
+
+                                        if (functionCallArgumentsEvents != null)
+                                        {
+                                            functionCallArgumentsEvents.RaiseEvent(functionCallArguments);
+                                        }
                                     }
                                 }
                             }
