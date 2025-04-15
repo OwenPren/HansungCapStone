@@ -155,7 +155,9 @@ MonoBehaviour:
   gameStartEvent: {fileID: 11400000, guid: 9b27721f1aac94268822429d20017e30, type: 2}
   roundStartEvent: {fileID: 11400000, guid: 595207132bbe746958d724f65c96883a, type: 2}
   gameEndEvent: {fileID: 11400000, guid: 0e46c835d960f4dca9af9f2eb44a137a, type: 2}
+  functionCallArgumentsEvents: {fileID: 11400000, guid: a506d866e5dafd84787ac676a2f6ebc8, type: 2}
   apiManager: {fileID: 138433107}
+  retrieveWaitTime: 2
 --- !u!4 &138433106
 Transform:
   m_ObjectHideFlags: 0

@@ -1,3 +1,4 @@
+/*
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,42 +13,43 @@ public class AuthManager : MonoBehaviour
     [SerializeField] TMP_InputField emailField;
     [SerializeField] TMP_InputField passField;
 
-    // ÀÎÁõÀ» °ü¸®ÇÒ °´Ã¼
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼
     Firebase.Auth.FirebaseAuth auth;
 
     void Awake()
     {
-        // °´Ã¼ ÃÊ±âÈ­
+        // ï¿½ï¿½Ã¼ ï¿½Ê±ï¿½È­
         auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
     }
     public void login()
     {
-        // Á¦°øµÇ´Â ÇÔ¼ö : ÀÌ¸ÞÀÏ°ú ºñ¹Ð¹øÈ£·Î ·Î±×ÀÎ ½ÃÄÑ ÁÜ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ : ï¿½Ì¸ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ð¹ï¿½È£ï¿½ï¿½ ï¿½Î±ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         auth.SignInWithEmailAndPasswordAsync(emailField.text, passField.text).ContinueWith(
             task => {
                 if (task.IsCompleted && !task.IsFaulted && !task.IsCanceled)
                 {
-                    Debug.Log(emailField.text + " ·Î ·Î±×ÀÎ ÇÏ¼Ì½À´Ï´Ù.");
+                    Debug.Log(emailField.text + " ï¿½ï¿½ ï¿½Î±ï¿½ï¿½ï¿½ ï¿½Ï¼Ì½ï¿½ï¿½Ï´ï¿½.");
                 }
                 else
                 {
-                    Debug.Log("·Î±×ÀÎ¿¡ ½ÇÆÐÇÏ¼Ì½À´Ï´Ù.");
+                    Debug.Log("ï¿½Î±ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¼Ì½ï¿½ï¿½Ï´ï¿½.");
                 }
             }
         );
     }
     public void register()
     {
-        // Á¦°øµÇ´Â ÇÔ¼ö : ÀÌ¸ÞÀÏ°ú ºñ¹Ð¹øÈ£·Î È¸¿ø°¡ÀÔ ½ÃÄÑ ÁÜ
+        // ï¿½ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½Ô¼ï¿½ : ï¿½Ì¸ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Ð¹ï¿½È£ï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         auth.CreateUserWithEmailAndPasswordAsync(emailField.text, passField.text).ContinueWith(
             task => {
                 if (!task.IsCanceled && !task.IsFaulted)
                 {
-                    Debug.Log(emailField.text + "·Î È¸¿ø°¡ÀÔ\n");
+                    Debug.Log(emailField.text + "ï¿½ï¿½ È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\n");
                 }
                 else
-                    Debug.Log("È¸¿ø°¡ÀÔ ½ÇÆÐ\n");
+                    Debug.Log("È¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½\n");
             }
             );
     }
 }
+*/
