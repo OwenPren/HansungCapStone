@@ -6,13 +6,30 @@ using Newtonsoft.Json.Linq;
 using System.Security.Principal;
 using System;
 
+public enum SectorType
+{
+    Energy,
+    Technology,
+    Finance,
+    Healthcare,
+    ConsumerDiscretionary,
+    ConsumerStaples,
+    Telecom,
+    Industrials,
+    Materials,
+    RealEstate
+}
+
 public class AssistantManager : MonoBehaviour
 {
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
     public GameEndEventSO gameEndEvent;
+    public FunctionCallArgumentsEvents functionCallArgumentsEvents;
 
     public APIManager apiManager;
+
+    [SerializeField] private float retrieveWaitTime = 2.0f;
 
     private bool IsThread = false;
     private string threadID = "";
@@ -22,25 +39,28 @@ public class AssistantManager : MonoBehaviour
     private string functionCallID = "";
     private JObject functionCallArguments = null;
 
+    private bool runInProgress = false;
+
     private void OnEnable()
     {
         gameStartEvent.OnGameStart += OnGameStart;
-        roundStartEvent.OnRoundStart += OnRoundStart;
+        roundStartEvent.AddListener(OnRoundStart);
         gameEndEvent.OnGameEnd += OnGameEnd;
     }
 
     private void OnDisable()
     {
         gameStartEvent.OnGameStart -= OnGameStart;
-        roundStartEvent.OnRoundStart -= OnRoundStart;
+        roundStartEvent.RemoveListener(OnRoundStart);
         gameEndEvent.OnGameEnd -= OnGameEnd;
     }
 
-    private void OnRoundStart()
+    private IEnumerator OnRoundStart()
     {
         //라운드 시작시 어시스턴트로 부터 사건 생성 요청
-        GenerationEvent();
-        //생성된 사건으로부터 주가 정보 생성 
+        yield return StartCoroutine(GenerationEvent());
+        //생성된 사건으로부터 주가 정보 생성
+        yield return StartCoroutine(StockPriceAdjustment());
     }
 
     private void OnGameStart()
@@ -66,36 +86,77 @@ public class AssistantManager : MonoBehaviour
         messageID = "";
         runStatus = "";
         functionCallID = "";
+        functionCallArguments = null;
+        runInProgress = false;
     }
 
-private void GenerationEvent()
-{
-    // 구성 요소 설명:
-    // specialEventInfo: 현재 활성화된 특별 이벤트 정보 (없으면 빈 문자열)
-    // generateSpecialEvent: 이번 라운드에 특별 이벤트를 생성할지 여부
-    // generateUnexpectedEvent: 이번 라운드에 예기치 않은 이벤트를 포함할지 여부
-    // numberOfEventsToGenerate: 생성할 일반 이벤트의 수
-    
-    JObject inputParameters = new JObject
+    private IEnumerator GenerationEvent()
     {
-        ["specialEventInfo"] = "",            // 특별 이벤트 정보 (없을 경우 빈 문자열)
-        ["generateSpecialEvent"] = false,       // 특별 이벤트 생성 여부
-        ["generateUnexpectedEvent"] = false,    // 예기치 않은 이벤트 포함 여부
-        ["numberOfEventsToGenerate"] = 3         // 생성할 일반 이벤트 수
-    };
-
-    JObject toolChoiceObject = new JObject
-    {
-        ["type"] = "function",
-        ["function"] = new JObject
-        {
-            ["name"] = "generate_event_titles_and_descriptions"
+        // 구성 요소 설명:
+        // specialEventInfo: 현재 활성화된 특별 이벤트 정보 (없으면 빈 문자열)
+        // generateSpecialEvent: 이번 라운드에 특별 이벤트를 생성할지 여부
+        // generateUnexpectedEvent: 이번 라운드에 예기치 않은 이벤트를 포함할지 여부
+        // eventSectors: 생성할 일반 이벤트의 분야 (랜덤하게 1~3개 선택됨)
+        
+        // 랜덤으로 1~3개 분야 선택
+        int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
+        SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
+        List<SectorType> sectorsList = new List<SectorType>(allSectors);
+        
+        // Fisher-Yates 셔플
+        for (int i = sectorsList.Count - 1; i > 0; i--) {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            SectorType temp = sectorsList[i];
+            sectorsList[i] = sectorsList[j];
+            sectorsList[j] = temp;
         }
-    };
+        
+        List<SectorType> chosenSectors = sectorsList.GetRange(0, numberOfSectors);
+        JArray eventSectorsArray = new JArray();
+        foreach (var sector in chosenSectors) {
+            eventSectorsArray.Add(sector.ToString());
+        }
+        
+        JObject inputParameters = new JObject
+        {
+            ["specialEventInfo"] = "",            // 특별 이벤트 정보 (없을 경우 빈 문자열)
+            ["generateSpecialEvent"] = false,       // 특별 이벤트 생성 여부
+            ["generateUnexpectedEvent"] = false,    // 예기치 않은 이벤트 포함 여부
+            ["eventSectors"] = eventSectorsArray      // 생성할 사건 분야 리스트
+        };
+        
+        JObject toolChoiceObject = new JObject
+        {
+            ["type"] = "function",
+            ["function"] = new JObject
+            {
+                ["name"] = "generate_event_titles_and_descriptions"
+            }
+        };
+        
+        // 어시스턴트에게 이벤트 생성 요청 (입력 값은 JSON 문자열로 변환되어 전송됨)
+        yield return StartCoroutine(GenarationRoutine("user", inputParameters.ToString(), APIUrls.EventGenerationAssistantID, toolChoiceObject));
+    }
 
-    // 어시스턴트에게 이벤트 생성 요청 (입력 값은 JSON 문자열로 변환되어 전송됨)
-    StartCoroutine(GenarationRoutine("user", inputParameters.ToString(), APIUrls.EventGenerationAssistantID, toolChoiceObject));
-}
+    private IEnumerator StockPriceAdjustment()
+    {
+        if (functionCallArguments == null)
+        {
+            Debug.Log("function Argument is not exist");
+            yield break; 
+        }
+
+        JObject toolChoiceObject = new JObject
+        {
+            ["type"] = "function",
+            ["function"] = new JObject
+            {
+                ["name"] = "calculate_sector_price_changes"
+            }
+        };
+
+        yield return StartCoroutine(GenarationRoutine("user", functionCallArguments.ToString(), APIUrls.StockPriceAdjustmentAssistantID, toolChoiceObject));
+    }
 
     private IEnumerator GenarationRoutine(string role, string data, string assistantId, JObject toolChoice = null)
     {
@@ -107,7 +168,16 @@ private void GenerationEvent()
         yield return StartCoroutine(RetrieveRun());
 
         //function call 수행 완료 요청
-        yield return StartCoroutine(SubmitToolOutputsToRun());
+        if (runStatus == "requires_action")
+        {
+            // tool outputs 제출
+            yield return StartCoroutine(SubmitToolOutputsToRun());
+
+            // 2차 대기 : completed 될 때까지
+            yield return StartCoroutine(RetrieveRun());
+        }
+
+        runInProgress = false;
         
         //생성된 메시지의 id 조회 - RetrieveRun 단계에서 메세지 생성 대기 및 function call이 반환되므로 사용 할 필요 없음. 
         //yield return StartCoroutine(ListMessage());
@@ -198,6 +268,9 @@ private void GenerationEvent()
 
     private IEnumerator CreateRun(string assistantId, object toolChoice = null, string additionalInstructions = null, string instructions = null, JArray additionalMessages = null, int? maxCompletionTokens = null)
     {
+        if (runInProgress) yield break;
+        runInProgress = true;
+
         if (string.IsNullOrEmpty(threadID))
         {
             Debug.Log("Thread ID Error"); 
@@ -323,6 +396,11 @@ private void GenerationEvent()
                                             functionCallArguments = new JObject();
                                         }
                                         Debug.Log("Function Call Arguments: " + functionCallArguments.ToString());
+
+                                        if (functionCallArgumentsEvents != null)
+                                        {
+                                            functionCallArgumentsEvents.RaiseEvent(functionCallArguments);
+                                        }
                                     }
                                 }
                             }
@@ -348,7 +426,7 @@ private void GenerationEvent()
             else
             {
                 Debug.Log("Current Run Status: " + runStatus);
-                yield return new WaitForSeconds(3.0f);
+                yield return new WaitForSeconds(retrieveWaitTime);
             }
         }
     }
