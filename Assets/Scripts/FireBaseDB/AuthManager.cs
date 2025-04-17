@@ -12,41 +12,41 @@ public class AuthManager : MonoBehaviour
     //[SerializeField] TMP_InputField emailField;
     //[SerializeField] TMP_InputField passField;
 
-    //// ÀÎÁõÀ» °ü¸®ÇÒ °´Ã¼
+    //// ì¸ì¦ì„ ê´€ë¦¬í•  ê°ì²´
     //Firebase.Auth.FirebaseAuth auth;
 
     //void Awake()
     //{
-    //    // °´Ã¼ ÃÊ±âÈ­
+    //    // ê°ì²´ ì´ˆê¸°í™”
     //    auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
     //}
     //public void login()
     //{
-    //    // Á¦°øµÇ´Â ÇÔ¼ö : ÀÌ¸ŞÀÏ°ú ºñ¹Ğ¹øÈ£·Î ·Î±×ÀÎ ½ÃÄÑ ÁÜ
+    //    // ì œê³µë˜ëŠ” í•¨ìˆ˜ : ì´ë©”ì¼ê³¼ ë¹„ë°€ë²ˆí˜¸ë¡œ ë¡œê·¸ì¸ ì‹œì¼œ ì¤Œ
     //    auth.SignInWithEmailAndPasswordAsync(emailField.text, passField.text).ContinueWith(
     //        task => {
     //            if (task.IsCompleted && !task.IsFaulted && !task.IsCanceled)
     //            {
-    //                Debug.Log(emailField.text + " ·Î ·Î±×ÀÎ ÇÏ¼Ì½À´Ï´Ù.");
+    //                Debug.Log(emailField.text + " ë¡œ ë¡œê·¸ì¸ í•˜ì…¨ìŠµë‹ˆë‹¤.");
     //            }
     //            else
     //            {
-    //                Debug.Log("·Î±×ÀÎ¿¡ ½ÇÆĞÇÏ¼Ì½À´Ï´Ù.");
+    //                Debug.Log("ë¡œê·¸ì¸ì— ì‹¤íŒ¨í•˜ì…¨ìŠµë‹ˆë‹¤.");
     //            }
     //        }
     //    );
     //}
     //public void register()
     //{
-    //    // Á¦°øµÇ´Â ÇÔ¼ö : ÀÌ¸ŞÀÏ°ú ºñ¹Ğ¹øÈ£·Î È¸¿ø°¡ÀÔ ½ÃÄÑ ÁÜ
+    //    // ì œê³µë˜ëŠ” í•¨ìˆ˜ : ì´ë©”ì¼ê³¼ ë¹„ë°€ë²ˆí˜¸ë¡œ íšŒì›ê°€ì… ì‹œì¼œ ì¤Œ
     //    auth.CreateUserWithEmailAndPasswordAsync(emailField.text, passField.text).ContinueWith(
     //        task => {
     //            if (!task.IsCanceled && !task.IsFaulted)
     //            {
-    //                Debug.Log(emailField.text + "·Î È¸¿ø°¡ÀÔ\n");
+    //                Debug.Log(emailField.text + "ë¡œ íšŒì›ê°€ì…\n");
     //            }
     //            else
-    //                Debug.Log("È¸¿ø°¡ÀÔ ½ÇÆĞ\n");
+    //                Debug.Log("íšŒì›ê°€ì… ì‹¤íŒ¨\n");
     //        }
     //        );
     //}
