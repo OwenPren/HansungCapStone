@@ -65,6 +65,12 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    void GenerateSituation()
+    {
+        // 여기를 ChatAssistant 연결하여 상황 부여 받을 예정
+        // currentSituation = 한 대형 IT 회사가 신형 소프트웨어 기술을 발표했다.";
+    }
+
     void StartGame()
     {
         //게임 시작 로직 구현 필요

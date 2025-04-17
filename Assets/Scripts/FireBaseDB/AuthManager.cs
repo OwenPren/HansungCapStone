@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Firebase.Auth;
+//using Firebase.Auth;
 using UnityEngine.UI;
 using UnityEngine.Tilemaps;
 using TMPro;
@@ -9,10 +9,10 @@ using TMPro;
 public class AuthManager : MonoBehaviour
 {
 
-    [SerializeField] TMP_InputField emailField;
-    [SerializeField] TMP_InputField passField;
+    //[SerializeField] TMP_InputField emailField;
+    //[SerializeField] TMP_InputField passField;
 
-//// 인증을 관리할 객체
+    //// 인증을 관리할 객체
     //Firebase.Auth.FirebaseAuth auth;
 
     //void Awake()
