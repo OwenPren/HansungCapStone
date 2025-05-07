@@ -20,8 +20,10 @@ public class GameManager : NetworkBehaviour
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
     public GameEndEventSO gameEndEvent;
+    private PlayerDatabaseSO _db;            // 주입받음
 
     //Network Object
+    //[SerializeField] private NetworkObject playerPrefab;
     [Networked] public GameState State { get; private set; }
     [Networked] public float Timer { get; private set; }
     [Networked] public int CurrentRound { get; private set; }
@@ -29,6 +31,36 @@ public class GameManager : NetworkBehaviour
     private bool isWaiting = false;
     private float waitTimer = 0f;
 
+    public void InitAfterLoad(PlayerDatabaseSO db)
+    {
+        _db = db;
+
+        if (Object.HasStateAuthority)        // Host 만 실행
+            SpawnPlayers();
+    }
+
+    private void SpawnPlayers()
+    {
+        foreach (var p in Runner.ActivePlayers)
+        {
+            // 1) DB에서 런타임 SO 찾기
+            var so = _db.Find(p);
+
+            // 2) 로비에서 Spawn 돼 있던 플레이어 오브젝트 찾기
+            if (Runner.TryGetPlayerObject(p, out var obj))
+            {
+                // 3) PlayerNetwork 컴포넌트에 SO 주입
+                var pn = obj.GetComponent<PlayerNetwork>();
+                pn.runtimeData = so;
+            }
+            else
+            {
+                // (선택) 로비에서 Spawn 하지 않았다면:
+                // var obj = Runner.Spawn(playerPrefab, GetSpawnPos(p), Quaternion.identity, p);
+                // obj.GetComponent<PlayerNetwork>().runtimeData = so;
+            }
+        }
+    }
     public override void FixedUpdateNetwork()
     {
         //클라이언트 제외

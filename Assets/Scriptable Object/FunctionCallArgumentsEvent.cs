@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 public class JObjectEvent : UnityEvent<JObject> {}
 
 [CreateAssetMenu(menuName = "Events/FunctionCallArgumentsEvents")]
-public class FunctionCallArgumentsEvents : ScriptableObject
+public class FunctionCallArgumentsEvent : ScriptableObject
 {
     public JObjectEvent OnEventRaised;
 

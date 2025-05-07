@@ -740,6 +740,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   targetSceneIndex: 5
   roomCodeField: {fileID: 921508068}
+  db: {fileID: 11400000, guid: b0dbf6534f81ef249918d7ff8668cb6f, type: 2}
+  defaults: {fileID: 11400000, guid: 29eb7240a7d687b4ab146f420965098a, type: 2}
   _playerPrefab:
     RawGuidValue: e3965746328aaec4bb210329d4cd7c5e
 --- !u!4 &529629553

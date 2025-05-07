@@ -15,7 +15,16 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   [SerializeField] private int targetSceneIndex;
   [SerializeField] private TMP_InputField roomCodeField;
 
+  [SerializeField] private PlayerDatabaseSO db;
+  [SerializeField] private PlayerDefaultDataSO defaults;
+
+
   private Canvas canvas;
+
+  void Awake()
+  {
+      FindObjectOfType<NetworkRunner>()?.AddCallbacks(this);
+  }
 
   async void StartGame(GameMode mode, string roomCode)
   {
@@ -143,6 +152,16 @@ private string GenerateRoomCode(int length)
       NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab,spawnPosition, Quaternion.identity, player);
 
       _spawnedCharacters.Add(player, networkPlayerObject);
+
+      var so = ScriptableObject.CreateInstance<PlayerDataSO>();
+      so.Owner    = player;
+      so.money    = defaults.startMoney;
+      foreach (var st in defaults.startStocks)
+          so.holdings[st.sector] = st.amount;
+      db.players.Add(so);
+
+      networkPlayerObject.GetComponent<PlayerNetwork>().runtimeData = so;
+
     }
   }
   public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) 
@@ -158,9 +177,13 @@ private string GenerateRoomCode(int length)
 
   public void OnSceneLoadDone(NetworkRunner runner) 
   {
-   Debug.Log("OnSceneLoadDone. room code: " + runner.SessionInfo.Name);
-   CreateCanvas();
-   ShowTextBox(runner.SessionInfo.Name);
+    if (!runner.IsServer) return;
+    Debug.Log("OnSceneLoadDone. room code: " + runner.SessionInfo.Name);
+    CreateCanvas();
+    ShowTextBox(runner.SessionInfo.Name);
+
+    var gm = FindObjectOfType<GameManager>();
+    gm.InitAfterLoad(db);  
   }
 
   //interface 
