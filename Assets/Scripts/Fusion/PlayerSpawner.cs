@@ -14,6 +14,7 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   private NetworkRunner _runner;
   [SerializeField] private int targetSceneIndex;
   [SerializeField] private TMP_InputField roomCodeField;
+  [SerializeField] private float initialCash = 5000000;
 
   private Canvas canvas;
 
@@ -141,6 +142,12 @@ private string GenerateRoomCode(int length)
       //Create a player
       Vector2 spawnPosition = new Vector2((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 3, 0);
       NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab,spawnPosition, Quaternion.identity, player);
+
+      var pm = networkPlayerObject.GetComponent<PlayerManager>();
+      pm.SetPlayerRef(player);
+      pm.Initialize(initialCash);
+
+      GameManager.Instance.RegisterPlayerManager(player, pm);
 
       _spawnedCharacters.Add(player, networkPlayerObject);
     }

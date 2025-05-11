@@ -1,167 +1,167 @@
-using UnityEngine;
-using UnityEngine.UI;
-using TMPro; 
+// using UnityEngine;
+// using UnityEngine.UI;
+// using TMPro; 
 
-public class MarketPanel2UI : MonoBehaviour
-{
-    [Header("UI Elements")]
-    public TextMeshProUGUI stockNameText;
-    public TextMeshProUGUI currentPriceText;
-    public TextMeshProUGUI playerHoldingText;
-    public TMP_InputField quantityInput; // ¸Å¼ö/¸Åµµ ¼ö·® ÀÔ·Â ÇÊµå
-    public Button buyButton;
-    public Button sellButton;
-    public Button closeButton; // MarketPanel2¸¦ ´Ý´Â ¹öÆ°
+// public class MarketPanel2UI : MonoBehaviour
+// {
+//     [Header("UI Elements")]
+//     public TextMeshProUGUI stockNameText;
+//     public TextMeshProUGUI currentPriceText;
+//     public TextMeshProUGUI playerHoldingText;
+//     public TMP_InputField quantityInput; // ï¿½Å¼ï¿½/ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½Êµï¿½
+//     public Button buyButton;
+//     public Button sellButton;
+//     public Button closeButton; // MarketPanel2ï¿½ï¿½ ï¿½Ý´ï¿½ ï¿½ï¿½Æ°
 
-    private string currentStockName; // ÇöÀç º¸°í ÀÖ´Â ÁÖ½Ä ÀÌ¸§
+//     private string currentStockName; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Ö½ï¿½ ï¿½Ì¸ï¿½
 
-    void Awake()
-    {
-        if (buyButton != null) buyButton.onClick.AddListener(OnBuyButtonClick);
-        if (sellButton != null) sellButton.onClick.AddListener(OnSellButtonClick);
-        if (closeButton != null) closeButton.onClick.AddListener(OnCloseButtonClick);
+//     void Awake()
+//     {
+//         if (buyButton != null) buyButton.onClick.AddListener(OnBuyButtonClick);
+//         if (sellButton != null) sellButton.onClick.AddListener(OnSellButtonClick);
+//         if (closeButton != null) closeButton.onClick.AddListener(OnCloseButtonClick);
 
-        // ÃÊ±â¿¡´Â ºñÈ°¼ºÈ­ »óÅÂÀÏ ¼ö ÀÖÀ½
-        gameObject.SetActive(false);
-    }
+//         // ï¿½Ê±â¿¡ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//         gameObject.SetActive(false);
+//     }
 
-    // UIManager·ÎºÎÅÍ È£ÃâµÇ¾î Æ¯Á¤ Á¾¸ñ Á¤º¸¸¦ ¹Þ¾Æ UI¿¡ Ç¥½Ã
-    public void DisplayStockInfo(string name)
-    {
-        currentStockName = name;
-        // GameManager¸¦ ÅëÇØ StockMarketManager¿Í LocalPlayerManager Á¢±Ù
-        GameManager gm = GameManager.Instance;
-        if (gm == null || gm.stockMarketManager == null || gm.localPlayerManager == null)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
+//     // UIManagerï¿½Îºï¿½ï¿½ï¿½ È£ï¿½ï¿½Ç¾ï¿½ Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¾ï¿½ UIï¿½ï¿½ Ç¥ï¿½ï¿½
+//     public void DisplayStockInfo(string name)
+//     {
+//         currentStockName = name;
+//         // GameManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ StockMarketManagerï¿½ï¿½ LocalPlayerManager ï¿½ï¿½ï¿½ï¿½
+//         GameManager gm = GameManager.Instance;
+//         if (gm == null || gm.stockMarketManager == null || gm.localPlayerManager == null)
+//         {
+//             gameObject.SetActive(false);
+//             return;
+//         }
 
-        // ÁÖ½Ä µ¥ÀÌÅÍ °¡Á®¿À±â
-        StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-        if (stock != null)
-        {
-            stockNameText.text = stock.stockName;
-            currentPriceText.text = "ÇöÀç°¡: " + stock.currentPrice.ToString("N2"); // ¼Ò¼öÁ¡ 2ÀÚ¸®±îÁö Ç¥½Ã
-        }
-        else
-        {
-            stockNameText.text = "Error";
-            currentPriceText.text = "N/A";
-        }
+//         // ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
+//         if (stock != null)
+//         {
+//             stockNameText.text = stock.stockName;
+//             currentPriceText.text = "ï¿½ï¿½ï¿½ç°¡: " + stock.currentPrice.ToString("N2"); // ï¿½Ò¼ï¿½ï¿½ï¿½ 2ï¿½Ú¸ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½
+//         }
+//         else
+//         {
+//             stockNameText.text = "Error";
+//             currentPriceText.text = "N/A";
+//         }
 
-        // ÇÃ·¹ÀÌ¾î º¸À¯·® °¡Á®¿À±â (·ÎÄÃ ÇÃ·¹ÀÌ¾î ¸Å´ÏÀú »ç¿ë)
-        int holding = gm.localPlayerManager.GetPlayerStockQuantity(currentStockName);
-        playerHoldingText.text = "º¸À¯·®: " + holding.ToString();
+//         // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Å´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
+//         int holding = gm.localPlayerManager.GetPlayerStockQuantity(currentStockName);
+//         playerHoldingText.text = "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: " + holding.ToString();
 
-        // ¸Å¼ö/¸Åµµ ¼ö·® ÀÔ·Â ÇÊµå ÃÊ±âÈ­
-        quantityInput.text = "1"; // ±âº» ¼ö·® ¼³Á¤
-        // ÇÃ·¹ÀÌ¾î Çö±Ý ¹× º¸À¯·®¿¡ µû¶ó ¸Å¼ö/¸Åµµ ¹öÆ° È°¼ºÈ­
-    }
+//         // ï¿½Å¼ï¿½/ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½Êµï¿½ ï¿½Ê±ï¿½È­
+//         quantityInput.text = "1"; // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//         // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Å¼ï¿½/ï¿½Åµï¿½ ï¿½ï¿½Æ° È°ï¿½ï¿½È­
+//     }
 
-    // '¸Å¼ö' 
-    void OnBuyButtonClick()
-    {
-        if (string.IsNullOrEmpty(currentStockName)) return;
+//     // 'ï¿½Å¼ï¿½' 
+//     void OnBuyButtonClick()
+//     {
+//         if (string.IsNullOrEmpty(currentStockName)) return;
 
-        // ÀÔ·ÂµÈ ¼ö·® °¡Á®¿À±â
-        if (int.TryParse(quantityInput.text, out int quantity))
-        {
-            GameManager gm = GameManager.Instance;
-            if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
-            {
-                StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-                if (stock.currentPrice > 0)
-                {
-                    // PlayerManagerÀÇ ¸Å¼ö ¸Þ¼­µå È£Ãâ
-                    bool success = gm.localPlayerManager.BuyStock(currentStockName, quantity, stock.currentPrice);
-                    if (success)
-                    {
-                        Debug.Log("Buy Successful!");
-                        DisplayStockInfo(currentStockName); 
-                    }
-                    else
-                    {
-                        Debug.Log("Buy Failed."); 
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"Could not get current price for {currentStockName}");
-                }
-            }
-            else
-            {
-                Debug.LogError("GameManager or Managers not available for Buy operation.");
-            }
-        }
-        else
-        {
-            Debug.Log("Invalid quantity entered.");
-        }
-    }
+//         // ï¿½Ô·Âµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         if (int.TryParse(quantityInput.text, out int quantity))
+//         {
+//             GameManager gm = GameManager.Instance;
+//             if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
+//             {
+//                 StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
+//                 if (stock.currentPrice > 0)
+//                 {
+//                     // PlayerManagerï¿½ï¿½ ï¿½Å¼ï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+//                     bool success = gm.localPlayerManager.BuyStock(currentStockName, quantity, stock.currentPrice);
+//                     if (success)
+//                     {
+//                         Debug.Log("Buy Successful!");
+//                         DisplayStockInfo(currentStockName); 
+//                     }
+//                     else
+//                     {
+//                         Debug.Log("Buy Failed."); 
+//                     }
+//                 }
+//                 else
+//                 {
+//                     Debug.LogError($"Could not get current price for {currentStockName}");
+//                 }
+//             }
+//             else
+//             {
+//                 Debug.LogError("GameManager or Managers not available for Buy operation.");
+//             }
+//         }
+//         else
+//         {
+//             Debug.Log("Invalid quantity entered.");
+//         }
+//     }
 
-    // '¸Åµµ' 
-    void OnSellButtonClick()
-    {
-        if (string.IsNullOrEmpty(currentStockName)) return;
+//     // 'ï¿½Åµï¿½' 
+//     void OnSellButtonClick()
+//     {
+//         if (string.IsNullOrEmpty(currentStockName)) return;
 
-        // ÀÔ·ÂµÈ ¼ö·® °¡Á®¿À±â
-        if (int.TryParse(quantityInput.text, out int quantity))
-        {
-            GameManager gm = GameManager.Instance;
-            if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
-            {
-                StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-                if (stock.currentPrice > 0)
-                {
-                    // PlayerManagerÀÇ ¸Åµµ ¸Þ¼­µå È£Ãâ
-                    bool success = gm.localPlayerManager.SellStock(currentStockName, quantity, stock.currentPrice);
-                    if (success)
-                    {
-                        Debug.Log("Sell Successful!");
-                        DisplayStockInfo(currentStockName); 
-                    }
-                    else
-                    {
-                        Debug.Log("Sell Failed."); 
-                    }
-                }
-                else
-                {
-                    Debug.LogError($"Could not get current price for {currentStockName}");
-                }
-            }
-            else
-            {
-                Debug.LogError("GameManager or Managers not available for Sell operation.");
-            }
-        }
-        else
-        {
-            Debug.Log("Invalid quantity entered.");
-        }
-    }
+//         // ï¿½Ô·Âµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         if (int.TryParse(quantityInput.text, out int quantity))
+//         {
+//             GameManager gm = GameManager.Instance;
+//             if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
+//             {
+//                 StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
+//                 if (stock.currentPrice > 0)
+//                 {
+//                     // PlayerManagerï¿½ï¿½ ï¿½Åµï¿½ ï¿½Þ¼ï¿½ï¿½ï¿½ È£ï¿½ï¿½
+//                     bool success = gm.localPlayerManager.SellStock(currentStockName, quantity, stock.currentPrice);
+//                     if (success)
+//                     {
+//                         Debug.Log("Sell Successful!");
+//                         DisplayStockInfo(currentStockName); 
+//                     }
+//                     else
+//                     {
+//                         Debug.Log("Sell Failed."); 
+//                     }
+//                 }
+//                 else
+//                 {
+//                     Debug.LogError($"Could not get current price for {currentStockName}");
+//                 }
+//             }
+//             else
+//             {
+//                 Debug.LogError("GameManager or Managers not available for Sell operation.");
+//             }
+//         }
+//         else
+//         {
+//             Debug.Log("Invalid quantity entered.");
+//         }
+//     }
 
-    // '´Ý±â' 
-    void OnCloseButtonClick()
-    {
-        // UIManager¸¦ Ã£¾Æ¼­ MarketPanel¸¸ º¸ÀÌ°Ô ÀüÈ¯ ¿äÃ»
-        UIManager uiManager = UIManager.Instance;
-        if (uiManager != null)
-        {
-            uiManager.ShowMarketPanel();
-        }
-        else
-        {
-            Debug.LogError("UIManager instance not found!");
-        }
-    }
+//     // 'ï¿½Ý±ï¿½' 
+//     void OnCloseButtonClick()
+//     {
+//         // UIManagerï¿½ï¿½ Ã£ï¿½Æ¼ï¿½ MarketPanelï¿½ï¿½ ï¿½ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½Ã»
+//         UIManager uiManager = UIManager.Instance;
+//         if (uiManager != null)
+//         {
+//             uiManager.ShowMarketPanel();
+//         }
+//         else
+//         {
+//             Debug.LogError("UIManager instance not found!");
+//         }
+//     }
 
-    void OnDestroy()
-    {
-        if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyButtonClick);
-        if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
-        if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
-    }
-}
+//     void OnDestroy()
+//     {
+//         if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyButtonClick);
+//         if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
+//         if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
+//     }
+// }

@@ -25,7 +25,7 @@ public class AssistantManager : MonoBehaviour
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
     public GameEndEventSO gameEndEvent;
-    public FunctionCallArgumentsEvents functionCallArgumentsEvents;
+    public FunctionCallArgumentsEvent functionCallArgumentsEvents;
 
     public APIManager apiManager;
 
