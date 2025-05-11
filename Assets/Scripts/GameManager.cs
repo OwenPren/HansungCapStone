@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState
 {
@@ -9,7 +10,6 @@ public enum GameState
     InProgress, // 라운드 진행중
     Started, // 라운드 시작
     Ended, // 라운드 종료
-
 }
 
 public class GameManager : NetworkBehaviour
@@ -124,6 +124,81 @@ public class GameManager : NetworkBehaviour
         Debug.Log("Game Started");
 
         gameStartEvent.Raise();
+    }
+
+    // ------------------------------------------------------------
+    public static GameManager Instance { get; private set; }
+
+    [Header("Persistent Manger")]
+    public StockMarketManager stockMarketManager;
+
+    [Header("GameScene Specific")]
+    public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
+    private Dictionary<int, PlayerManager> playerManagers = new Dictionary<int, PlayerManager>();
+    public PlayerManager localPlayerManager { get; private set; } // 다른 스크립트에서 접근 가능하도록 public getter 설정
+
+    void Awake() // 싱글톤 패턴
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+        // 구현 미완료 : 로비/네트워크 시스템으로부터 게임 시작 신호를 받고 게임 씬 로드 및 설정
+        // LoadGameScene(); 
+    }
+
+    public void LoadGameScene()
+    {
+        SceneManager.LoadScene("GameScene");
+        SceneManager.sceneLoaded += OnGameSceneLoaded; // 씬 로드 완료 후 호출 이벤트 등록
+    }
+    
+    // ------------------------------------------------------------
+
+    private void OnGameSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // GameScene이 로드되었는지 확인
+        if (scene.name == "GameScene")
+        {
+            SceneManager.sceneLoaded -= OnGameSceneLoaded; // 이벤트 등록했던거 해제
+
+            // 구현 미완료 : 로비/네트워크 시스템으로부터 방에 참여한 플레이어 목록과 로컬 플레이어 ID를 받아서 전달
+            List<PlayerData> playersInRoom = GetPlayersFromLobbySystem(); // 가상 함수
+            int localPlayerNetworkId = GetLocalPlayerIdFromNetworking(); // 가상 함수
+
+            SetupGameScene();
+        }
+    }
+
+    private List<PlayerData> GetPlayersFromLobbySystem() {
+        /* ... */ 
+        return null; 
+    }
+
+    private int GetLocalPlayerIdFromNetworking() {
+        /* ... */ 
+        return 0; 
+    }
+
+    // 구현 미완료 : 로비/네트워크 시스템과 연동하여 플레이어 정보를 가져오는 함수 구현 필요
+
+    // 플레이어 오브젝트 PlyaerManager 생성 --> 옮기는걸로
+    public void SetupGameScene()
+    {
+        // 딕셔너리를 초기화를 하고
+        // 딕셔너리마다 인벤토리들을 초기화
+    }
+
+    public class PlayerData 
+    {
+        public int id;
+        public string name;
     }
 
 }
