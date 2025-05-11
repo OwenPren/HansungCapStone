@@ -1,36 +1,38 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Fusion;
 
-// ÇÃ·¹ÀÌ¾î ÀÎº¥Åä¸® Ç×¸ñ ±¸Á¶Ã¼ ¶Ç´Â Å¬·¡½º
+// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½Îºï¿½ï¿½ä¸® ï¿½×¸ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½Ç´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 [System.Serializable]
 public class PlayerStock
 {
-    public string stockName; // ÁÖ½Ä Á¾¸ñ ÀÌ¸§
-    public int quantity; // º¸À¯ ¼ö·®
+    public string stockName; // ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ì¸ï¿½
+    public int quantity; // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
-// ÁÖ½Ä Ç×¸ñ ±¸Á¶Ã¼
-public class PlayerManager : MonoBehaviour
+// ï¿½Ö½ï¿½ ï¿½×¸ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼
+public class PlayerManager : NetworkBehaviour
 {
-    public float playerCash = 0f; 
+    [Networked] public float playerCash { get; private set; }
+    public PlayerRef PlayerRef { get; private set; }
     public List<PlayerStock> portfolio = new List<PlayerStock>();
 
-    // GameManager¿¡¼­ È£ÃâµÇ¾î ÃÊ±â ÀÚ±Ý µîÀ» ¼³Á¤
+    // GameManagerï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½Ç¾ï¿½ ï¿½Ê±ï¿½ ï¿½Ú±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     public void Initialize(float initialCash)
     {
         playerCash = initialCash;
 
-        //| Energy | ¿¡³ÊÁö |
-        //| Technology | ±â¼ú |
-        //| Finance | ±ÝÀ¶ |
-        //| Healthcare | ÀÇ·á |
-        //| ConsumerDiscretionary | ÀÓÀÇ¼ÒºñÀç |
-        //| ConsumerStaples | ÇÊ¼ö¼ÒºñÀç |
-        //| Telecom | Åë½Å |
-        //| Industrials | »ê¾÷Àç |
-        //| Materials | ¼ÒÀç |
-        //| RealEstate | ºÎµ¿»ê |
+        //| Energy | ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ |
+        //| Technology | ï¿½ï¿½ï¿½ |
+        //| Finance | ï¿½ï¿½ï¿½ï¿½ |
+        //| Healthcare | ï¿½Ç·ï¿½ |
+        //| ConsumerDiscretionary | ï¿½ï¿½ï¿½Ç¼Òºï¿½ï¿½ï¿½ |
+        //| ConsumerStaples | ï¿½Ê¼ï¿½ï¿½Òºï¿½ï¿½ï¿½ |
+        //| Telecom | ï¿½ï¿½ï¿½ |
+        //| Industrials | ï¿½ï¿½ï¿½ï¿½ï¿½ |
+        //| Materials | ï¿½ï¿½ï¿½ï¿½ |
+        //| RealEstate | ï¿½Îµï¿½ï¿½ï¿½ |
 
         portfolio.Add(new PlayerStock { stockName = "Energy", quantity = 0 });
         portfolio.Add(new PlayerStock { stockName = "Technology", quantity = 0 });
@@ -44,14 +46,18 @@ public class PlayerManager : MonoBehaviour
         portfolio.Add(new PlayerStock { stockName = "RealEstate", quantity = 0 });
     }
 
-    // Æ¯Á¤ ÁÖ½Ä º¸À¯·® °¡Á®¿À±â
+    public void SetPlayerRef(PlayerRef playerRef){
+        this.PlayerRef = playerRef;
+    }
+
+    // Æ¯ï¿½ï¿½ ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public int GetPlayerStockQuantity(string name)
     {
         var holding = portfolio.Find(h => h.stockName == name);
         return holding != null ? holding.quantity : 0;
     }
 
-    // ÁÖ½Ä ¸Å¼ö ·ÎÁ÷ (MarketPanel2UI¿¡¼­ È£ÃâµÊ)
+    // ï¿½Ö½ï¿½ ï¿½Å¼ï¿½ ï¿½ï¿½ï¿½ï¿½ (MarketPanel2UIï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½)
     public bool BuyStock(string name, int quantity, float currentPrice)
     {
         
@@ -66,24 +72,24 @@ public class PlayerManager : MonoBehaviour
         {
             playerCash -= cost;
 
-            // Æ÷Æ®Æú¸®¿À ¾÷µ¥ÀÌÆ®
+            // ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
             var holding = portfolio.Find(h => h.stockName == name);
             if (holding != null)
             {
                 holding.quantity += quantity;
             }
 
-            // TODO: ¸Å¼ö ¼º°ø UI ÇÇµå¹é
-            return true; // ¸Å¼ö ¼º°ø
+            // TODO: ï¿½Å¼ï¿½ ï¿½ï¿½ï¿½ï¿½ UI ï¿½Çµï¿½ï¿½
+            return true; // ï¿½Å¼ï¿½ ï¿½ï¿½ï¿½ï¿½
         }
         else
         {
-            // TODO: ¸Å¼ö ½ÇÆÐ UI ÇÇµå¹é
-            return false; // ¸Å¼ö ½ÇÆÐ (ÀÚ±Ý ºÎÁ·)
+            // TODO: ï¿½Å¼ï¿½ ï¿½ï¿½ï¿½ï¿½ UI ï¿½Çµï¿½ï¿½
+            return false; // ï¿½Å¼ï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½Ú±ï¿½ ï¿½ï¿½ï¿½ï¿½)
         }
     }
 
-    // ÁÖ½Ä ¸Åµµ ·ÎÁ÷ (MarketPanel2UI¿¡¼­ È£ÃâµÊ)
+    // ï¿½Ö½ï¿½ ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ (MarketPanel2UIï¿½ï¿½ï¿½ï¿½ È£ï¿½ï¿½ï¿½)
     public bool SellStock(string name, int quantity, float currentPrice)
     {
         if (quantity <= 0)
@@ -98,20 +104,20 @@ public class PlayerManager : MonoBehaviour
             float revenue = quantity * currentPrice;
             playerCash += revenue;
 
-            // Æ÷Æ®Æú¸®¿À ¾÷µ¥ÀÌÆ®
+            // ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
             holding.quantity -= quantity;
             if (holding.quantity == 0)
             {
                 portfolio.Remove(holding); 
             }
 
-            // TODO: ¸Åµµ ¼º°ø UI ÇÇµå¹é
-            return true; // ¸Åµµ ¼º°ø
+            // TODO: ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ UI ï¿½Çµï¿½ï¿½
+            return true; // ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½
         }
         else
         { 
-            // TODO: ¸Åµµ ½ÇÆÐ UI ÇÇµå¹é
-            return false; // ¸Åµµ ½ÇÆÐ (¼ö·® ºÎÁ· ¶Ç´Â ÁÖ½Ä ¹Ìº¸À¯)
+            // TODO: ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ UI ï¿½Çµï¿½ï¿½
+            return false; // ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½Ö½ï¿½ ï¿½Ìºï¿½ï¿½ï¿½)
         }
     }
 }

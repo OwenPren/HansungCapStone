@@ -573,7 +573,7 @@ MonoBehaviour:
   gameStartEvent: {fileID: 11400000, guid: 9b27721f1aac94268822429d20017e30, type: 2}
   roundStartEvent: {fileID: 11400000, guid: 595207132bbe746958d724f65c96883a, type: 2}
   gameEndEvent: {fileID: 11400000, guid: 0e46c835d960f4dca9af9f2eb44a137a, type: 2}
-  functionCallArgumentsEvents: {fileID: 11400000, guid: a506d866e5dafd84787ac676a2f6ebc8, type: 2}
+  functionCallArgumentsEvents: {fileID: 11400000, guid: 53892252d57693d4cb0fd1fed04a2840, type: 2}
   apiManager: {fileID: 138433107}
   retrieveWaitTime: 2
 --- !u!4 &138433106
@@ -4266,7 +4266,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 284f89a73e32adc44b264651bcdeb45e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCash: 0
+  _playerCash: 0
   portfolio: []
 --- !u!4 &929192338
 Transform:

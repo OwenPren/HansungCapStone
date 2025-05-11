@@ -65,12 +65,6 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    void GenerateSituation()
-    {
-        // 여기를 ChatAssistant 연결하여 상황 부여 받을 예정
-        // currentSituation = 한 대형 IT 회사가 신형 소프트웨어 기술을 발표했다.";
-    }
-
     void StartGame()
     {
         //게임 시작 로직 구현 필요
@@ -134,8 +128,8 @@ public class GameManager : NetworkBehaviour
 
     [Header("GameScene Specific")]
     public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
-    private Dictionary<int, PlayerManager> playerManagers = new Dictionary<int, PlayerManager>();
-    public PlayerManager localPlayerManager { get; private set; } // 다른 스크립트에서 접근 가능하도록 public getter 설정
+    private Dictionary<PlayerRef, PlayerManager> playerManagers = new Dictionary<PlayerRef, PlayerManager>();
+    //public PlayerManager localPlayerManager { get; private set; } // 다른 스크립트에서 접근 가능하도록 public getter 설정
 
     void Awake() // 싱글톤 패턴
     {
@@ -151,6 +145,24 @@ public class GameManager : NetworkBehaviour
         }
         // 구현 미완료 : 로비/네트워크 시스템으로부터 게임 시작 신호를 받고 게임 씬 로드 및 설정
         // LoadGameScene(); 
+    }
+
+    public void RegisterPlayerManager(PlayerRef playerRef, PlayerManager manager)
+    {
+        if (!playerManagers.ContainsKey(playerRef))
+        {
+            playerManagers.Add(playerRef, manager);
+             Debug.Log($"[Server] Register PlayerManager {playerRef}");
+        }
+    }
+
+    public void HandleBuyRequest(PlayerRef sender, string stockName, int quantity, float price)
+    {
+        if (playerManagers.TryGetValue(sender, out var playerManager))
+        {
+            bool success = playerManager.BuyStock(stockName, quantity, price);
+            Debug.Log($"[Server] Buy Request from {sender}: {success}");
+        }
     }
 
     public void LoadGameScene()
@@ -169,8 +181,8 @@ public class GameManager : NetworkBehaviour
             SceneManager.sceneLoaded -= OnGameSceneLoaded; // 이벤트 등록했던거 해제
 
             // 구현 미완료 : 로비/네트워크 시스템으로부터 방에 참여한 플레이어 목록과 로컬 플레이어 ID를 받아서 전달
-            List<PlayerData> playersInRoom = GetPlayersFromLobbySystem(); // 가상 함수
-            int localPlayerNetworkId = GetLocalPlayerIdFromNetworking(); // 가상 함수
+            //List<PlayerData> playersInRoom = GetPlayersFromLobbySystem(); // 가상 함수
+            //int localPlayerNetworkId = GetLocalPlayerIdFromNetworking(); // 가상 함수
 
             SetupGameScene();
         }
