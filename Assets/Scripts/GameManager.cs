@@ -65,7 +65,7 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    void StartGame()
+    public void StartGame()
     {
         //게임 시작 로직 구현 필요
         Debug.Log("StartGame function");
@@ -112,6 +112,18 @@ public class GameManager : NetworkBehaviour
 
     public override void Spawned()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+
         if (!Runner.IsServer) return;
         CurrentRound = 0;
         State = GameState.Waitng;
@@ -131,21 +143,12 @@ public class GameManager : NetworkBehaviour
     private Dictionary<PlayerRef, PlayerManager> playerManagers = new Dictionary<PlayerRef, PlayerManager>();
     //public PlayerManager localPlayerManager { get; private set; } // 다른 스크립트에서 접근 가능하도록 public getter 설정
 
-    void Awake() // 싱글톤 패턴
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-            DontDestroyOnLoad(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-            return;
-        }
-        // 구현 미완료 : 로비/네트워크 시스템으로부터 게임 시작 신호를 받고 게임 씬 로드 및 설정
-        // LoadGameScene(); 
-    }
+    // void Awake() // 싱글톤 패턴
+    // {
+
+    //     // 구현 미완료 : 로비/네트워크 시스템으로부터 게임 시작 신호를 받고 게임 씬 로드 및 설정
+    //     // LoadGameScene(); 
+    // }
 
     public void RegisterPlayerManager(PlayerRef playerRef, PlayerManager manager)
     {
