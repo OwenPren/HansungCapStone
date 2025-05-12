@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Fusion;
 
-// �÷��̾� �κ��丮 �׸� ����ü �Ǵ� Ŭ����
+
 [System.Serializable]
 public class PlayerStock
 {
-    public string stockName; // �ֽ� ���� �̸�
-    public int quantity; // ���� ����
+    public string stockName; 
+    public int quantity; 
 }
 
-// �ֽ� �׸� ����ü
 public class PlayerManager : NetworkBehaviour
 {
     [Networked] public float playerCash { get; private set; }
@@ -19,21 +18,9 @@ public class PlayerManager : NetworkBehaviour
     public List<PlayerStock> portfolio = new List<PlayerStock>();
     public Sprite character;
 
-    // GameManager���� ȣ��Ǿ� �ʱ� �ڱ� ���� ����
     public void Initialize(float initialCash)
     {
         playerCash = initialCash;
-
-        //| Energy | ������ |
-        //| Technology | ��� |
-        //| Finance | ���� |
-        //| Healthcare | �Ƿ� |
-        //| ConsumerDiscretionary | ���ǼҺ��� |
-        //| ConsumerStaples | �ʼ��Һ��� |
-        //| Telecom | ��� |
-        //| Industrials | ����� |
-        //| Materials | ���� |
-        //| RealEstate | �ε��� |
 
         portfolio.Add(new PlayerStock { stockName = "Energy", quantity = 0 });
         portfolio.Add(new PlayerStock { stockName = "Technology", quantity = 0 });
@@ -51,14 +38,12 @@ public class PlayerManager : NetworkBehaviour
         this.PlayerRef = playerRef;
     }
 
-    // Ư�� �ֽ� ������ ��������
     public int GetPlayerStockQuantity(string name)
     {
         var holding = portfolio.Find(h => h.stockName == name);
         return holding != null ? holding.quantity : 0;
     }
 
-    // �ֽ� �ż� ���� (MarketPanel2UI���� ȣ���)
     public bool BuyStock(string name, int quantity, float currentPrice)
     {
         
@@ -73,24 +58,21 @@ public class PlayerManager : NetworkBehaviour
         {
             playerCash -= cost;
 
-            // ��Ʈ������ ������Ʈ
             var holding = portfolio.Find(h => h.stockName == name);
             if (holding != null)
             {
                 holding.quantity += quantity;
             }
-
-            // TODO: �ż� ���� UI �ǵ��
-            return true; // �ż� ����
+            return true;
         }
         else
         {
-            // TODO: �ż� ���� UI �ǵ��
-            return false; // �ż� ���� (�ڱ� ����)
+            
+            return false;
         }
     }
 
-    // �ֽ� �ŵ� ���� (MarketPanel2UI���� ȣ���)
+ 
     public bool SellStock(string name, int quantity, float currentPrice)
     {
         if (quantity <= 0)
@@ -105,20 +87,18 @@ public class PlayerManager : NetworkBehaviour
             float revenue = quantity * currentPrice;
             playerCash += revenue;
 
-            // ��Ʈ������ ������Ʈ
+          
             holding.quantity -= quantity;
             if (holding.quantity == 0)
             {
                 portfolio.Remove(holding); 
             }
-
-            // TODO: �ŵ� ���� UI �ǵ��
-            return true; // �ŵ� ����
+         
+            return true; 
         }
         else
         { 
-            // TODO: �ŵ� ���� UI �ǵ��
-            return false; // �ŵ� ���� (���� ���� �Ǵ� �ֽ� �̺���)
+            return false; 
         }
     }
 }
