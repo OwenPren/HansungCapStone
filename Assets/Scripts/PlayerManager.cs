@@ -17,6 +17,7 @@ public class PlayerManager : NetworkBehaviour
     [Networked] public float playerCash { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
     public List<PlayerStock> portfolio = new List<PlayerStock>();
+    public Sprite character;
 
     // GameManager���� ȣ��Ǿ� �ʱ� �ڱ� ���� ����
     public void Initialize(float initialCash)

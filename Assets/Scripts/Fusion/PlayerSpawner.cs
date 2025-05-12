@@ -15,7 +15,7 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   [SerializeField] private int targetSceneIndex;
   [SerializeField] private TMP_InputField roomCodeField;
   [SerializeField] private float initialCash = 5000000;
-
+  private List<PlayerRef> _joinOrder = new();
   private Canvas canvas;
 
   async void StartGame(GameMode mode, string roomCode)
@@ -149,14 +149,30 @@ private string GenerateRoomCode(int length)
 
       GameManager.Instance.RegisterPlayerManager(player, pm);
 
+      _joinOrder.Add(player);
+      int slotIndex = _joinOrder.IndexOf(player);
+      Sprite characterSprite = pm.character;
+      GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+
+
       _spawnedCharacters.Add(player, networkPlayerObject);
     }
   }
+
+
   public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) 
   {
     Debug.Log("On Player Left");
     if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
     {
+        int slotIndex = _joinOrder.IndexOf(player);
+        if (slotIndex >= 0)
+        {
+          GameUIManager.Instance.ClearPlayerSlot(slotIndex);
+          _joinOrder.RemoveAt(slotIndex);
+        }
+
+
         runner.Despawn(networkObject);
         _spawnedCharacters.Remove(player);
     }

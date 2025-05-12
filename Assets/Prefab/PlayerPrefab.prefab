@@ -151,3 +151,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _playerCash: 0
   portfolio: []
+  character: {fileID: 21300000, guid: 23529c068b8134343a53b2861e9e142c, type: 3}
