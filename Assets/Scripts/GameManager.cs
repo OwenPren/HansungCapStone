@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json.Linq;
 
 public enum GameState
 {
@@ -141,14 +142,6 @@ public class GameManager : NetworkBehaviour
     [Header("GameScene Specific")]
     public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
     private Dictionary<PlayerRef, PlayerManager> playerManagers = new Dictionary<PlayerRef, PlayerManager>();
-    //public PlayerManager localPlayerManager { get; private set; } // 다른 스크립트에서 접근 가능하도록 public getter 설정
-
-    // void Awake() // 싱글톤 패턴
-    // {
-
-    //     // 구현 미완료 : 로비/네트워크 시스템으로부터 게임 시작 신호를 받고 게임 씬 로드 및 설정
-    //     // LoadGameScene(); 
-    // }
 
     public void RegisterPlayerManager(PlayerRef playerRef, PlayerManager manager)
     {
@@ -214,6 +207,41 @@ public class GameManager : NetworkBehaviour
     {
         public int id;
         public string name;
+    }
+
+    public void UpdateStockPrice(JObject Output)
+    {
+        if (Output.TryGetValue("eventInfo", out JToken eventInfoToken) && eventInfoToken is JArray eventInfoArray)
+        {
+            int len = eventInfoArray.Count;
+            for (int i = 0; i < len; i++)
+            {
+                JToken eventToken = eventInfoArray[i];
+                if (eventToken.Type == JTokenType.Object)
+                {
+                    JObject eventObject = eventToken.ToObject<JObject>();
+                    string impactDirection = eventObject.TryGetValue("impactDirection", out JToken directionToken)
+                                             ? directionToken.ToObject<string>()
+                                             : null;
+                    if (eventObject.TryGetValue("affectedSectors", out JToken sectorsToken) && sectorsToken is JArray affectedSectorsArray)
+                    {
+                        Debug.Log($"  Processing event {i}: Direction={impactDirection}, Affected Sectors Count={affectedSectorsArray.Count}");
+                        foreach (JToken sectorToken in affectedSectorsArray)
+                        {
+                            if (sectorToken.Type == JTokenType.String)
+                            {
+                                string sectorName = sectorToken.ToObject<string>();
+                                if (stockMarketManager != null)
+                                {
+                                    stockMarketManager.PriceChange(sectorName, impactDirection);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
     }
 
 }
