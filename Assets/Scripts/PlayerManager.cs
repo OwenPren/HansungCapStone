@@ -11,27 +11,62 @@ public class PlayerStock
     public int quantity; 
 }
 
+
 public class PlayerManager : NetworkBehaviour
 {
+
+
     [Networked] public float playerCash { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
     public List<PlayerStock> portfolio = new List<PlayerStock>();
     public Sprite character;
+    public StockMarketManager stockMarketManager;
 
+    void Start()
+    {
+        GameObject stockMarketManagerObject = GameObject.Find("StockMarketManager");
+
+        if (stockMarketManagerObject != null)
+        {
+            stockMarketManager = stockMarketManagerObject.GetComponent<StockMarketManager>();
+
+            if (stockMarketManager != null)
+            {
+                Debug.Log("StockMarketManager Find Success.");
+            }
+            else
+            {
+                Debug.LogError("StockMarketManager Find Fail.");
+            }
+
+        }
+    }
+
+    private List<string> stockNames = new List<string>
+    {
+        "Energy",
+        "Technology",
+        "Finance",
+        "Healthcare",
+        "ConsumerDiscretionary",
+        "ConsumerStaples",
+        "Telecom",
+        "Industrials",
+        "Materials",
+        "RealEstate"
+    };
     public void Initialize(float initialCash)
     {
         playerCash = initialCash;
 
-        portfolio.Add(new PlayerStock { stockName = "Energy", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Technology", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Finance", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Healthcare", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "ConsumerDiscretionary", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "ConsumerStaples", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Telecom", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Industrials", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "Materials", quantity = 0 });
-        portfolio.Add(new PlayerStock { stockName = "RealEstate", quantity = 0 });
+        foreach (string stockName in stockNames)
+        { 
+            portfolio.Add(new PlayerStock
+            {
+                stockName = stockName,
+                quantity = 0
+            });
+        }
     }
 
     public void SetPlayerRef(PlayerRef playerRef){
@@ -44,15 +79,24 @@ public class PlayerManager : NetworkBehaviour
         return holding != null ? holding.quantity : 0;
     }
 
-    public bool BuyStock(string name, int quantity, float currentPrice)
+    public bool BuyStock(string name, int quantity)
     {
+        StockData CurrentStock = stockMarketManager.GetStockData(name);
+        if (CurrentStock == null)
+        {
+            Debug.Log("StockLoad Fail");
+            return false;
+        }
+
+        float Price = CurrentStock.currentPrice;
+
         
         if (quantity <= 0)
         {
             return false;
         }
 
-        float cost = quantity * currentPrice;
+        float cost = quantity * Price;
 
         if (playerCash >= cost)
         {
@@ -67,14 +111,22 @@ public class PlayerManager : NetworkBehaviour
         }
         else
         {
-            
             return false;
         }
     }
 
  
-    public bool SellStock(string name, int quantity, float currentPrice)
+    public bool SellStock(string name, int quantity)
     {
+        StockData CurrentStock = stockMarketManager.GetStockData(name);
+        if (CurrentStock == null)
+        {
+            Debug.Log("StockLoad Fail");
+            return false;
+        }
+
+        float Price = CurrentStock.currentPrice;
+
         if (quantity <= 0)
         {
             return false;
@@ -84,7 +136,7 @@ public class PlayerManager : NetworkBehaviour
 
         if (holding != null && holding.quantity >= quantity)
         {
-            float revenue = quantity * currentPrice;
+            float revenue = quantity * Price;
             playerCash += revenue;
 
           
@@ -93,11 +145,11 @@ public class PlayerManager : NetworkBehaviour
             {
                 portfolio.Remove(holding); 
             }
-         
+
             return true; 
         }
         else
-        { 
+        {
             return false; 
         }
     }

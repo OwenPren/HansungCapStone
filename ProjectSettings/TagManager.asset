@@ -3,7 +3,17 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Energy
+  - Technology
+  - Finance
+  - Healthcare
+  - ConsumerDiscretionary
+  - ConsumerStaples
+  - Telecom
+  - Industrials
+  - Materials
+  - RealEstate
   layers:
   - Default
   - TransparentFX
