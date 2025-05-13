@@ -1,167 +1,203 @@
-// using UnityEngine;
-// using UnityEngine.UI;
-// using TMPro; 
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Fusion; // Fusion 네임스페이스 추가
+using System.Linq; // LINQ를 사용하기 위해 추가
 
-// public class MarketPanel2UI : MonoBehaviour
-// {
-//     [Header("UI Elements")]
-//     public TextMeshProUGUI stockNameText;
-//     public TextMeshProUGUI currentPriceText;
-//     public TextMeshProUGUI playerHoldingText;
-//     public TMP_InputField quantityInput; // �ż�/�ŵ� ���� �Է� �ʵ�
-//     public Button buyButton;
-//     public Button sellButton;
-//     public Button closeButton; // MarketPanel2�� �ݴ� ��ư
+public class MarketPanel2UI : MonoBehaviour
+{
+    [Header("UI Elements")]
+    public TextMeshProUGUI stockNameText;
+    public TextMeshProUGUI currentPriceText;
+    public TextMeshProUGUI playerHoldingText;
+    public TMP_InputField quantityInput;
+    public Button buyButton;
+    public Button sellButton;
+    public Button closeButton;
+    public Button incrementButton; // + 버튼
+    public Button decrementButton; // - 버튼
 
-//     private string currentStockName; // ���� ���� �ִ� �ֽ� �̸�
+    private string currentStockName;
 
-//     void Awake()
-//     {
-//         if (buyButton != null) buyButton.onClick.AddListener(OnBuyButtonClick);
-//         if (sellButton != null) sellButton.onClick.AddListener(OnSellButtonClick);
-//         if (closeButton != null) closeButton.onClick.AddListener(OnCloseButtonClick);
+    // 로컬 플레이어의 PlayerManager 참조
+    private PlayerManager localPlayerManager;
 
-//         // �ʱ⿡�� ��Ȱ��ȭ ������ �� ����
-//         gameObject.SetActive(false);
-//     }
+    // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
+    void OnEnable()
+    {
+        FindLocalPlayerManager();
+    }
 
-//     // UIManager�κ��� ȣ��Ǿ� Ư�� ���� ������ �޾� UI�� ǥ��
-//     public void DisplayStockInfo(string name)
-//     {
-//         currentStockName = name;
-//         // GameManager�� ���� StockMarketManager�� LocalPlayerManager ����
-//         GameManager gm = GameManager.Instance;
-//         if (gm == null || gm.stockMarketManager == null || gm.localPlayerManager == null)
-//         {
-//             gameObject.SetActive(false);
-//             return;
-//         }
+    void FindLocalPlayerManager()
+    {
+        // 씬에 있는 모든 PlayerManager 컴포넌트를 찾습니다.
+        PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>();
 
-//         // �ֽ� ������ ��������
-//         StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-//         if (stock != null)
-//         {
-//             stockNameText.text = stock.stockName;
-//             currentPriceText.text = "���簡: " + stock.currentPrice.ToString("N2"); // �Ҽ��� 2�ڸ����� ǥ��
-//         }
-//         else
-//         {
-//             stockNameText.text = "Error";
-//             currentPriceText.text = "N/A";
-//         }
+        // 그 중에서 현재 클라이언트의 입력 권한을 가진 PlayerManager를 찾습니다.
+        // NetworkBehaviour의 Object.HasInputAuthority를 사용합니다.
+        localPlayerManager = allPlayerManagers.FirstOrDefault(pm => pm.Object != null && pm.Object.HasInputAuthority);
 
-//         // �÷��̾� ������ �������� (���� �÷��̾� �Ŵ��� ���)
-//         int holding = gm.localPlayerManager.GetPlayerStockQuantity(currentStockName);
-//         playerHoldingText.text = "������: " + holding.ToString();
+        if (localPlayerManager != null)
+        {
+            Debug.Log("Local PlayerManager found!");
+        }
+        else
+        {
+            Debug.LogWarning("Local PlayerManager not found.");
+        }
+    }
 
-//         // �ż�/�ŵ� ���� �Է� �ʵ� �ʱ�ȭ
-//         quantityInput.text = "1"; // �⺻ ���� ����
-//         // �÷��̾� ���� �� �������� ���� �ż�/�ŵ� ��ư Ȱ��ȭ
-//     }
 
-//     // '�ż�' 
-//     void OnBuyButtonClick()
-//     {
-//         if (string.IsNullOrEmpty(currentStockName)) return;
+    public void DisplayStockInfo(string name, string nameKR)
+    {
+        gameObject.SetActive(true);
+        currentStockName = name;
+        GameManager gm = GameManager.Instance;
+        if (gm == null || gm.stockMarketManager == null)
+        {
+            gameObject.SetActive(false);
+            return;
+        }
 
-//         // �Էµ� ���� ��������
-//         if (int.TryParse(quantityInput.text, out int quantity))
-//         {
-//             GameManager gm = GameManager.Instance;
-//             if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
-//             {
-//                 StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-//                 if (stock.currentPrice > 0)
-//                 {
-//                     // PlayerManager�� �ż� �޼��� ȣ��
-//                     bool success = gm.localPlayerManager.BuyStock(currentStockName, quantity, stock.currentPrice);
-//                     if (success)
-//                     {
-//                         Debug.Log("Buy Successful!");
-//                         DisplayStockInfo(currentStockName); 
-//                     }
-//                     else
-//                     {
-//                         Debug.Log("Buy Failed."); 
-//                     }
-//                 }
-//                 else
-//                 {
-//                     Debug.LogError($"Could not get current price for {currentStockName}");
-//                 }
-//             }
-//             else
-//             {
-//                 Debug.LogError("GameManager or Managers not available for Buy operation.");
-//             }
-//         }
-//         else
-//         {
-//             Debug.Log("Invalid quantity entered.");
-//         }
-//     }
+        StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
+        if (stock != null)
+        {
+            stockNameText.text = nameKR;
+            currentPriceText.text = "현재가: " + stock.currentPrice.ToString("N2");
 
-//     // '�ŵ�' 
-//     void OnSellButtonClick()
-//     {
-//         if (string.IsNullOrEmpty(currentStockName)) return;
+            // 로컬 플레이어의 보유량 표시
+            if (localPlayerManager != null)
+            {
+                int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
+                playerHoldingText.text = "보유 현황: " + holding.ToString()+" 개 보유중";
+            }
+            else
+            {
+                playerHoldingText.text = "보유량: N/A (플레이어 정보 없음)";
+            }
+        }
+        else
+        {
+            stockNameText.text = "Error";
+            currentPriceText.text = "N/A";
+            playerHoldingText.text = "보유량: N/A";
+        }
 
-//         // �Էµ� ���� ��������
-//         if (int.TryParse(quantityInput.text, out int quantity))
-//         {
-//             GameManager gm = GameManager.Instance;
-//             if (gm != null && gm.stockMarketManager != null && gm.localPlayerManager != null)
-//             {
-//                 StockData stock = gm.stockMarketManager.GetStockData(currentStockName);
-//                 if (stock.currentPrice > 0)
-//                 {
-//                     // PlayerManager�� �ŵ� �޼��� ȣ��
-//                     bool success = gm.localPlayerManager.SellStock(currentStockName, quantity, stock.currentPrice);
-//                     if (success)
-//                     {
-//                         Debug.Log("Sell Successful!");
-//                         DisplayStockInfo(currentStockName); 
-//                     }
-//                     else
-//                     {
-//                         Debug.Log("Sell Failed."); 
-//                     }
-//                 }
-//                 else
-//                 {
-//                     Debug.LogError($"Could not get current price for {currentStockName}");
-//                 }
-//             }
-//             else
-//             {
-//                 Debug.LogError("GameManager or Managers not available for Sell operation.");
-//             }
-//         }
-//         else
-//         {
-//             Debug.Log("Invalid quantity entered.");
-//         }
-//     }
+        quantityInput.text = "1";
 
-//     // '�ݱ�' 
-//     void OnCloseButtonClick()
-//     {
-//         // UIManager�� ã�Ƽ� MarketPanel�� ���̰� ��ȯ ��û
-//         UIManager uiManager = UIManager.Instance;
-//         if (uiManager != null)
-//         {
-//             uiManager.ShowMarketPanel();
-//         }
-//         else
-//         {
-//             Debug.LogError("UIManager instance not found!");
-//         }
-//     }
+    }
 
-//     void OnDestroy()
-//     {
-//         if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyButtonClick);
-//         if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
-//         if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
-//     }
-// }
+    public void OnIncrementButtonClick()
+    {
+        if (quantityInput == null) return;
+
+        if (int.TryParse(quantityInput.text, out int currentQuantity))
+        {
+            // Increment quantity
+            currentQuantity++;
+            quantityInput.text = currentQuantity.ToString();
+            Debug.Log("Quantity incremented to: " + currentQuantity);
+        }
+        else
+        {
+            // If parsing fails, set to default (1)
+            quantityInput.text = "1";
+            Debug.LogWarning("Invalid quantity input, setting to 1.");
+        }
+    }
+
+    // Decrement button click handler
+    public void OnDecrementButtonClick()
+    {
+        if (quantityInput == null) return;
+
+        if (int.TryParse(quantityInput.text, out int currentQuantity))
+        {
+            // Decrement quantity, but not below 1
+            currentQuantity = Mathf.Max(1, currentQuantity - 1);
+            quantityInput.text = currentQuantity.ToString();
+            Debug.Log("Quantity decremented to: " + currentQuantity);
+        }
+        else
+        {
+            // If parsing fails, set to default (1)
+            quantityInput.text = "1";
+            Debug.LogWarning("Invalid quantity input, setting to 1.");
+        }
+    }
+
+    public void OnBuyButtonClick()
+    {
+        if (string.IsNullOrEmpty(currentStockName)) return;
+        if (localPlayerManager == null)
+        {
+            Debug.LogError("Local PlayerManager not available for Buy operation.");
+            return;
+        }
+
+        if (int.TryParse(quantityInput.text, out int quantity))
+        {
+            GameManager.Instance.HandleBuyRequest(localPlayerManager.Object.InputAuthority, currentStockName, quantity);
+        }
+
+        if (localPlayerManager != null)
+        {
+            int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
+            playerHoldingText.text = "보유 현황: " + holding.ToString() + " 개 보유중";
+        }
+
+        else
+        {
+            Debug.Log("Invalid quantity entered.");
+        }
+    }
+
+
+    public void OnSellButtonClick()
+    {
+        if (string.IsNullOrEmpty(currentStockName)) return;
+        if (localPlayerManager == null)
+        {
+            Debug.LogError("Local PlayerManager not available for Sell operation.");
+            return;
+        }
+
+
+        if (int.TryParse(quantityInput.text, out int quantity))
+        {
+            GameManager.Instance.HandleSellRequest(localPlayerManager.Object.InputAuthority, currentStockName, quantity);
+        }
+
+        if (localPlayerManager != null)
+        {
+            int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
+            playerHoldingText.text = "보유 현황: " + holding.ToString()+" 개 보유중";
+        }
+        else
+        {
+            Debug.Log("Invalid quantity entered.");
+        }
+    }
+
+    public void OnCloseButtonClick()
+    {
+        //UIManager uiManager = UIManager.Instance; // UIManager.Instance는 GameManager처럼 싱글톤으로 가정합니다.
+        //if (uiManager != null)
+        //{
+        //    gameObject.SetActive(false); // 일단 이 패널만 비활성화
+        //    uiManager.ShowMarketPanel(); // UIManager에 MarketPanel (목록)을 보여주는 메서드가 있다고 가정
+        //}
+        //else
+        //{
+            //Debug.LogError("UIManager instance not found!");
+       gameObject.SetActive(false); // UIManager 없으면 일단 패널 닫기
+        //}
+    }
+
+    void OnDestroy()
+    {
+        if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyButtonClick);
+        if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
+        if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
+    }
+}

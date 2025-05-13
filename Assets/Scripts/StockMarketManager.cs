@@ -14,21 +14,45 @@ public class StockMarketManager : MonoBehaviour
 {
     // 유니티 에디터에서 주식 목록 설정
     public List<StockData> allStocks = new List<StockData>();
-    
+
+    private List<string> stockNames = new List<string>
+    {
+        "Energy",
+        "Technology",
+        "Finance",
+        "Healthcare",
+        "ConsumerDiscretionary",
+        "ConsumerStaples",
+        "Telecom",
+        "Industrials",
+        "Materials",
+        "RealEstate"
+    };
+
     void Awake()
     {
         Debug.Log("주식 시장 목록 초기화...");
-        // 구현 미완료 : 주식 시장 10개의 항목에 대한 목록 구성, 랜덤? 고정값?
-        allStocks.Add(new StockData { stockName = "Energy", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Technology", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Finance", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Healthcare", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "ConsumerDiscretionary", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "ConsumerStaples", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Telecom", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Industrials", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "Materials", currentPrice = 0 });
-        allStocks.Add(new StockData { stockName = "RealEstate", currentPrice = 0 });
+        InitializeStocks();
+    }
+
+    void InitializeStocks()
+    {
+        allStocks.Clear(); // 기존 데이터 초기화
+
+        foreach (string stockName in stockNames)
+        {
+            // 100.0f에서 1000.0f 사이의 랜덤 가격 생성
+            // UnityEngine.Random.Range(float minInclusive, float maxInclusive)는 min과 max 모두 포함합니다.
+            float randomPrice = UnityEngine.Random.Range(100f, 1000f);
+
+            allStocks.Add(new StockData
+            {
+                stockName = stockName,
+                currentPrice = randomPrice // 생성된 랜덤 가격 할당
+            });
+
+            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); // 확인을 위해 로그 출력
+        }
     }
 
     public StockData GetStockData(string name)
