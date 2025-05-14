@@ -14,7 +14,7 @@ public class LoginManager : MonoBehaviour
     public Button loginButton;
     public Button signupButton;
 
-    private string serverBaseUrl = "http://3.34.181.165:3000";
+    private string serverBaseUrl = "http://43.203.206.157:3000";
 
     void Start()
     {
@@ -56,9 +56,14 @@ public class LoginManager : MonoBehaviour
 
         if (req.result == UnityWebRequest.Result.Success)
         {
-            // ✅ 로그인 성공 → 아이디/닉네임 저장
-            PlayerPrefs.SetString("userId", id);  // ID 저장
-            PlayerPrefs.SetString("nickname", ExtractNickname(req.downloadHandler.text));  // 닉네임 저장
+            // 로그인 성공 → 아이디/닉네임 저장
+            PlayerData.instance.userID = id;
+            PlayerData.instance.nickname = ExtractNickname(req.downloadHandler.text);
+
+            // Photon CustomProperties에 닉네임 저장
+            ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable();
+            props["nickname"] = PlayerData.instance.nickname;
+            Photon.Pun.PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
             debugText.text = "로그인 성공!";
             SceneManager.LoadScene("SelectCharacter");
