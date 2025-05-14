@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class CharacterSelection : MonoBehaviour
 {
@@ -11,9 +12,11 @@ public class CharacterSelection : MonoBehaviour
     //public Sprite[] characterSprites; // 캐릭터 이미지 배열
     public int maxCharacters = 4;
     private int currentIndex = 0;
+    public Button backButton;
 
     void Start()
     {
+        backButton.onClick.AddListener(OnBackClicked);
         UpdateCharacterDisplay();
         // 디버깅용 출력
         debugText.text = $"[디버그]\n아이디: {PlayerData.instance.userID}\n닉네임: {PlayerData.instance.nickname}\n캐릭터: {PlayerData.instance.selectedCharacterIndex}";
@@ -65,5 +68,10 @@ public class CharacterSelection : MonoBehaviour
         Photon.Pun.PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         // 다음 씬 로드
         UnityEngine.SceneManagement.SceneManager.LoadScene("LobbyScene");
+    }
+
+    public void OnBackClicked()
+    {
+        SceneManager.LoadScene("LogInScene");
     }
 }
