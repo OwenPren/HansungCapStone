@@ -151,9 +151,18 @@ private string GenerateRoomCode(int length)
 
       _joinOrder.Add(player);
       int slotIndex = _joinOrder.IndexOf(player);
-      Sprite characterSprite = pm.character;
-      GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+      //Sprite characterSprite = pm.character;
+      //GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+      if (player.PlayerId == Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber &&
+                Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
+            {
+                int charIndex = (int)Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties["character"];
 
+                // Resource\Character\Character_[charIndex] Sprite 로드
+                string path = "Characters/Character_" + charIndex;
+                Sprite characterSprite = Resources.Load<Sprite>(path);
+                GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+            }
 
       _spawnedCharacters.Add(player, networkPlayerObject);
     }
