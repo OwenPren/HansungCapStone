@@ -18,7 +18,7 @@ public class SignupManager : MonoBehaviour
     public Button checkIdButton;
     public Button checkNickButton;
 
-    private string serverBaseUrl = "http://3.34.181.165:3000"; // ← EC2 IP로 수정
+    private string serverBaseUrl = "http://43.203.206.157:3000"; // ← EC2 IP로 수정
 
     private bool isIdChecked = false;
     private bool isNickChecked = false;
