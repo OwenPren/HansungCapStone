@@ -17,6 +17,7 @@ public class SignupManager : MonoBehaviour
     public Button signupButton;
     public Button checkIdButton;
     public Button checkNickButton;
+    public Button backButton;
 
     private string serverBaseUrl = "http://43.203.206.157:3000"; // ← EC2 IP로 수정
 
@@ -28,6 +29,7 @@ public class SignupManager : MonoBehaviour
         signupButton.onClick.AddListener(OnSignupButtonClicked);
         checkIdButton.onClick.AddListener(OnCheckIdClicked);
         checkNickButton.onClick.AddListener(OnCheckNickClicked);
+        backButton.onClick.AddListener(OnBackClicked);
     }
 
     public void OnSignupButtonClicked()
@@ -71,7 +73,7 @@ public class SignupManager : MonoBehaviour
         }
         else
         {
-            debugText.text = $"회원가입 실패: {req.downloadHandler.text}";
+            debugText.text = "회원가입 실패: " + req.downloadHandler.text;
         }
     }
 
@@ -149,6 +151,10 @@ public class SignupManager : MonoBehaviour
             debugText.text = "닉네임 확인 실패: " + errorMsg;
             isNickChecked = false;
         }
+    }
+    public void OnBackClicked()
+    {
+        SceneManager.LoadScene("LogInScene");
     }
 
     [System.Serializable]
