@@ -13,6 +13,7 @@ public class LoginManager : MonoBehaviour
     public TMP_Text debugText;
     public Button loginButton;
     public Button signupButton;
+    public Button backButton;
 
     private string serverBaseUrl = "http://43.203.206.157:3000";
 
@@ -20,6 +21,7 @@ public class LoginManager : MonoBehaviour
     {
         loginButton.onClick.AddListener(OnLoginClicked);
         signupButton.onClick.AddListener(OnSignupClicked);
+        backButton.onClick.AddListener(OnBackClicked);
     }
 
     public void OnLoginClicked()
@@ -39,6 +41,11 @@ public class LoginManager : MonoBehaviour
     public void OnSignupClicked()
     {
         SceneManager.LoadScene("SignUpScene");
+    }
+
+    public void OnBackClicked()
+    {
+        SceneManager.LoadScene("LoadingScene");
     }
 
     IEnumerator LoginRequest(string id, string pw)
@@ -71,7 +78,7 @@ public class LoginManager : MonoBehaviour
         else
         {
             string errorMsg = req.downloadHandler?.text ?? "오류 발생";
-            debugText.text = $"로그인 실패: {errorMsg}";
+            debugText.text = "로그인 실패: " + errorMsg;
         }
     }
     string ExtractNickname(string json)
