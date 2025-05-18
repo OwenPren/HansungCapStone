@@ -16,6 +16,7 @@ public class MarketPanel2UI : MonoBehaviour
     public Button closeButton;
     public Button incrementButton; // + 버튼
     public Button decrementButton; // - 버튼
+    //public UIManager UIManager;
 
     private string currentStockName;
 

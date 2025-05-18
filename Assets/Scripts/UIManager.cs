@@ -1,27 +1,59 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
+using System.Collections.Generic;
+using System.Linq;
+using System.Globalization;
 
 public class UIManager : MonoBehaviour
 {
-    // 싱글톤 인스턴스
-    public static UIManager Instance { get; private set; }
 
     [Header("UI Panels")]
     public GameObject gamePanel; // 기본 게임 정보 및 버튼 패널
     public GameObject inventoryPanel; // 인벤토리 패널
     public GameObject marketPanel; // 주식 시장 (종목 목록) 패널
     public GameObject marketPanel2; // 개별 종목 상세 정보 패널
+    public TextMeshProUGUI currentCashText; // 현재 보유액
+    public TextMeshProUGUI currentValueText; // 현재 평가액
+    private PlayerManager localPlayerManager; // 본인의 플레이어 매니저(포트폴리오가 있는 스크립트)
 
-    void Awake()
+
+    public void UpdateCurrentCashandValue()
     {
-        if (Instance != null && Instance != this)
+        if (localPlayerManager == null)
         {
-            Destroy(gameObject); // 새로 생성된 이 오브젝트를 파괴
+            FindPortfolio();
         }
-        else 
+       
+        if (localPlayerManager != null)
         {
-            Instance = this; // 이 오브젝트를 싱글톤 인스턴스로 설정
-            DontDestroyOnLoad(gameObject);
+            currentCashText.text = localPlayerManager.playerCash.ToString("N0", CultureInfo.InvariantCulture);
+            currentValueText.text = localPlayerManager.playerValue.ToString("N0", CultureInfo.InvariantCulture);
+        }
+    }
+
+    public void FindPortfolio()
+    {
+        PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>(); // ① 모든 PlayerManager 찾기
+
+        localPlayerManager = allPlayerManagers.FirstOrDefault(pm => pm != null && pm.Object != null && pm.Object.HasInputAuthority); // ② 로컬 플레이어의 매니저 필터링
+
+        if (localPlayerManager != null)
+        {
+            Debug.Log("Local PlayerManager found!");
+        }
+        else
+        {
+            Debug.LogWarning("Local PlayerManager not found.");
+        }
+
+        if (localPlayerManager != null)
+        {
+            UpdateCurrentCashandValue(); // 찾자마자 UI 업데이트
+        }
+        else
+        {
+            Debug.LogError("Cannot access portfolio or update UI, localPlayerManager is null.");
         }
     }
 

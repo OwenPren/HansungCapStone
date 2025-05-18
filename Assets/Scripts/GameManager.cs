@@ -126,6 +126,8 @@ public class GameManager : NetworkBehaviour
 
     [Header("Persistent Manger")]
     public StockMarketManager stockMarketManager;
+    public UIManager UIManager;
+
 
     [Header("GameScene Specific")]
     public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
@@ -136,7 +138,7 @@ public class GameManager : NetworkBehaviour
         if (!playerManagers.ContainsKey(playerRef))
         {
             playerManagers.Add(playerRef, manager);
-             Debug.Log($"[Server] Register PlayerManager {playerRef}");
+            Debug.Log($"[Server] Register PlayerManager {playerRef}");
         }
     }
 
@@ -147,6 +149,7 @@ public class GameManager : NetworkBehaviour
             // PlayerManager의 BuyStock 로직 실행
             bool success = playerManager.BuyStock(stockName, quantity);
             Debug.Log($"[Server] Buy Request from {sender}: {success}");
+            UIManager.UpdateCurrentCashandValue();
         }
         else
         {
@@ -164,6 +167,7 @@ public class GameManager : NetworkBehaviour
                 // PlayerManager의 SellStock 로직 실행
                 bool success = playerManager.SellStock(stockName, quantity);
                 Debug.Log($"[Server] Sell Request from {sender}: {success}");
+                UIManager.UpdateCurrentCashandValue();
 
             }
             else

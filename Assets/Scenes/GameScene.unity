@@ -2092,7 +2092,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 360180081}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 869663611}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: ShowMarketPanel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &360180081
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3072,7 +3084,7 @@ GameObject:
   - component: {fileID: 500550800}
   - component: {fileID: 500550799}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Close Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3140,7 +3152,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 500550800}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1696931218}
+        m_TargetAssemblyTypeName: CloseButton, Assembly-CSharp
+        m_MethodName: OnCloseButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &500550800
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3271,7 +3295,7 @@ GameObject:
   - component: {fileID: 511293270}
   - component: {fileID: 511293269}
   m_Layer: 5
-  m_Name: Money 1 (1)
+  m_Name: CashTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3420,7 +3444,7 @@ GameObject:
   - component: {fileID: 529686743}
   - component: {fileID: 529686742}
   m_Layer: 5
-  m_Name: Money 2
+  m_Name: CurrentValue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3834,6 +3858,7 @@ GameObject:
   - component: {fileID: 583732236}
   - component: {fileID: 583732235}
   - component: {fileID: 583732234}
+  - component: {fileID: 583732237}
   m_Layer: 5
   m_Name: InventoryPanel
   m_TagString: Untagged
@@ -3899,6 +3924,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 900, y: 550}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &583732237
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 583732233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca73b114daf3dc74c91a18047a729377, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &633985447
 GameObject:
   m_ObjectHideFlags: 0
@@ -5252,6 +5289,7 @@ GameObject:
   m_Component:
   - component: {fileID: 869663609}
   - component: {fileID: 869663610}
+  - component: {fileID: 869663611}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -5295,6 +5333,24 @@ MonoBehaviour:
   - {fileID: 315968562}
   - {fileID: 1105804588}
   StartButton: {fileID: 736353143}
+--- !u!114 &869663611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869663607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 845ccd1b29ff47f4daa05d91e1c59673, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gamePanel: {fileID: 372700373}
+  inventoryPanel: {fileID: 583732233}
+  marketPanel: {fileID: 1696931213}
+  marketPanel2: {fileID: 1880461996}
+  currentCashText: {fileID: 2095310402}
+  currentValueText: {fileID: 529686743}
 --- !u!1 &879898633
 GameObject:
   m_ObjectHideFlags: 0
@@ -5308,7 +5364,7 @@ GameObject:
   - component: {fileID: 879898636}
   - component: {fileID: 879898635}
   m_Layer: 5
-  m_Name: Money 2 (1)
+  m_Name: ValueTitle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9232,7 +9288,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1422244330}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 869663611}
+        m_TargetAssemblyTypeName: UIManager, Assembly-CSharp
+        m_MethodName: ShowInventoryPanel
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1422244330
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9533,6 +9601,7 @@ MonoBehaviour:
   _Timer: 60
   _CurrentRound: 0
   stockMarketManager: {fileID: 786252115}
+  UIManager: {fileID: 869663611}
   playerManagerPrefab: {fileID: 0}
 --- !u!4 &1455227981
 Transform:
@@ -10907,6 +10976,7 @@ GameObject:
   - component: {fileID: 1696931215}
   - component: {fileID: 1696931214}
   - component: {fileID: 1696931217}
+  - component: {fileID: 1696931218}
   m_Layer: 5
   m_Name: MarketPanel
   m_TagString: Untagged
@@ -11008,6 +11078,18 @@ MonoBehaviour:
   - {fileID: 1515577357}
   thisPanel: {fileID: 1696931213}
   stockDetailPanelObject: {fileID: 1880461996}
+--- !u!114 &1696931218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1696931213}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca73b114daf3dc74c91a18047a729377, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1710330437
 GameObject:
   m_ObjectHideFlags: 0
@@ -13107,7 +13189,7 @@ GameObject:
   - component: {fileID: 2029453775}
   - component: {fileID: 2029453774}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Close Button
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -13176,7 +13258,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2029453775}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 583732237}
+        m_TargetAssemblyTypeName: CloseButton, Assembly-CSharp
+        m_MethodName: OnCloseButtonClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &2029453775
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13534,7 +13628,7 @@ GameObject:
   - component: {fileID: 2095310402}
   - component: {fileID: 2095310401}
   m_Layer: 5
-  m_Name: Money 1
+  m_Name: CurrentCash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
