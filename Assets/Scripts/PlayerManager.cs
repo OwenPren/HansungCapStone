@@ -7,16 +7,16 @@ using Fusion;
 [System.Serializable]
 public class PlayerStock
 {
-    public string stockName; 
-    public int quantity; 
+    public string stockName;
+    public int quantity;
+    public float usedMoney;
 }
 
 
 public class PlayerManager : NetworkBehaviour
 {
-
-
     [Networked] public float playerCash { get; private set; }
+    [Networked] public float playerValue { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
     public List<PlayerStock> portfolio = new List<PlayerStock>();
     public Sprite character;
@@ -25,7 +25,6 @@ public class PlayerManager : NetworkBehaviour
     void Start()
     {
         GameObject stockMarketManagerObject = GameObject.Find("StockMarketManager");
-
         if (stockMarketManagerObject != null)
         {
             stockMarketManager = stockMarketManagerObject.GetComponent<StockMarketManager>();
@@ -55,21 +54,25 @@ public class PlayerManager : NetworkBehaviour
         "Materials",
         "RealEstate"
     };
+
     public void Initialize(float initialCash)
     {
         playerCash = initialCash;
+        playerValue = initialCash;
 
         foreach (string stockName in stockNames)
-        { 
+        {
             portfolio.Add(new PlayerStock
             {
                 stockName = stockName,
-                quantity = 0
+                quantity = 0,
+                usedMoney = 0
             });
         }
     }
 
-    public void SetPlayerRef(PlayerRef playerRef){
+    public void SetPlayerRef(PlayerRef playerRef)
+    {
         this.PlayerRef = playerRef;
     }
 
@@ -77,6 +80,36 @@ public class PlayerManager : NetworkBehaviour
     {
         var holding = portfolio.Find(h => h.stockName == name);
         return holding != null ? holding.quantity : 0;
+    }
+
+    public void ValuationUpdate(List<PlayerStock> portfolio)
+    {
+        float StockValuation = 0f;
+
+        if (portfolio == null)
+        {
+            Debug.LogError("Portfolio is null!");
+            //return 0f;
+        }
+
+        foreach (PlayerStock playerStock in portfolio)
+        {
+            StockData currentStock = stockMarketManager.GetStockData(playerStock.stockName);
+
+            if (currentStock == null)
+            {
+                Debug.LogWarning($"Stock data not found for {playerStock.stockName}. Skipping.");
+                continue;
+            }
+
+            float price = currentStock.currentPrice;
+            float stockValue = (float)playerStock.quantity * price;
+            StockValuation += stockValue;
+        }
+
+        playerValue = StockValuation + this.playerCash;
+
+        //return StockValuation;
     }
 
     public bool BuyStock(string name, int quantity)
@@ -90,7 +123,7 @@ public class PlayerManager : NetworkBehaviour
 
         float Price = CurrentStock.currentPrice;
 
-        
+
         if (quantity <= 0)
         {
             return false;
@@ -101,11 +134,14 @@ public class PlayerManager : NetworkBehaviour
         if (playerCash >= cost)
         {
             playerCash -= cost;
+            
 
             var holding = portfolio.Find(h => h.stockName == name);
             if (holding != null)
             {
                 holding.quantity += quantity;
+                holding.usedMoney += cost;
+                ValuationUpdate(portfolio);
             }
             return true;
         }
@@ -113,9 +149,11 @@ public class PlayerManager : NetworkBehaviour
         {
             return false;
         }
+
+        
     }
 
- 
+
     public bool SellStock(string name, int quantity)
     {
         StockData CurrentStock = stockMarketManager.GetStockData(name);
@@ -138,19 +176,17 @@ public class PlayerManager : NetworkBehaviour
         {
             float revenue = quantity * Price;
             playerCash += revenue;
-
-          
+            holding.usedMoney -= ((quantity / holding.quantity) * holding.usedMoney);
             holding.quantity -= quantity;
-            if (holding.quantity == 0)
-            {
-                portfolio.Remove(holding); 
-            }
-
-            return true; 
+            ValuationUpdate(portfolio);
+            return true;
         }
         else
         {
-            return false; 
+            return false;
         }
+        
     }
+
+    
 }

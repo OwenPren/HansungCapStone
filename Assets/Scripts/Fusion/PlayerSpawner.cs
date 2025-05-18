@@ -14,7 +14,7 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   private NetworkRunner _runner;
   [SerializeField] private int targetSceneIndex;
   [SerializeField] private TMP_InputField roomCodeField;
-  [SerializeField] private float initialCash = 5000000;
+  [SerializeField] private float initialCash = 50000000;
   private List<PlayerRef> _joinOrder = new();
   private Canvas canvas;
 
