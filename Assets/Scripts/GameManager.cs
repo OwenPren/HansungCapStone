@@ -24,7 +24,7 @@ public class GameManager : NetworkBehaviour
 
     //Network Object
     [Networked] public GameState State { get; private set; }
-    [Networked] public float Timer { get; private set; }
+    [Networked, OnChangedRender(nameof(OnTimerChanged))] public float Timer { get; private set; }
     [Networked] public int CurrentRound { get; private set; }
 
     private bool isWaiting = false;
@@ -38,18 +38,7 @@ public class GameManager : NetworkBehaviour
         switch (State)
         {
             case GameState.Waitng:
-                // 게임 시작 전 대기 상태: 테스트용으로 10초 대기 후 StartGame() 호출
-                if (!isWaiting)
-                {
-                     waitTimer = 0f;
-                     isWaiting = true;
-                }
-                waitTimer += Runner.DeltaTime;
-                if (waitTimer >= 10f)
-                {
-                     StartGame();
-                     isWaiting = false;
-                }
+                // 게임 시작 전 대기 상태:
                 break;
 
             case GameState.Started:
@@ -104,13 +93,12 @@ public class GameManager : NetworkBehaviour
             State = GameState.Started;
         }
     }
-
-    void EvaluateRound()
+    private void OnTimerChanged()          // 모든 피어의 렌더 단계에서 실행
     {
-        // 여기에서 수익 반영, 순위 계산 등 수행
-        Debug.Log("라운드 결과 평가 시작");
+        TimerChanged?.Invoke(Timer);       // 정적 이벤트로 UI에 알림
     }
-
+    public static event System.Action<float> TimerChanged;
+    
     public override void Spawned()
     {
         if (Instance == null)
@@ -226,6 +214,7 @@ public class GameManager : NetworkBehaviour
                                 string sectorName = sectorToken.ToObject<string>();
                                 if (stockMarketManager != null)
                                 {
+                                    Debug.Log($"{sectorName}: ,{impactDirection}");
                                     stockMarketManager.PriceChange(sectorName, impactDirection);
                                 }
                             }

@@ -1,11 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using Fusion;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
     public static GameUIManager Instance { get; private set; }
+    public RoundStartEventSO roundStartEvent;
+
+    private bool isStartGame;
 
     [Header ("GameUI")]
     [SerializeField] private GameObject gameUI;
@@ -15,6 +19,16 @@ public class GameUIManager : MonoBehaviour
     [SerializeField] private GameObject watingRoomUI;
     [SerializeField] private List<Image> playerSlots;
     [SerializeField] private Button StartButton;
+
+    private void OnEnable()
+    {
+        roundStartEvent.AddListener(StartGame);
+    }
+
+    private void OnDisable()
+    {
+        roundStartEvent.RemoveListener(StartGame);
+    }
 
 
     private void Awake()
@@ -36,6 +50,10 @@ public class GameUIManager : MonoBehaviour
     {
         HideUI(gameUI);
         ShowUI(watingRoomUI);
+        isStartGame = false;
+        StartButton.interactable = false;
+            //FindObjectOfType<NetworkRunner>()?.IsServer == true;
+
     }
 
     public void ShowUI(GameObject obj)
@@ -49,6 +67,12 @@ public class GameUIManager : MonoBehaviour
     public void ToggleUI(GameObject obj)
     {
         obj.SetActive(!obj.activeSelf);
+    }
+
+    public void ToggleStartButton()
+    {
+        StartButton.interactable =
+            FindObjectOfType<NetworkRunner>()?.IsServer == true;
     }
 
     public void SetPlayerSlots(int slotIndex, Sprite characterSprite)
@@ -72,8 +96,12 @@ public class GameUIManager : MonoBehaviour
 
     public void StartGame()
     {
+        if (isStartGame) return;
+
         ToggleUI(gameUI);
         ToggleUI(watingRoomUI);
+
+        isStartGame = true;
     }
     
 
