@@ -61,15 +61,16 @@ public class AssistantManager : MonoBehaviour
         yield return StartCoroutine(GenerationEvent());
         //생성된 사건으로부터 주가 정보 생성
         yield return StartCoroutine(StockPriceAdjustment());
+
+        GameManager.Instance.UpdateStockPrice(functionCallArguments);
     }
 
     private void OnGameStart()
     {
         //게임 시작시 쓰레드 생성
-        if (!IsThread)
-        {
-            StartCoroutine(StartThread());
-        }
+        StartCoroutine(GameStartRoutine());
+
+        GameUIManager.Instance.ToggleStartButton();
     }
 
     private void OnGameEnd()
@@ -88,6 +89,15 @@ public class AssistantManager : MonoBehaviour
         functionCallID = "";
         functionCallArguments = null;
         runInProgress = false;
+    }
+
+    private IEnumerator GameStartRoutine()
+    {
+        if (!IsThread)
+        {
+            yield return StartCoroutine(StartThread());   
+        }
+        yield return StartCoroutine(OnRoundStart());      
     }
 
     private IEnumerator GenerationEvent()
