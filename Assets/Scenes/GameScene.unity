@@ -767,7 +767,7 @@ GameObject:
   - component: {fileID: 138803283}
   - component: {fileID: 138803282}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: MonthText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5351,6 +5351,18 @@ MonoBehaviour:
   marketPanel2: {fileID: 1880461996}
   currentCashText: {fileID: 2095310402}
   currentValueText: {fileID: 529686743}
+  currentTimeText: {fileID: 1710330440}
+  currentRoundText: {fileID: 138803283}
+  currentRankText:
+  - {fileID: 882330324}
+  - {fileID: 1643283736}
+  - {fileID: 72073724}
+  - {fileID: 1693017100}
+  currentRankNameText:
+  - {fileID: 1846090466}
+  - {fileID: 1309964788}
+  - {fileID: 1128896446}
+  - {fileID: 675038529}
 --- !u!1 &879898633
 GameObject:
   m_ObjectHideFlags: 0

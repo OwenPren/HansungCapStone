@@ -4,6 +4,7 @@ using Fusion;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 
 public enum GameState
 {
@@ -16,7 +17,7 @@ public enum GameState
 public class GameManager : NetworkBehaviour
 {
     public float timeLimit = 60f;
-    
+
     //Sriptable Object
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
@@ -26,6 +27,10 @@ public class GameManager : NetworkBehaviour
     [Networked] public GameState State { get; private set; }
     [Networked, OnChangedRender(nameof(OnTimerChanged))] public float Timer { get; private set; }
     [Networked] public int CurrentRound { get; private set; }
+
+    [Header("Persistent Manger")]
+    public StockMarketManager stockMarketManager;
+    public UIManager UIManager;
 
     private bool isWaiting = false;
     private float waitTimer = 0f;
@@ -50,7 +55,7 @@ public class GameManager : NetworkBehaviour
                 if (Timer <= 0f)
                 {
                     EndRound();
-                } 
+                }
                 break;
         }
     }
@@ -68,8 +73,8 @@ public class GameManager : NetworkBehaviour
         Debug.Log("[Round] " + CurrentRound + " Started");
         if (CurrentRound > 12)
         {
-             Debug.Log("No more rounds left.");
-             return;
+            Debug.Log("No more rounds left.");
+            return;
         }
         State = GameState.InProgress;
         Timer = timeLimit;
@@ -80,9 +85,12 @@ public class GameManager : NetworkBehaviour
     void EndRound()
     {
         State = GameState.Ended;
+
+        UIManager.UpdateCurrentRanking();
+
         Debug.Log("[Round] " + CurrentRound + " Ended");
-        
-        
+
+
         if (CurrentRound >= 12)
         {
             Debug.Log("Final Round Ended");
@@ -98,7 +106,7 @@ public class GameManager : NetworkBehaviour
         TimerChanged?.Invoke(Timer);       // 정적 이벤트로 UI에 알림
     }
     public static event System.Action<float> TimerChanged;
-    
+
     public override void Spawned()
     {
         if (Instance == null)
@@ -124,9 +132,7 @@ public class GameManager : NetworkBehaviour
     // ------------------------------------------------------------
     public static GameManager Instance { get; private set; }
 
-    [Header("Persistent Manger")]
-    public StockMarketManager stockMarketManager;
-    public UIManager UIManager;
+
 
 
     [Header("GameScene Specific")]
@@ -185,10 +191,8 @@ public class GameManager : NetworkBehaviour
     {
         SceneManager.LoadScene("GameScene");
     }
-    
-    // ------------------------------------------------------------
 
-    public class PlayerData 
+    public class PlayerData
     {
         public int id;
         public string name;
@@ -196,36 +200,61 @@ public class GameManager : NetworkBehaviour
 
     public void UpdateStockPrice(JObject Output)
     {
-        if (Output.TryGetValue("eventInfo", out JToken eventInfoToken) && eventInfoToken is JArray eventInfoArray)
+        //string sectorName = ""; JObject = 어시스턴트 출력에서 이 두개의 데이터만 파싱해주세요
+        //string impactDirection = "";
+        //stockMarketManager.PriceChange(sectorName, impactDirection);
+    }
+
+    private bool AreFloatsEqual(float f1, float f2, float tolerance)
+    {
+        return Mathf.Abs(f1 - f2) <= tolerance;
+    }
+
+    // 순위와 함께 PlayerRef 또는 기타 정보를 표시
+    public List<(int Rank, PlayerRef PlayerRef, PlayerManager PlayerManager)> GetRankedPlayersWithInfo()
+    {
+        if (this.playerManagers == null || this.playerManagers.Count == 0)
         {
-            int len = eventInfoArray.Count;
-            for (int i = 0; i < len; i++)
-            {
-                JToken eventToken = eventInfoArray[i];
-                if (eventToken.Type == JTokenType.Object)
-                {
-                    JObject eventObject = eventToken.ToObject<JObject>();
-                    string impactDirection = eventObject.TryGetValue("impactDirection", out JToken directionToken)
-                                             ? directionToken.ToObject<string>()
-                                             : null;
-                    if (eventObject.TryGetValue("affectedSectors", out JToken sectorsToken) && sectorsToken is JArray affectedSectorsArray)
-                    {
-                        Debug.Log($"  Processing event {i}: Direction={impactDirection}, Affected Sectors Count={affectedSectorsArray.Count}");
-                        foreach (JToken sectorToken in affectedSectorsArray)
-                        {
-                            if (sectorToken.Type == JTokenType.String)
-                            {
-                                string sectorName = sectorToken.ToObject<string>();
-                                if (stockMarketManager != null)
-                                {
-                                    Debug.Log($"{sectorName}: ,{impactDirection}");
-                                    stockMarketManager.PriceChange(sectorName, impactDirection);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            Debug.LogWarning("Player managers dictionary is empty or null. Cannot determine ranks.");
+            return new List<(int, PlayerRef, PlayerManager)>();
         }
+
+        // 1. 딕셔너리의 각 키-값 쌍을 가져와 PlayerManager의 playerValue를 기준으로 내림차순 정렬합니다.
+        //    OrderByDescending 결과는 IOrderedEnumerable 이므로, ToList()로 변환하여 인덱스 접근 가능하게 합니다.
+        var sortedPlayerList = playerManagers.OrderByDescending(pair => pair.Value.playerValue).ToList();
+
+        List<(int Rank, PlayerRef PlayerRef, PlayerManager PlayerManager)> rankedList = new List<(int, PlayerRef, PlayerManager)>();
+
+        int currentRank = 1; // 현재 플레이어에게 할당될 순위
+        int tie = 1;
+        float previousValue = 0f; // 이전 플레이어의 playerValue를 저장 (첫 플레이어와 비교 시 항상 다르게 초기화)
+        const float rankTolerance = 0.001f; // 순위 결정에 사용할 오차 범위
+
+        // 2. 정렬된 리스트를 순회하며 순위를 결정하고 결과 리스트를 채웁니다.
+        for (int i = 0; i < sortedPlayerList.Count; i++)
+        {
+            var pair = sortedPlayerList[i]; // 현재 순회 중인 플레이어의 키-값 쌍
+            float currentValue = pair.Value.playerValue; // 현재 플레이어의 값
+
+            // 첫 번째 플레이어이거나 (i == 0),
+            if (i == 0)
+            {
+                previousValue = currentValue;
+                rankedList.Add((currentRank, pair.Key, pair.Value));
+            }
+            else if (AreFloatsEqual(currentValue, previousValue, rankTolerance))
+            {
+                rankedList.Add((currentRank-tie, pair.Key, pair.Value));
+                tie++;
+            }
+            else
+            {
+                previousValue = currentValue;
+                rankedList.Add((currentRank, pair.Key, pair.Value));
+                tie = 1;
+            }
+            currentRank++;
+        }
+        return rankedList;
     }
 }
