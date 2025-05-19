@@ -18,6 +18,7 @@ public class PlayerManager : NetworkBehaviour
     [Networked] public float playerCash { get; private set; }
     [Networked] public float playerValue { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
+    public string NameField;
     public List<PlayerStock> portfolio = new List<PlayerStock>();
     public Sprite character;
     public StockMarketManager stockMarketManager;
@@ -59,7 +60,7 @@ public class PlayerManager : NetworkBehaviour
     {
         playerCash = initialCash;
         playerValue = initialCash;
-
+        NameField = PlayerData.instance.nickname;
         foreach (string stockName in stockNames)
         {
             portfolio.Add(new PlayerStock
@@ -149,8 +150,6 @@ public class PlayerManager : NetworkBehaviour
         {
             return false;
         }
-
-        
     }
 
 
