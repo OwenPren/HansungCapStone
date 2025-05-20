@@ -10,6 +10,7 @@ public class PlayerStock
     public string stockName;
     public int quantity;
     public float usedMoney;
+    public float stockReturn;
 }
 
 
@@ -17,6 +18,7 @@ public class PlayerManager : NetworkBehaviour
 {
     [Networked] public float playerCash { get; private set; }
     [Networked] public float playerValue { get; private set; }
+    [Networked] public float previousValue { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
     public string NameField;
     public List<PlayerStock> portfolio = new List<PlayerStock>();
@@ -60,6 +62,7 @@ public class PlayerManager : NetworkBehaviour
     {
         playerCash = initialCash;
         playerValue = initialCash;
+        previousValue = initialCash;
         NameField = PlayerData.instance.nickname;
         foreach (string stockName in stockNames)
         {
@@ -67,9 +70,15 @@ public class PlayerManager : NetworkBehaviour
             {
                 stockName = stockName,
                 quantity = 0,
-                usedMoney = 0
+                usedMoney = 0,
+                stockReturn = 0
             });
         }
+    }
+
+    public void SetPreviousValue()
+    {
+        this.previousValue = this.playerValue;
     }
 
     public void SetPlayerRef(PlayerRef playerRef)
@@ -105,6 +114,7 @@ public class PlayerManager : NetworkBehaviour
 
             float price = currentStock.currentPrice;
             float stockValue = (float)playerStock.quantity * price;
+            playerStock.stockReturn = (100.0f*stockValue)/playerStock.usedMoney-100.0f;
             StockValuation += stockValue;
         }
 
@@ -186,6 +196,5 @@ public class PlayerManager : NetworkBehaviour
         }
         
     }
-
     
 }

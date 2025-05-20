@@ -8,6 +8,8 @@ public class StockData
 {
     public string stockName; // 이름
     public float currentPrice; // 가격
+    public float previousPrice;  //이전 가격
+    public float stockChangeRate; // 주식 증감률
 }
 
 public class StockMarketManager : MonoBehaviour
@@ -48,7 +50,9 @@ public class StockMarketManager : MonoBehaviour
             allStocks.Add(new StockData
             {
                 stockName = stockName,
-                currentPrice = randomPrice // 생성된 랜덤 가격 할당
+                currentPrice = randomPrice, // 생성된 랜덤 가격 할당
+                previousPrice = randomPrice, // 최초 생성된 랜덤 가격
+                stockChangeRate = 0.0f
             });
 
             Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); // 확인을 위해 로그 출력
@@ -73,6 +77,25 @@ public class StockMarketManager : MonoBehaviour
             StockData stock = allStocks.Find(s => s.stockName == affectedSectors);
             if (impactDirection == "+") stock.currentPrice = stock.currentPrice * 1.01f;
             else stock.currentPrice = stock.currentPrice * 0.99f;
+        }
+    }
+
+    public void PriceUpdate()
+    {
+        if (allStocks == null)
+        {
+            Debug.LogError("allStocks is null!");
+        }
+
+        foreach (StockData currentStockData in allStocks)
+        {
+            if (currentStockData == null)
+            {
+                Debug.LogWarning($"Stock data not found for {currentStockData.stockName}. Skipping.");
+                continue;
+            }
+
+            currentStockData.stockChangeRate = (100.0f * currentStockData.currentPrice) / currentStockData.previousPrice - 100.0f;
         }
     }
 }
