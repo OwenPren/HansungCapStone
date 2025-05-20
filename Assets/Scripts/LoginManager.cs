@@ -66,10 +66,12 @@ public class LoginManager : MonoBehaviour
             // 로그인 성공 → 아이디/닉네임 저장
             PlayerData.instance.userID = id;
             PlayerData.instance.nickname = ExtractNickname(req.downloadHandler.text);
+            PlayerData.instance.StartKeepAlive();   // Keep-alive 시작 (서버와 연결 유지)
 
             // Photon CustomProperties에 닉네임 저장
             ExitGames.Client.Photon.Hashtable props = new ExitGames.Client.Photon.Hashtable();
             props["nickname"] = PlayerData.instance.nickname;
+            // 수정
             Photon.Pun.PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
             debugText.text = "로그인 성공!";
