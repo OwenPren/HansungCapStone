@@ -203,6 +203,7 @@ public class GameManager : NetworkBehaviour
         //string sectorName = ""; JObject = 어시스턴트 출력에서 이 두개의 데이터만 파싱해주세요
         //string impactDirection = "";
         //stockMarketManager.PriceChange(sectorName, impactDirection);
+        stockMarketManager.PriceUpdate();
     }
 
     private bool AreFloatsEqual(float f1, float f2, float tolerance)

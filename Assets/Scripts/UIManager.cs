@@ -96,6 +96,8 @@ public class UIManager : MonoBehaviour
                 if (player != null) // 혹시 PlayerManager 객체가 null일 경우를 대비 (극히 드물지만)
                 {
                     // 순위 (단일 숫자) 표시
+                    player.SetPreviousValue();
+                    player.ValuationUpdate(player.portfolio);
                     rankTxt.text = playerRankInfo.Rank.ToString();
                     nameTxt.text = player.NameField;
                 }
