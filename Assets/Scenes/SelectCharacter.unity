@@ -1978,7 +1978,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   debugText: {fileID: 1755909266}
-  characterDisplay: {fileID: 1326498259}
+  characterObjects:
+  - {fileID: 227882786}
+  - {fileID: 256830827}
+  - {fileID: 668617222}
+  - {fileID: 379862316}
   maxCharacters: 4
   backButton: {fileID: 1449269515}
 --- !u!4 &1503464022

@@ -8,7 +8,9 @@ using UnityEngine.SceneManagement;
 public class CharacterSelection : MonoBehaviour
 {
     public TMP_Text debugText;  // 아이디 닉네임 캐릭터 디버깅 출력용
-    public Image characterDisplay;
+    //public Image characterDisplay;
+    public GameObject[] characterObjects;
+
     //public Sprite[] characterSprites; // 캐릭터 이미지 배열
     public int maxCharacters = 4;
     private int currentIndex = 0;
@@ -36,6 +38,17 @@ public class CharacterSelection : MonoBehaviour
 
     private void UpdateCharacterDisplay()
     {
+        for (int i = 0; i < characterObjects.Length; i++)
+        {
+            if (characterObjects[i] == null) continue;
+
+            Image image = characterObjects[i].GetComponentInChildren<Image>();
+            if (image != null)
+            {
+                image.color = (i == currentIndex) ? Color.black : Color.white;
+            }
+        }
+        /*
         string path = $"Characters/Character_{currentIndex}";
         GameObject prefab = Resources.Load<GameObject>(path);
         if (prefab != null)
@@ -44,6 +57,8 @@ public class CharacterSelection : MonoBehaviour
             if (sr != null)
             {
                 characterDisplay.sprite = sr.sprite;
+                // 캐릭터 색 변경
+                characterDisplay.color = Color.black;
             }
             else
             {
@@ -54,6 +69,7 @@ public class CharacterSelection : MonoBehaviour
         {
             Debug.LogWarning($"Character prefab not found at path: {path}");
         }
+        */
         // 캐릭터 선택 변경 시 디버깅 텍스트 갱신
         debugText.text = $"아이디: {PlayerData.instance.userID}\n닉네임: {PlayerData.instance.nickname}\n현재 캐릭터: {currentIndex}";
     }
