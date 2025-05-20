@@ -198,11 +198,12 @@ public class GameManager : NetworkBehaviour
         public string name;
     }
 
-    public void UpdateStockPrice(JObject Output)
+    public void UpdateStockPrice(string sectorName, string impactDirection)
     {
         //string sectorName = ""; JObject = 어시스턴트 출력에서 이 두개의 데이터만 파싱해주세요
         //string impactDirection = "";
-        //stockMarketManager.PriceChange(sectorName, impactDirection);
+        //Debug.Log(sectorName+": "+impactDirection);
+        stockMarketManager.PriceChange(sectorName, impactDirection);
         stockMarketManager.PriceUpdate();
     }
 

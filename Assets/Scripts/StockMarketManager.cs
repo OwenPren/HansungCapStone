@@ -2,19 +2,19 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
-// ÁÖ½Ä µ¥ÀÌÅÍ ±¸Á¶Ã¼ ¶Ç´Â Å¬·¡½º (±âÁ¸ ÄÚµå À¯Áö)
+// ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½Ç´ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½)
 [System.Serializable]
 public class StockData
 {
-    public string stockName; // ÀÌ¸§
-    public float currentPrice; // °¡°Ý
-    public float previousPrice;  //ÀÌÀü °¡°Ý
-    public float stockChangeRate; // ÁÖ½Ä Áõ°¨·ü
+    public string stockName; // ï¿½Ì¸ï¿½
+    public float currentPrice; // ï¿½ï¿½ï¿½ï¿½
+    public float previousPrice;  //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    public float stockChangeRate; // ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 }
 
 public class StockMarketManager : MonoBehaviour
 {
-    // À¯´ÏÆ¼ ¿¡µðÅÍ¿¡¼­ ÁÖ½Ä ¸ñ·Ï ¼³Á¤
+    // ï¿½ï¿½ï¿½ï¿½Æ¼ ï¿½ï¿½ï¿½ï¿½ï¿½Í¿ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     public List<StockData> allStocks = new List<StockData>();
 
     private List<string> stockNames = new List<string>
@@ -33,29 +33,29 @@ public class StockMarketManager : MonoBehaviour
 
     void Awake()
     {
-        Debug.Log("ÁÖ½Ä ½ÃÀå ¸ñ·Ï ÃÊ±âÈ­...");
+        Debug.Log("ï¿½Ö½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­...");
         InitializeStocks();
     }
 
     void InitializeStocks()
     {
-        allStocks.Clear(); // ±âÁ¸ µ¥ÀÌÅÍ ÃÊ±âÈ­
+        allStocks.Clear(); // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 
         foreach (string stockName in stockNames)
         {
-            // 100.0f¿¡¼­ 1000.0f »çÀÌÀÇ ·£´ý °¡°Ý »ý¼º
-            // UnityEngine.Random.Range(float minInclusive, float maxInclusive)´Â min°ú max ¸ðµÎ Æ÷ÇÔÇÕ´Ï´Ù.
+            // 100.0fï¿½ï¿½ï¿½ï¿½ 1000.0f ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+            // UnityEngine.Random.Range(float minInclusive, float maxInclusive)ï¿½ï¿½ minï¿½ï¿½ max ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             float randomPrice = UnityEngine.Random.Range(100f, 1000f);
 
             allStocks.Add(new StockData
             {
                 stockName = stockName,
-                currentPrice = randomPrice, // »ý¼ºµÈ ·£´ý °¡°Ý ÇÒ´ç
-                previousPrice = randomPrice, // ÃÖÃÊ »ý¼ºµÈ ·£´ý °¡°Ý
+                currentPrice = randomPrice, // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò´ï¿½
+                previousPrice = randomPrice, // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 stockChangeRate = 0.0f
             });
 
-            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); // È®ÀÎÀ» À§ÇØ ·Î±× Ãâ·Â
+            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); // È®ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î±ï¿½ ï¿½ï¿½ï¿½
         }
     }
 
@@ -66,10 +66,10 @@ public class StockMarketManager : MonoBehaviour
         {
             return stock;
         }
-        return null; // ÇØ´ç ÀÌ¸§ÀÇ ÁÖ½ÄÀÌ ¾øÀ» °æ¿ì
+        return null; // ï¿½Ø´ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½Ö½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
     }
 
-    // ¶ó¿îµå ½ÃÀÛ ¹× Á¾·á ½Ã ÁÖ°¡ º¯µ¿ ½Ã¹Ä·¹ÀÌ¼Ç ·ÎÁ÷
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¹Ä·ï¿½ï¿½Ì¼ï¿½ ï¿½ï¿½ï¿½ï¿½
     public void PriceChange(string affectedSectors, string impactDirection)
     {
         if (affectedSectors != null)
