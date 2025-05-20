@@ -62,7 +62,8 @@ public class AssistantManager : MonoBehaviour
         //생성된 사건으로부터 주가 정보 생성
         yield return StartCoroutine(StockPriceAdjustment());
 
-        GameManager.Instance.UpdateStockPrice(functionCallArguments);
+        //GameManager.Instance.UpdateStockPrice(functionCallArguments);
+        FuctionCallArgumentParseAndUpdateStockPrice(functionCallArguments);
     }
 
     private void OnGameStart()
@@ -100,6 +101,27 @@ public class AssistantManager : MonoBehaviour
         yield return StartCoroutine(OnRoundStart());      
     }
 
+    private void FuctionCallArgumentParseAndUpdateStockPrice(JObject argument)
+    {
+        Dictionary<string, string> sectorImpacts = new Dictionary<string, string>();
+
+        foreach (JToken ev in argument["eventInfo"]!)
+        {
+            string direction = ev["impactDirection"]!.ToString();
+            foreach (JToken sector in ev["affectedSectors"]!)
+            {
+                sectorImpacts[sector.ToString()] = direction;
+            }
+        }
+
+        foreach (var kv in sectorImpacts)
+        { 
+            Debug.Log($"{kv.Key} : {kv.Value}");
+            GameManager.Instance.UpdateStockPrice(kv.Key,kv.Value);
+        }
+
+    }
+
     private IEnumerator GenerationEvent()
     {
         // 구성 요소 설명:
@@ -107,26 +129,28 @@ public class AssistantManager : MonoBehaviour
         // generateSpecialEvent: 이번 라운드에 특별 이벤트를 생성할지 여부
         // generateUnexpectedEvent: 이번 라운드에 예기치 않은 이벤트를 포함할지 여부
         // eventSectors: 생성할 일반 이벤트의 분야 (랜덤하게 1~3개 선택됨)
-        
+
         // 랜덤으로 1~3개 분야 선택
         int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
         SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
         List<SectorType> sectorsList = new List<SectorType>(allSectors);
-        
+
         // Fisher-Yates 셔플
-        for (int i = sectorsList.Count - 1; i > 0; i--) {
+        for (int i = sectorsList.Count - 1; i > 0; i--)
+        {
             int j = UnityEngine.Random.Range(0, i + 1);
             SectorType temp = sectorsList[i];
             sectorsList[i] = sectorsList[j];
             sectorsList[j] = temp;
         }
-        
+
         List<SectorType> chosenSectors = sectorsList.GetRange(0, numberOfSectors);
         JArray eventSectorsArray = new JArray();
-        foreach (var sector in chosenSectors) {
+        foreach (var sector in chosenSectors)
+        {
             eventSectorsArray.Add(sector.ToString());
         }
-        
+
         JObject inputParameters = new JObject
         {
             ["specialEventInfo"] = "",            // 특별 이벤트 정보 (없을 경우 빈 문자열)
@@ -134,7 +158,7 @@ public class AssistantManager : MonoBehaviour
             ["generateUnexpectedEvent"] = false,    // 예기치 않은 이벤트 포함 여부
             ["eventSectors"] = eventSectorsArray      // 생성할 사건 분야 리스트
         };
-        
+
         JObject toolChoiceObject = new JObject
         {
             ["type"] = "function",
@@ -143,7 +167,7 @@ public class AssistantManager : MonoBehaviour
                 ["name"] = "generate_event_titles_and_descriptions"
             }
         };
-        
+
         // 어시스턴트에게 이벤트 생성 요청 (입력 값은 JSON 문자열로 변환되어 전송됨)
         yield return StartCoroutine(GenarationRoutine("user", inputParameters.ToString(), APIUrls.EventGenerationAssistantID, toolChoiceObject));
     }

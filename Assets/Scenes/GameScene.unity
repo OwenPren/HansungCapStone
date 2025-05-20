@@ -5324,7 +5324,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 54074e20417363d41b6a3dafb38912b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  roundStartEvent: {fileID: 0}
+  roundStartEvent: {fileID: 11400000, guid: 595207132bbe746958d724f65c96883a, type: 2}
   gameUI: {fileID: 2064075895}
   watingRoomUI: {fileID: 1473464203}
   playerSlots:
