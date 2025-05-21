@@ -5,6 +5,7 @@ using UnityEngine;
 using Newtonsoft.Json.Linq;
 using System.Security.Principal;
 using System;
+using System.Linq;
 
 public enum SectorType
 {
@@ -104,9 +105,20 @@ public class AssistantManager : MonoBehaviour
     private void FuctionCallArgumentParseAndUpdateStockPrice(JObject argument)
     {
         Dictionary<string, string> sectorImpacts = new Dictionary<string, string>();
+        List<string> eventDescriptions = new List<string>();
+
+        if (argument == null || argument["eventInfo"] == null)
+        {
+            return;
+        }
 
         foreach (JToken ev in argument["eventInfo"]!)
         {
+            if (ev["description"] != null)
+            {
+                eventDescriptions.Add(ev["description"]!.ToString());
+            }
+
             string direction = ev["impactDirection"]!.ToString();
             foreach (JToken sector in ev["affectedSectors"]!)
             {
@@ -117,9 +129,13 @@ public class AssistantManager : MonoBehaviour
         foreach (var kv in sectorImpacts)
         { 
             Debug.Log($"{kv.Key} : {kv.Value}");
-            GameManager.Instance.UpdateStockPrice(kv.Key,kv.Value);
         }
 
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ToGmSectorImpacts(sectorImpacts);
+            GameManager.Instance.ToGmHintData(eventDescriptions);
+        }
     }
 
     private IEnumerator GenerationEvent()

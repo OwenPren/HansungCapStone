@@ -6,15 +6,14 @@ using System.Linq;
 [System.Serializable]
 public class StockData
 {
-    public string stockName; // �̸�
-    public float currentPrice; // ����
-    public float previousPrice;  //���� ����
-    public float stockChangeRate; // �ֽ� ������
+    public string stockName; // 
+    public float currentPrice; // 
+    public float previousPrice;  //
+    public float stockChangeRate; // 
 }
 
 public class StockMarketManager : MonoBehaviour
 {
-    // ����Ƽ �����Ϳ��� �ֽ� ��� ����
     public List<StockData> allStocks = new List<StockData>();
 
     private List<string> stockNames = new List<string>
@@ -43,8 +42,6 @@ public class StockMarketManager : MonoBehaviour
 
         foreach (string stockName in stockNames)
         {
-            // 100.0f���� 1000.0f ������ ���� ���� ����
-            // UnityEngine.Random.Range(float minInclusive, float maxInclusive)�� min�� max ��� �����մϴ�.
             float randomPrice = UnityEngine.Random.Range(100f, 1000f);
 
             allStocks.Add(new StockData
@@ -66,17 +63,17 @@ public class StockMarketManager : MonoBehaviour
         {
             return stock;
         }
-        return null; // �ش� �̸��� �ֽ��� ���� ���
+        return null; 
     }
 
-    // ���� ���� �� ���� �� �ְ� ���� �ùķ��̼� ����
+    
     public void PriceChange(string affectedSectors, string impactDirection)
     {
         if (affectedSectors != null)
         {
             StockData stock = allStocks.Find(s => s.stockName == affectedSectors);
-            if (impactDirection == "+") stock.currentPrice = stock.currentPrice * 1.01f;
-            else stock.currentPrice = stock.currentPrice * 0.99f;
+            if (impactDirection == "+") stock.currentPrice = stock.currentPrice * 1.1f;
+            else stock.currentPrice = stock.currentPrice * 0.9f;
         }
     }
 

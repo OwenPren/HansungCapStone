@@ -112,9 +112,10 @@ public class PlayerManager : NetworkBehaviour
                 continue;
             }
 
-            float price = currentStock.currentPrice;
-            float stockValue = (float)playerStock.quantity * price;
+            float stockValue = (float)playerStock.quantity * currentStock.currentPrice;
+
             playerStock.stockReturn = (100.0f*stockValue)/playerStock.usedMoney-100.0f;
+
             StockValuation += stockValue;
         }
 

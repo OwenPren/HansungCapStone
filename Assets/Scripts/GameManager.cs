@@ -28,12 +28,17 @@ public class GameManager : NetworkBehaviour
     [Networked, OnChangedRender(nameof(OnTimerChanged))] public float Timer { get; private set; }
     [Networked] public int CurrentRound { get; private set; }
 
-    [Header("Persistent Manger")]
+    [Header("Persistent Manager")]
     public StockMarketManager stockMarketManager;
     public UIManager UIManager;
 
+    public List<string> HintData = new List<string>();
+    public Dictionary<string, string> UpdateSectorImpacts = new Dictionary<string, string>();
+    public Dictionary<string, string> SectorImpacts = new Dictionary<string, string>();
+
     private bool isWaiting = false;
-    private float waitTimer = 0f;
+    private float waitTimer = 10.0f;
+    private bool firstrun = false;
 
     public override void FixedUpdateNetwork()
     {
@@ -49,12 +54,22 @@ public class GameManager : NetworkBehaviour
             case GameState.Started:
                 StartRound();
                 break;
+
             case GameState.InProgress:
                 Timer -= Runner.DeltaTime;
 
                 if (Timer <= 0f)
                 {
-                    EndRound();
+                    EndRound(false);
+                }
+                break;
+
+            case GameState.Ended:
+                waitTimer -= Runner.DeltaTime;
+
+                if (waitTimer <= 0f)
+                {
+                    EndRound(true);
                 }
                 break;
         }
@@ -69,6 +84,9 @@ public class GameManager : NetworkBehaviour
 
     void StartRound()
     {
+        UIManager.UpdateCurrentRanking();
+        UIManager.UpdateHintUI(HintData);
+
         CurrentRound++;
         Debug.Log("[Round] " + CurrentRound + " Started");
         if (CurrentRound > 12)
@@ -82,12 +100,10 @@ public class GameManager : NetworkBehaviour
         roundStartEvent.Raise(this);
     }
 
-    void EndRound()
+    void EndRound(bool start)
     {
         State = GameState.Ended;
-
-        UIManager.UpdateCurrentRanking();
-
+        UpdateStockPrices(UpdateSectorImpacts);
         Debug.Log("[Round] " + CurrentRound + " Ended");
 
 
@@ -96,9 +112,10 @@ public class GameManager : NetworkBehaviour
             Debug.Log("Final Round Ended");
             gameEndEvent.Raise();
         }
-        else
+        else if (start)
         {
             State = GameState.Started;
+            waitTimer = 10.0f;
         }
     }
     private void OnTimerChanged()          // 모든 피어의 렌더 단계에서 실행
@@ -131,8 +148,6 @@ public class GameManager : NetworkBehaviour
 
     // ------------------------------------------------------------
     public static GameManager Instance { get; private set; }
-
-
 
 
     [Header("GameScene Specific")]
@@ -198,13 +213,86 @@ public class GameManager : NetworkBehaviour
         public string name;
     }
 
-    public void UpdateStockPrice(string sectorName, string impactDirection)
+    public void UpdateStockPrices(Dictionary<string, string> sectorImpacts)
     {
-        //string sectorName = ""; JObject = 어시스턴트 출력에서 이 두개의 데이터만 파싱해주세요
-        //string impactDirection = "";
-        //Debug.Log(sectorName+": "+impactDirection);
-        stockMarketManager.PriceChange(sectorName, impactDirection);
-        stockMarketManager.PriceUpdate();
+        if (sectorImpacts == null || sectorImpacts.Count == 0)
+        {
+            Debug.LogWarning("전달된 섹터 영향 딕셔너리가 비어 있습니다. 주가 업데이트를 건너뜀.");
+            return;
+        }
+
+        // 1. 각 섹터의 주가 변동 적용
+        foreach (var entry in sectorImpacts)
+        {
+            string sectorName = entry.Key;
+            string impactDirection = entry.Value;
+
+            if (stockMarketManager != null)
+            {
+                stockMarketManager.PriceChange(sectorName, impactDirection);
+                Debug.Log($"[StockMarket] 섹터 {sectorName} 주가 변동 적용: {impactDirection}");
+            }
+            else
+            {
+                Debug.LogError("StockMarketManager가 할당되지 않았습니다. 주가 변동을 적용할 수 없습니다.");
+            }
+        }
+
+        // 모든 주가 변동이 적용된 후 한 번만 PriceUpdate 호출
+        if (stockMarketManager != null)
+        {
+            stockMarketManager.PriceUpdate();
+            Debug.Log("[StockMarket] 모든 주가 변동 업데이트 완료.");
+        }
+
+        // 2. 모든 플레이어의 포트폴리오 가치 업데이트
+        if (playerManagers == null || playerManagers.Count == 0)
+        {
+            Debug.LogWarning("PlayerManagers 딕셔너리가 비어 있거나 할당되지 않았습니다. 플레이어 포트폴리오 가치 업데이트를 건너뜜.");
+        }
+        else
+        {
+            foreach (var kvp in playerManagers)
+            {
+                PlayerManager playerManager = kvp.Value;
+
+                if (playerManager != null)
+                {
+                    // PlayerManager.portfolio가 public이거나 GetPlayerPortfolio()와 같은 메서드로 접근 가능하다고 가정
+                    playerManager.ValuationUpdate(playerManager.portfolio);
+                    Debug.Log($"플레이어의 포트폴리오 가치 업데이트 완료."); 
+                }
+                else
+                {
+                    Debug.LogWarning($"특정 플레이어의 PlayerManager가 null입니다.");
+                }
+            }
+        }
+
+        // 3. UI 업데이트
+        //UIManager가 싱글톤이라면
+         if (UIManager != null)
+        {
+            UIManager.UpdateCurrentCashandValue();
+        }
+
+        UpdateSectorImpacts = SectorImpacts;
+    }
+
+    public void ToGmHintData(List<string> description)
+    {
+        HintData = description;
+    }
+
+    public void ToGmSectorImpacts(Dictionary<string, string> SectorImpacts)
+    {
+        this.SectorImpacts = SectorImpacts;
+
+        if ( !firstrun )
+        {
+            UpdateSectorImpacts = SectorImpacts;
+            firstrun = !firstrun;
+        }
     }
 
     private bool AreFloatsEqual(float f1, float f2, float tolerance)
