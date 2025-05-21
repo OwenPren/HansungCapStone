@@ -3614,8 +3614,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 440, y: -60}
-  m_SizeDelta: {x: 700, y: 50}
+  m_AnchoredPosition: {x: 541.83, y: -61.4188}
+  m_SizeDelta: {x: 903.66, y: 52.8376}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &532113292
 MonoBehaviour:
@@ -3637,7 +3637,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD78C\uD2B82"
+  m_text: "\uD78C\uD2B82 : \uC0C8\uB85C\uC6B4 \uBAA8\uBC14\uC77C \uC1FC\uD551 \uD50C\uB7AB\uD3FC\uC774
+    \uC778\uAE30\uB97C \uB04C\uBA74\uC11C \uC18C\uBE44\uC790\uB4E4\uC758 \uC5EC\uAC00
+    \uC9C0\uCD9C\uC774 \uD65C\uBC1C\uD574\uC9C0\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
@@ -5363,6 +5365,9 @@ MonoBehaviour:
   - {fileID: 1309964788}
   - {fileID: 1128896446}
   - {fileID: 675038529}
+  currentHintText:
+  - {fileID: 1825397547}
+  - {fileID: 532113292}
 --- !u!1 &879898633
 GameObject:
   m_ObjectHideFlags: 0
@@ -9614,6 +9619,7 @@ MonoBehaviour:
   _CurrentRound: 0
   stockMarketManager: {fileID: 786252115}
   UIManager: {fileID: 869663611}
+  HintData: []
   playerManagerPrefab: {fileID: 0}
 --- !u!4 &1455227981
 Transform:
@@ -12065,8 +12071,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 440, y: 60}
-  m_SizeDelta: {x: 700, y: 50}
+  m_AnchoredPosition: {x: 541.83, y: 80}
+  m_SizeDelta: {x: 903.6566, y: 44.5692}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1825397547
 MonoBehaviour:
@@ -12088,7 +12094,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uD78C\uD2B81"
+  m_text: "\uD78C\uD2B81 : \uC138\uACC4\uC801\uC778 \uACF5\uAE09\uB9DD \uBB38\uC81C\uC640
+    \uC6D0\uC790\uC7AC \uAC00\uACA9 \uC778\uC0C1\uC73C\uB85C \uC778\uD574 \uC2DD\uB8CC\uD488
+    \uBC0F \uC0DD\uD65C\uC6A9\uD488 \uAC00\uACA9\uC774 \uAE09\uB4F1\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}

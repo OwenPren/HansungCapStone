@@ -27,6 +27,9 @@ public class UIManager : MonoBehaviour
     public List<TextMeshProUGUI> currentRankText = new List<TextMeshProUGUI>();
     public List<TextMeshProUGUI> currentRankNameText = new List<TextMeshProUGUI>();
 
+    [Header("Hint UI")]
+    public List<TextMeshProUGUI> currentHintText = new List<TextMeshProUGUI>();
+
     private PlayerManager localPlayerManager; // 본인의 플레이어 매니저(포트폴리오가 있는 스크립트)
 
 
@@ -42,6 +45,30 @@ public class UIManager : MonoBehaviour
         {
             currentRoundText.text = GameManager.Instance.CurrentRound.ToString() + "월";
         }
+
+        UpdateCurrentCashandValue();
+    }
+
+    public void UpdateHintUI(List<string> HintData)
+    {
+        // currentHintText 배열을 초기화 (이전 힌트 잔여 방지)
+        for (int j = 0; j < currentHintText.Count; j++)
+        {
+            currentHintText[j].text = "";
+        }
+
+        // HintData의 길이와 currentHintText 배열의 길이 중 더 작은 값만큼 반복
+        int count = Mathf.Min(HintData.Count, currentHintText.Count);
+        for (int i = 0; i < count; i++)
+        {
+            currentHintText[i].text = $"힌트 {i + 1}: {HintData[i]}";
+        }
+
+        // 만약 HintData가 currentHintText보다 많다면 경고 (선택 사항)
+        //if (HintData.Count > currentHintText.Count)
+        //{
+        //    Debug.LogWarning($"모든 힌트를 표시할 수 없습니다. UI 텍스트 컴포넌트({currentHintText.Count}개)가 힌트({HintData.Count}개)보다 적습니다.");
+        //}
     }
 
     public void UpdateCurrentRanking()
