@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Fusion;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,7 +19,9 @@ public class GameUIManager : MonoBehaviour
     [Header ("WatingRoomUI")]
     [SerializeField] private GameObject watingRoomUI;
     [SerializeField] private List<Image> playerSlots;
-    [SerializeField] private Button StartButton;
+    [SerializeField] private Button startButton;
+    [SerializeField] private TMP_Text roomCode;
+
 
     private void OnEnable()
     {
@@ -51,7 +54,7 @@ public class GameUIManager : MonoBehaviour
         HideUI(gameUI);
         ShowUI(watingRoomUI);
         isStartGame = false;
-        StartButton.interactable = false;
+        startButton.interactable = false;
             //FindObjectOfType<NetworkRunner>()?.IsServer == true;
 
     }
@@ -71,7 +74,7 @@ public class GameUIManager : MonoBehaviour
 
     public void ToggleStartButton()
     {
-        StartButton.interactable =
+        startButton.interactable =
             FindObjectOfType<NetworkRunner>()?.IsServer == true;
     }
 
@@ -103,6 +106,10 @@ public class GameUIManager : MonoBehaviour
 
         isStartGame = true;
     }
-    
 
+    public void SetRoomCode(string roomCode)
+    {
+        this.roomCode.text = roomCode;
+
+    }
 }
