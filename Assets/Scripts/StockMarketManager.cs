@@ -42,17 +42,17 @@ public class StockMarketManager : MonoBehaviour
 
         foreach (string stockName in stockNames)
         {
-            float randomPrice = UnityEngine.Random.Range(100f, 1000f);
+            float randomPrice = UnityEngine.Random.Range(10000f, 50000f);
 
             allStocks.Add(new StockData
             {
                 stockName = stockName,
-                currentPrice = randomPrice, // ������ ���� ���� �Ҵ�
-                previousPrice = randomPrice, // ���� ������ ���� ����
+                currentPrice = randomPrice, 
+                previousPrice = randomPrice, 
                 stockChangeRate = 0.0f
             });
 
-            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); // Ȯ���� ���� �α� ���
+            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); 
         }
     }
 

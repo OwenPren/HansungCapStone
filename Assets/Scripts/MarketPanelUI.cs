@@ -9,6 +9,7 @@ public class StockListPanelUI : MonoBehaviour
     [Header("주식 목록 버튼들")]
     // Inspector에서 주식별 버튼들을 여기에 드래그하여 할당합니다.
     public List<Button> stockButtons;
+    public List<Button> stockPiece;
 
     [Header("패널 오브젝트")]
     // 현재 스크립트가 붙어있는 MarketPanel 오브젝트 자체를 할당합니다.

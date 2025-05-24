@@ -93,42 +93,42 @@ private string GenerateRoomCode(int length)
     }
   }
 
-  public void ShowTextBox(string message) // , float duration = 2f
-  {
-      // 텍스트 박스 오브젝트 생성
-      GameObject textBox = new GameObject("TextBox");
-      textBox.transform.SetParent(canvas.transform);
+  // public void ShowTextBox(string message) // , float duration = 2f
+  // {
+  //     // 텍스트 박스 오브젝트 생성
+  //     GameObject textBox = new GameObject("TextBox");
+  //     textBox.transform.SetParent(canvas.transform);
 
-      // 배경 이미지 추가
-      Image bgImage = textBox.AddComponent<Image>();
-      bgImage.color = new Color(0, 0, 0, 0.6f); // 반투명 검정색 배경
+  //     // 배경 이미지 추가
+  //     Image bgImage = textBox.AddComponent<Image>();
+  //     bgImage.color = new Color(0, 0, 0, 0.6f); // 반투명 검정색 배경
 
-      // 텍스트 추가
-      GameObject textObj = new GameObject("Text");
-      textObj.transform.SetParent(textBox.transform);
-      TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
-      text.text = message;
-      text.fontSize = 36;
-      text.alignment = TextAlignmentOptions.Center;
-      text.color = Color.white;
+  //     // 텍스트 추가
+  //     GameObject textObj = new GameObject("Text");
+  //     textObj.transform.SetParent(textBox.transform);
+  //     TextMeshProUGUI text = textObj.AddComponent<TextMeshProUGUI>();
+  //     text.text = message;
+  //     text.fontSize = 36;
+  //     text.alignment = TextAlignmentOptions.Center;
+  //     text.color = Color.white;
 
-      // **RectTransform 설정 (앵커를 이용한 배치)**
-      RectTransform boxRect = textBox.GetComponent<RectTransform>();
-      boxRect.sizeDelta = new Vector2(500, 100);
-      boxRect.anchorMin = new Vector2(0.5f, 1f); // 화면 상단 중앙 기준
-      boxRect.anchorMax = new Vector2(0.5f, 1f);
-      boxRect.pivot = new Vector2(0.5f, 1f); // 피벗을 상단 중앙에 설정
-      boxRect.anchoredPosition = new Vector2(0, -50); // 화면 최상단에서 50px 아래
+  //     // **RectTransform 설정 (앵커를 이용한 배치)**
+  //     RectTransform boxRect = textBox.GetComponent<RectTransform>();
+  //     boxRect.sizeDelta = new Vector2(500, 100);
+  //     boxRect.anchorMin = new Vector2(0.5f, 1f); // 화면 상단 중앙 기준
+  //     boxRect.anchorMax = new Vector2(0.5f, 1f);
+  //     boxRect.pivot = new Vector2(0.5f, 1f); // 피벗을 상단 중앙에 설정
+  //     boxRect.anchoredPosition = new Vector2(0, -50); // 화면 최상단에서 50px 아래
 
-      RectTransform textRect = textObj.GetComponent<RectTransform>();
-      textRect.sizeDelta = new Vector2(480, 80);
-      textRect.anchorMin = new Vector2(0.5f, 0.5f);
-      textRect.anchorMax = new Vector2(0.5f, 0.5f);
-      textRect.pivot = new Vector2(0.5f, 0.5f);
-      textRect.anchoredPosition = Vector2.zero;
+  //     RectTransform textRect = textObj.GetComponent<RectTransform>();
+  //     textRect.sizeDelta = new Vector2(480, 80);
+  //     textRect.anchorMin = new Vector2(0.5f, 0.5f);
+  //     textRect.anchorMax = new Vector2(0.5f, 0.5f);
+  //     textRect.pivot = new Vector2(0.5f, 0.5f);
+  //     textRect.anchoredPosition = Vector2.zero;
 
-      //Destroy(textBox, duration);
-  }
+  //     //Destroy(textBox, duration);
+  // }
 
 
   [SerializeField] private NetworkPrefabRef _playerPrefab;
@@ -153,9 +153,9 @@ private string GenerateRoomCode(int length)
       int slotIndex = _joinOrder.IndexOf(player);
       //Sprite characterSprite = pm.character;
       //GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
-      // pun 코드 수정할 것.
-      if (player.PlayerId == Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber &&
-                Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
+      // pun 코드 수정할 것. pun 서버 연결되었는지 확인 하는 부분만 제거거
+      //player.PlayerId == Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber &&
+      if (Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
       {
         int charIndex = (int)Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties["character"];
 
@@ -189,11 +189,12 @@ private string GenerateRoomCode(int length)
 
   }
 
-  public void OnSceneLoadDone(NetworkRunner runner) 
+  public void OnSceneLoadDone(NetworkRunner runner)
   {
-   Debug.Log("OnSceneLoadDone. room code: " + runner.SessionInfo.Name);
-   CreateCanvas();
-   ShowTextBox(runner.SessionInfo.Name);
+    Debug.Log("OnSceneLoadDone. room code: " + runner.SessionInfo.Name);
+    //CreateCanvas();
+    //ShowTextBox(runner.SessionInfo.Name);
+    GameUIManager.Instance.SetRoomCode(runner.SessionInfo.Name);
   }
 
   //interface 

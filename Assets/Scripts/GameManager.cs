@@ -37,7 +37,7 @@ public class GameManager : NetworkBehaviour
     public Dictionary<string, string> SectorImpacts = new Dictionary<string, string>();
 
     private bool isWaiting = false;
-    private float waitTimer = 10.0f;
+    public float waitTimer = 10.0f;
     private bool firstrun = false;
 
     public override void FixedUpdateNetwork()
@@ -84,7 +84,13 @@ public class GameManager : NetworkBehaviour
 
     void StartRound()
     {
-        UIManager.UpdateCurrentRanking();
+        if ( CurrentRound == 0 )
+        {
+            UIManager.UpdateCurrentRanking();
+        }
+        UIManager.ShowGamePanel();
+        PmRoundStartCall();
+        UIManager.ShowResultPanel(false);
         UIManager.UpdateHintUI(HintData);
 
         CurrentRound++;
@@ -103,7 +109,17 @@ public class GameManager : NetworkBehaviour
     void EndRound(bool start)
     {
         State = GameState.Ended;
-        UpdateStockPrices(UpdateSectorImpacts);
+
+        if (!start)
+        {
+            UpdateStockPrices(UpdateSectorImpacts);
+            UIManager.UpdateCurrentRanking();
+        }
+
+        UIManager.UpdateResultUI();
+        UIManager.ShowResultPanel(true);
+
+
         Debug.Log("[Round] " + CurrentRound + " Ended");
 
 
@@ -153,6 +169,12 @@ public class GameManager : NetworkBehaviour
     [Header("GameScene Specific")]
     public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
     private Dictionary<PlayerRef, PlayerManager> playerManagers = new Dictionary<PlayerRef, PlayerManager>();
+
+    public void PmRoundStartCall()
+    {
+        foreach (var kvp in playerManagers)
+            kvp.Value.SetPreviousValue();
+    }
 
     public void RegisterPlayerManager(PlayerRef playerRef, PlayerManager manager)
     {
