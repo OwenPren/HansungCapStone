@@ -167,7 +167,7 @@ public class GameManager : NetworkBehaviour
 
 
     [Header("GameScene Specific")]
-    public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
+    //public GameObject playerManagerPrefab; // 게임 씬에서 생성될 PlayerManager 오브젝트
     private Dictionary<PlayerRef, PlayerManager> playerManagers = new Dictionary<PlayerRef, PlayerManager>();
 
     public void PmRoundStartCall()

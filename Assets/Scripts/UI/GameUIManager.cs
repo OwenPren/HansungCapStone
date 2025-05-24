@@ -5,246 +5,436 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class GameUIManager : NetworkBehaviour
+public class GameUIManager : MonoBehaviour
 {
-    public static GameUIManager Instance { get; private set; }
+    private static GameUIManager _instance;
+    public static GameUIManager Instance 
+    { 
+        get 
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<GameUIManager>();
+                if (_instance == null)
+                {
+                    Debug.LogError("[GameUIManager] No GameUIManager found in scene!");
+                }
+                else
+                {
+                    Debug.Log("[GameUIManager] Instance found via FindObjectOfType");
+                }
+            }
+            return _instance;
+        }
+        private set { _instance = value; }
+    }
+    
     public RoundStartEventSO roundStartEvent;
-
     private bool isStartGame;
 
     [Header("GameUI")]
     [SerializeField] private GameObject gameUI;
 
-    [Header("WatingRoomUI")]
+    [Header("WatingRoomUI")]  
     [SerializeField] private GameObject watingRoomUI;
     [SerializeField] private List<Image> playerSlots;
     [SerializeField] private Button startButton;
     [SerializeField] private TMP_Text roomCode;
 
-    [Header("Network Player Management")]
-    private List<PlayerRef> _joinOrder = new List<PlayerRef>();
-
-    private void OnEnable()
-    {
-        roundStartEvent.AddListener(StartGame);
-    }
-
-    private void OnDisable()
-    {
-        roundStartEvent.RemoveListener(StartGame);
-    }
+    [Header("Player Management")]
+    private Dictionary<PlayerRef, int> playerSlotMapping;
 
     private void Awake()
     {
-        // 이미 인스턴스가 있으면 중복 제거
-        if (Instance != null && Instance != this)
+        Debug.Log("[GameUIManager] Awake() called");
+        
+        // 싱글톤 패턴 구현
+        if (_instance != null && _instance != this)
         {
+            Debug.Log($"[GameUIManager] Destroying duplicate instance. Existing: {_instance.name}, This: {this.name}");
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        _instance = this;
+        
+        // playerSlotMapping 초기화
+        playerSlotMapping = new Dictionary<PlayerRef, int>();
+        
+        // DontDestroyOnLoad는 필요한 경우에만 사용
+        // 현재 씬에만 있어야 할 UI라면 주석 처리
+        // DontDestroyOnLoad(gameObject);
+        
+        Debug.Log("[GameUIManager] Instance set successfully");
     }
 
-    // Start is called before the first frame update
+    private void OnEnable()
+    {
+        if (roundStartEvent != null)
+        {
+            roundStartEvent.AddListener(StartGame);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (roundStartEvent != null)
+        {
+            roundStartEvent.RemoveListener(StartGame);
+        }
+    }
+
     void Start()
     {
-        HideUI(gameUI);
-        ShowUI(watingRoomUI);
+        Debug.Log("[GameUIManager] Start() called");
+        
+        // UI 컴포넌트들 null 체크
+        if (gameUI == null) Debug.LogError("[GameUIManager] gameUI is not assigned!");
+        if (watingRoomUI == null) Debug.LogError("[GameUIManager] watingRoomUI is not assigned!");
+        if (playerSlots == null || playerSlots.Count == 0) Debug.LogError("[GameUIManager] playerSlots is not properly assigned!");
+        if (startButton == null) Debug.LogError("[GameUIManager] startButton is not assigned!");
+        if (roomCode == null) Debug.LogError("[GameUIManager] roomCode is not assigned!");
+        
+        // 초기 UI 설정
+        if (gameUI != null) HideUI(gameUI);
+        if (watingRoomUI != null) ShowUI(watingRoomUI);
+        
         isStartGame = false;
-        startButton.interactable = false;
-    }
-
-    public override void Spawned()
-    {
-        // NetworkBehaviour 초기화
-        if (Object.HasStateAuthority)
+        
+        if (startButton != null)
         {
-            Debug.Log("[GameUIManager] Network object spawned with authority");
+            startButton.interactable = false;
         }
+        
+        // PlayerInfoManager가 준비되면 동기화 시작
+        StartCoroutine(WaitForInitialSync());
+        
+        Debug.Log("[GameUIManager] Start() completed");
+    }
+    
+    private IEnumerator WaitForInitialSync()
+    {
+        // PlayerInfoManager와 네트워크 준비까지 대기
+        yield return new WaitUntil(() => PlayerInfoManager.Instance != null);
+        yield return new WaitForSeconds(2.0f); // 충분한 지연으로 모든 플레이어 정보가 준비될 때까지 대기
+        
+        Debug.Log("[GameUIManager] Performing initial sync");
+        SyncAllPlayerSlots();
+        
+        // 시작 버튼 설정
+        ToggleStartButton();
     }
 
     #region UI Control Methods
     public void ShowUI(GameObject obj)
     {
-        obj.SetActive(true);
+        if (obj != null)
+        {
+            obj.SetActive(true);
+        }
     }
 
     public void HideUI(GameObject obj)
     {
-        obj.SetActive(false);
+        if (obj != null)
+        {
+            obj.SetActive(false);
+        }
     }
 
     public void ToggleUI(GameObject obj)
     {
-        obj.SetActive(!obj.activeSelf);
+        if (obj != null)
+        {
+            obj.SetActive(!obj.activeSelf);
+        }
     }
 
     public void ToggleStartButton()
     {
-        startButton.interactable = FindObjectOfType<NetworkRunner>()?.IsServer == true;
-    }
-
-    public void StartGame()
-    {
-        if (isStartGame) return;
-
-        ToggleUI(gameUI);
-        ToggleUI(watingRoomUI);
-
-        isStartGame = true;
-    }
-
-    public void SetRoomCode(string roomCode)
-    {
-        this.roomCode.text = roomCode;
-    }
-    #endregion
-
-    #region Network Player Slot Management
-    /// <summary>
-    /// 플레이어 슬롯 설정 (로컬에서만 실행)
-    /// </summary>
-    public void SetPlayerSlots(int slotIndex, Sprite characterSprite)
-    {
-        if (slotIndex < 0 || slotIndex >= playerSlots.Count) return;
-
-        var img = playerSlots[slotIndex];
-        img.sprite = characterSprite;
-        img.enabled = true;
-        
-        Debug.Log($"[GameUIManager] Set player slot {slotIndex} locally");
-    }
-
-    /// <summary>
-    /// 플레이어 슬롯 클리어 (로컬에서만 실행)
-    /// </summary>
-    public void ClearPlayerSlot(int slotIndex)
-    {
-        if (slotIndex < 0 || slotIndex >= playerSlots.Count) return;
-
-        var img = playerSlots[slotIndex];
-        img.sprite = null;
-        img.enabled = false;
-        
-        Debug.Log($"[GameUIManager] Cleared player slot {slotIndex} locally");
-    }
-
-    /// <summary>
-    /// 플레이어 참가 시 모든 클라이언트에 UI 업데이트 전송
-    /// </summary>
-    public void OnPlayerJoined(PlayerRef player, int charIndex)
-    {
-        if (!Object.HasStateAuthority) return;
-
-        if (!_joinOrder.Contains(player))
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (startButton != null && runner != null)
         {
-            _joinOrder.Add(player);
-        }
-
-        int slotIndex = _joinOrder.IndexOf(player);
-        UpdatePlayerSlotRPC(slotIndex, charIndex);
-    }
-
-    /// <summary>
-    /// 플레이어 퇴장 시 모든 클라이언트에 UI 업데이트 전송
-    /// </summary>
-    public void OnPlayerLeft(PlayerRef player)
-    {
-        if (!Object.HasStateAuthority) return;
-
-        int slotIndex = _joinOrder.IndexOf(player);
-        if (slotIndex >= 0)
-        {
-            _joinOrder.Remove(player);
-            ClearPlayerSlotRPC(slotIndex);
-
-            // 남은 플레이어들의 슬롯 재정렬
-            SyncAllPlayerSlotsRPC();
+            startButton.interactable = runner.IsServer;
+            
+            // 버튼 클릭 이벤트 연결 (서버에서만)
+            if (runner.IsServer)
+            {
+                startButton.onClick.RemoveAllListeners();
+                startButton.onClick.AddListener(OnStartButtonClicked);
+                Debug.Log("[GameUIManager] Start button click listener added for server");
+            }
         }
     }
 
-    /// <summary>
-    /// 모든 클라이언트에게 플레이어 슬롯 UI 업데이트를 전송하는 RPC
-    /// </summary>
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void UpdatePlayerSlotRPC(int slotIndex, int charIndex)
+    // 게임 시작 버튼 클릭 시 호출 (서버에서만)
+    public void OnStartButtonClicked()
     {
-        string path = "Characters/Character_" + charIndex;
-        Sprite characterSprite = Resources.Load<Sprite>(path);
-
-        if (characterSprite != null)
+        Debug.Log("[GameUIManager] Start button clicked on server");
+        
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (runner != null && runner.IsServer)
         {
-            SetPlayerSlots(slotIndex, characterSprite);
-            Debug.Log($"[GameUIManager RPC] Player slot {slotIndex} updated with character {charIndex}");
+            // 모든 클라이언트에 게임 시작 알림
+            RequestGameStart();
+        }
+    }
+
+    // 게임 시작 요청 (서버에서 모든 클라이언트로)
+    public void RequestGameStart()
+    {
+        // PlayerInfoManager를 통해 RPC 전송
+        if (PlayerInfoManager.Instance != null && PlayerInfoManager.Instance.Object.HasStateAuthority)
+        {
+            Debug.Log("[GameUIManager] Requesting game start via PlayerInfoManager");
+            PlayerInfoManager.Instance.RpcStartGame();
         }
         else
         {
-            Debug.LogError($"[GameUIManager RPC] Failed to load character sprite at path: {path}");
+            Debug.LogError("[GameUIManager] Cannot request game start - PlayerInfoManager not available or no authority");
         }
     }
 
-    /// <summary>
-    /// 모든 클라이언트에게 플레이어 슬롯 제거를 전송하는 RPC
-    /// </summary>
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void ClearPlayerSlotRPC(int slotIndex)
+    // 실제 게임 시작 처리 (모든 클라이언트에서 실행)
+    public void StartGame()
     {
-        ClearPlayerSlot(slotIndex);
-        Debug.Log($"[GameUIManager RPC] Player slot {slotIndex} cleared");
+        if (isStartGame) 
+        {
+            Debug.Log("[GameUIManager] Game already started, ignoring");
+            return;
+        }
+
+        Debug.Log("[GameUIManager] Starting game - switching UI");
+
+        // UI 전환
+        HideUI(watingRoomUI);
+        ShowUI(gameUI);
+
+        isStartGame = true;
+        
+        // 이벤트 발생 (다른 시스템들에게 알림)
+        // if (roundStartEvent != null)
+        // {
+        //     roundStartEvent.Invoke();
+        // }
+
+        Debug.Log("[GameUIManager] Game started successfully");
     }
 
-    /// <summary>
-    /// 늦게 접속한 클라이언트를 위해 현재 모든 플레이어의 슬롯 정보를 동기화
-    /// </summary>
-    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
-    public void SyncAllPlayerSlotsRPC()
+    public void SetRoomCode(string roomCodeText)
     {
-        if (!Object.HasStateAuthority) return;
+        if (roomCode != null)
+        {
+            this.roomCode.text = roomCodeText;
+        }
+    }
+    #endregion
+
+    #region Player Slot Management
+    public void SetPlayerSlots(int slotIndex, Sprite characterSprite)
+    {
+        Debug.Log($"[GameUIManager] SetPlayerSlots called - slotIndex: {slotIndex}, sprite: {characterSprite?.name}");
+        
+        if (playerSlots == null)
+        {
+            Debug.LogError("[GameUIManager] playerSlots list is null!");
+            return;
+        }
+        
+        if (slotIndex < 0 || slotIndex >= playerSlots.Count)
+        {
+            Debug.LogError($"[GameUIManager] Invalid slot index: {slotIndex}, playerSlots count: {playerSlots.Count}");
+            return;
+        }
+
+        var img = playerSlots[slotIndex];
+        if (img != null)
+        {
+            img.sprite = characterSprite;
+            img.enabled = true;
+            Debug.Log($"[GameUIManager] Successfully set player slot {slotIndex} with sprite: {characterSprite?.name}");
+        }
+        else
+        {
+            Debug.LogError($"[GameUIManager] Image component at slot {slotIndex} is null!");
+        }
+    }
+
+    public void ClearPlayerSlot(int slotIndex)
+    {
+        if (playerSlots == null || slotIndex < 0 || slotIndex >= playerSlots.Count) return;
+
+        var img = playerSlots[slotIndex];
+        if (img != null)
+        {
+            img.sprite = null;
+            img.enabled = false;
+            Debug.Log($"[GameUIManager] Cleared player slot {slotIndex}");
+        }
+    }
+
+    public void OnPlayerInfoUpdated(PlayerRef player, int characterIndex)
+    {
+        Debug.Log($"[GameUIManager] OnPlayerInfoUpdated - Player: {player}, CharIndex: {characterIndex}");
+        
+        if (playerSlotMapping == null)
+        {
+            Debug.LogError("[GameUIManager] playerSlotMapping is null! Reinitializing...");
+            playerSlotMapping = new Dictionary<PlayerRef, int>();
+        }
+        
+        int slotIndex = GetOrAssignPlayerSlot(player);
+        Debug.Log($"[GameUIManager] Assigned slot {slotIndex} to player {player}");
+        
+        string path = "Characters/Character_" + characterIndex;
+        Sprite characterSprite = Resources.Load<Sprite>(path);
+        
+        if (characterSprite != null)
+        {
+            SetPlayerSlots(slotIndex, characterSprite);
+            Debug.Log($"[GameUIManager] Successfully updated slot {slotIndex} with character {characterIndex}");
+        }
+        else
+        {
+            Debug.LogError($"[GameUIManager] Failed to load character sprite at path: {path}");
+        }
+    }
+
+    private int GetOrAssignPlayerSlot(PlayerRef player)
+    {
+        if (playerSlotMapping == null)
+        {
+            playerSlotMapping = new Dictionary<PlayerRef, int>();
+        }
+        
+        if (playerSlotMapping.TryGetValue(player, out int existingSlot))
+        {
+            return existingSlot;
+        }
+
+        int newSlot = playerSlotMapping.Count;
+        playerSlotMapping[player] = newSlot;
+        
+        Debug.Log($"[GameUIManager] New slot {newSlot} assigned to player {player}");
+        return newSlot;
+    }
+
+    public void OnPlayerLeft(PlayerRef player)
+    {
+        if (playerSlotMapping != null && playerSlotMapping.TryGetValue(player, out int slotIndex))
+        {
+            playerSlotMapping.Remove(player);
+            ClearPlayerSlot(slotIndex);
+            Debug.Log($"[GameUIManager] Player {player} left, cleared slot {slotIndex}");
+        }
+    }
+
+    public void SyncAllPlayerSlots()
+    {
+        Debug.Log("[GameUIManager] SyncAllPlayerSlots called");
+
+        if (playerSlotMapping == null)
+        {
+            playerSlotMapping = new Dictionary<PlayerRef, int>();
+        }
 
         // 모든 슬롯 초기화
+        ClearAllSlots();
+        playerSlotMapping.Clear();
+
+        // PlayerInfoManager 확인
+        if (PlayerInfoManager.Instance == null)
+        {
+            Debug.LogWarning("[GameUIManager] PlayerInfoManager.Instance is null during sync");
+            return;
+        }
+
+        Debug.Log($"[GameUIManager] Found {PlayerInfoManager.Instance.PlayerInfos.Count} players to sync");
+        
+        foreach (var kvp in PlayerInfoManager.Instance.PlayerInfos)
+        {
+            PlayerRef player = kvp.Key;
+            NetworkPlayerInfo playerInfo = kvp.Value;
+            
+            int slotIndex = GetOrAssignPlayerSlot(player);
+            
+            string path = "Characters/Character_" + playerInfo.selectedCharacterIndex;
+            Sprite characterSprite = Resources.Load<Sprite>(path);
+            
+            if (characterSprite != null)
+            {
+                SetPlayerSlots(slotIndex, characterSprite);
+                Debug.Log($"[GameUIManager] Synced player {player} ('{playerInfo.nickname.ToString()}') to slot {slotIndex} with character {playerInfo.selectedCharacterIndex}");
+            }
+            else
+            {
+                Debug.LogError($"[GameUIManager] Failed to load character sprite: {path}");
+            }
+        }
+    }
+
+    public void ClearAllSlots()
+    {
+        if (playerSlots == null) return;
+        
+        Debug.Log("[GameUIManager] Clearing all player slots");
         for (int i = 0; i < playerSlots.Count; i++)
         {
             ClearPlayerSlot(i);
         }
-
-        // 현재 접속한 플레이어들의 정보 재설정
-        for (int i = 0; i < _joinOrder.Count; i++)
-        {
-            PlayerRef player = _joinOrder[i];
-            
-            // 실제 구현에서는 플레이어의 캐릭터 정보를 가져오는 방법이 필요
-            // 예시: PlayerManager나 다른 컴포넌트에서 캐릭터 인덱스 조회
-            if (TryGetPlayerCharacterIndex(player, out int charIndex))
-            {
-                UpdatePlayerSlotRPC(i, charIndex);
-            }
-        }
     }
 
-    /// <summary>
-    /// 플레이어의 캐릭터 인덱스를 가져오는 헬퍼 메서드
-    /// (실제 구현에 맞게 수정 필요)
-    /// </summary>
-    private bool TryGetPlayerCharacterIndex(PlayerRef player, out int charIndex)
+    void Update()
     {
-        charIndex = 0;
-        
-        // GameManager에서 PlayerManager 찾기
-        if (GameManager.Instance != null)
+        if (Input.GetKeyDown(KeyCode.U))
         {
-            // GameManager의 playerManagers에서 해당 플레이어 찾기
-            // 실제 구현에서는 PlayerManager에 캐릭터 정보를 저장해야 함
-            // 임시로 PUN 정보 사용 (실제로는 네트워크 동기화된 데이터 사용 권장)
-            if (Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
+            Debug.Log($"[GameUIManager] === UI DEBUG INFO ===");
+            Debug.Log($"[GameUIManager] Instance: {(_instance != null ? "EXISTS" : "NULL")}");
+            Debug.Log($"[GameUIManager] playerSlotMapping: {(playerSlotMapping != null ? $"EXISTS (Count: {playerSlotMapping.Count})" : "NULL")}");
+            Debug.Log($"[GameUIManager] playerSlots: {(playerSlots != null ? $"EXISTS (Count: {playerSlots.Count})" : "NULL")}");
+            
+            if (playerSlotMapping != null)
             {
-                charIndex = (int)Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties["character"];
-                return true;
+                foreach (var kvp in playerSlotMapping)
+                {
+                    Debug.Log($"[GameUIManager] Player {kvp.Key} -> Slot {kvp.Value}");
+                }
             }
+            
+            if (playerSlots != null)
+            {
+                for (int i = 0; i < playerSlots.Count; i++)
+                {
+                    var slot = playerSlots[i];
+                    if (slot != null)
+                    {
+                        Debug.Log($"[GameUIManager] Slot {i}: enabled={slot.enabled}, sprite={slot.sprite?.name ?? "null"}");
+                    }
+                    else
+                    {
+                        Debug.Log($"[GameUIManager] Slot {i}: NULL IMAGE COMPONENT");
+                    }
+                }
+            }
+            
+            Debug.Log("[GameUIManager] Triggering manual sync...");
+            SyncAllPlayerSlots();
         }
         
-        return false;
+        // 게임 시작 테스트 키 (G키 - 서버에서만)
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            var runner = FindObjectOfType<NetworkRunner>();
+            if (runner != null && runner.IsServer)
+            {
+                Debug.Log("[GameUIManager] Manual game start triggered (G key)");
+                RequestGameStart();
+            }
+            else
+            {
+                Debug.Log("[GameUIManager] G key pressed but not server or no runner");
+            }
+        }
     }
     #endregion
 }

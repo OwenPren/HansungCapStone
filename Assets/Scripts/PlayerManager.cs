@@ -78,9 +78,37 @@ public class PlayerManager : NetworkBehaviour
         }
     }
 
+    [Networked] public string NetworkedNickname { get; private set; }
+    [Networked] public string NetworkedUserID { get; private set; }
+    [Networked] public int NetworkedCharacterIndex { get; private set; }
+
+    public void UpdatePlayerInfo(string userID, string nickname, int characterIndex)
+    {
+        Debug.Log($"[PlayerManager] UpdatePlayerInfo called - UserID: '{userID}', Nickname: '{nickname}', CharIndex: {characterIndex}");
+        Debug.Log($"[PlayerManager] HasStateAuthority: {Object.HasStateAuthority}, HasInputAuthority: {Object.HasInputAuthority}");
+        
+        if (Object.HasStateAuthority)
+        {
+            Debug.Log($"[PlayerManager] Has state authority, updating networked variables...");
+            NetworkedNickname = nickname;
+            NetworkedUserID = userID;
+            NetworkedCharacterIndex = characterIndex;
+            Debug.Log($"[PlayerManager] Networked variables updated successfully");
+        }
+        else
+        {
+            Debug.LogWarning($"[PlayerManager] Does NOT have state authority, cannot update networked variables");
+        }
+        
+        NameField = nickname;
+        Debug.Log($"[PlayerManager] NameField set to: '{NameField}'");
+        
+        Debug.Log($"[PlayerManager] Player info update completed for: {nickname}");
+    }
+
     public void SetPreviousValue()
     {
-        previousValue = playerValue;    
+        previousValue = playerValue;
     }
 
     public void SetPlayerRef(PlayerRef playerRef)

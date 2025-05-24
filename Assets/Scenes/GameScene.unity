@@ -6100,6 +6100,7 @@ GameObject:
   - component: {fileID: 869663609}
   - component: {fileID: 869663610}
   - component: {fileID: 869663611}
+  - component: {fileID: 869663612}
   m_Layer: 0
   m_Name: UIManager
   m_TagString: Untagged
@@ -6194,6 +6195,24 @@ MonoBehaviour:
   - {fileID: 1451805614}
   - {fileID: 49024328}
   - {fileID: 762407591}
+--- !u!114 &869663612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 869663607}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1552182283, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SortKey: 3133844988
+  ObjectInterest: 1
+  Flags: 131073
+  NestedObjects: []
+  NetworkedBehaviours: []
+  ForceRemoteRenderTimeframe: 0
 --- !u!1 &879898633
 GameObject:
   m_ObjectHideFlags: 0
@@ -10699,6 +10718,75 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1383334488}
   m_CullTransparentMesh: 1
+--- !u!1001 &1384283906
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1562293660218825174, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: Flags
+      value: 786433
+      objectReference: {fileID: 0}
+    - target: {fileID: 1562293660218825174, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: SortKey
+      value: 233832558
+      objectReference: {fileID: 0}
+    - target: {fileID: 1562293660218825174, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: ObjectInterest
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 507.356
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 261.83667
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -2.0324967
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3279221672172752160, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6163016345771247691, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
+      propertyPath: m_Name
+      value: PlayerInfoManager
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 585505e11986b5f4297135c8eee79cca, type: 3}
 --- !u!1 &1385663249
 GameObject:
   m_ObjectHideFlags: 0
@@ -11649,7 +11737,6 @@ MonoBehaviour:
   UIManager: {fileID: 869663611}
   HintData: []
   waitTimer: 10
-  playerManagerPrefab: {fileID: 0}
 --- !u!4 &1455227981
 Transform:
   m_ObjectHideFlags: 0
@@ -16918,3 +17005,4 @@ SceneRoots:
   - {fileID: 1900540363}
   - {fileID: 869663609}
   - {fileID: 786252116}
+  - {fileID: 1384283906}

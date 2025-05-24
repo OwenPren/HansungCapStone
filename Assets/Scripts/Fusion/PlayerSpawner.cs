@@ -136,55 +136,90 @@ private string GenerateRoomCode(int length)
 
   public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) 
   {
-    if (runner.IsServer)
-    {
-      Debug.Log("On Player Joined");
-      //Create a player
-      Vector2 spawnPosition = new Vector2((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 3, 0);
-      NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab,spawnPosition, Quaternion.identity, player);
-
-      var pm = networkPlayerObject.GetComponent<PlayerManager>();
-      pm.SetPlayerRef(player);
-      pm.Initialize(initialCash);
-
-      GameManager.Instance.RegisterPlayerManager(player, pm);
-
-      _joinOrder.Add(player);
-      int slotIndex = _joinOrder.IndexOf(player);
-      //Sprite characterSprite = pm.character;
-      //GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
-      // pun 코드 수정할 것. pun 서버 연결되었는지 확인 하는 부분만 제거거
-      //player.PlayerId == Photon.Pun.PhotonNetwork.LocalPlayer.ActorNumber &&
-      if (Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
+      if (runner.IsServer)
       {
-        int charIndex = (int)Photon.Pun.PhotonNetwork.LocalPlayer.CustomProperties["character"];
+          Debug.Log("On Player Joined: " + player);
+          
+          Vector2 spawnPosition = new Vector2((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 3, 0);
+          NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
 
-        // Resource\Character\Character_[charIndex] Sprite 로드
-        string path = "Characters/Character_" + charIndex;
-        Sprite characterSprite = Resources.Load<Sprite>(path);
-        GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+          var pm = networkPlayerObject.GetComponent<PlayerManager>();
+          pm.SetPlayerRef(player);
+          
+          // 일단 기본값으로 초기화
+          pm.Initialize(initialCash);
+
+          GameManager.Instance.RegisterPlayerManager(player, pm);
+
+          _joinOrder.Add(player);
+          _spawnedCharacters.Add(player, networkPlayerObject);
+          
+          // PlayerInfoManager가 준비되면 플레이어 정보를 기다림
+          StartCoroutine(WaitForPlayerInfo(player));
+          
+          // 새 플레이어가 접속했으므로 기존 모든 플레이어 정보를 동기화
+          StartCoroutine(SyncAllPlayersForNewJoiner());
+      }
+  }
+  
+  private System.Collections.IEnumerator SyncAllPlayersForNewJoiner()
+  {
+      // PlayerInfoManager가 준비될 때까지 대기
+      yield return new WaitUntil(() => PlayerInfoManager.Instance != null);
+      yield return new WaitForSeconds(1.0f); // 충분한 지연
+      
+      if (PlayerInfoManager.Instance != null)
+      {
+          Debug.Log("[PlayerSpawner] Triggering sync for new joiner");
+          
+          // 서버에서 모든 클라이언트에 전체 플레이어 정보 동기화
+          if (PlayerInfoManager.Instance.Object.HasStateAuthority)
+          {
+              PlayerInfoManager.Instance.RpcSyncAllPlayerInfo();
+          }
+      }
+  }
+
+  private System.Collections.IEnumerator WaitForPlayerInfo(PlayerRef player)
+  {
+    float timeout = 5f; // 5초 타임아웃
+    float elapsed = 0f;
+
+    while (elapsed < timeout)
+    {
+      if (PlayerInfoManager.Instance != null)
+      {
+        var playerInfo = PlayerInfoManager.Instance.GetPlayerInfo(player);
+        if (playerInfo.HasValue)
+        {
+          OnPlayerInfoReceived(player, playerInfo.Value);
+          yield break;
+        }
       }
 
-      _spawnedCharacters.Add(player, networkPlayerObject);
+      elapsed += Time.deltaTime;
+      yield return null;
     }
+
+    Debug.LogWarning($"Player info not received for {player} within timeout");
   }
 
 
-  public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) 
+  public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
   {
     Debug.Log("On Player Left");
     if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
     {
-        int slotIndex = _joinOrder.IndexOf(player);
-        if (slotIndex >= 0)
-        {
-          GameUIManager.Instance.ClearPlayerSlot(slotIndex);
-          _joinOrder.RemoveAt(slotIndex);
-        }
+      int slotIndex = _joinOrder.IndexOf(player);
+      if (slotIndex >= 0)
+      {
+        GameUIManager.Instance.ClearPlayerSlot(slotIndex);
+        _joinOrder.RemoveAt(slotIndex);
+      }
 
 
-        runner.Despawn(networkObject);
-        _spawnedCharacters.Remove(player);
+      runner.Despawn(networkObject);
+      _spawnedCharacters.Remove(player);
     }
 
   }
@@ -195,6 +230,90 @@ private string GenerateRoomCode(int length)
     //CreateCanvas();
     //ShowTextBox(runner.SessionInfo.Name);
     GameUIManager.Instance.SetRoomCode(runner.SessionInfo.Name);
+  }
+
+  public void OnPlayerInfoReceived(PlayerRef playerRef, NetworkPlayerInfo playerInfo)
+  {
+      Debug.Log($"[PlayerSpawner] OnPlayerInfoReceived - Player: {playerRef}, Nickname: {playerInfo.nickname.ToString()}, CharIndex: {playerInfo.selectedCharacterIndex}");
+      
+      if (_spawnedCharacters.TryGetValue(playerRef, out NetworkObject networkObject))
+      {
+          var pm = networkObject.GetComponent<PlayerManager>();
+          if (pm != null)
+          {
+              // PlayerManager의 정보 업데이트
+              pm.UpdatePlayerInfo(playerInfo.userID.ToString(), playerInfo.nickname.ToString(), playerInfo.selectedCharacterIndex);
+              
+              // 캐릭터 스프라이트 업데이트 (PlayerManager에 저장)
+              string path = "Characters/Character_" + playerInfo.selectedCharacterIndex;
+              Sprite characterSprite = Resources.Load<Sprite>(path);
+              if (characterSprite != null)
+              {
+                  pm.character = characterSprite;
+                  Debug.Log($"[PlayerSpawner] Character sprite updated for player {playerRef}");
+              }
+              else
+              {
+                  Debug.LogError($"[PlayerSpawner] Failed to load character sprite: {path}");
+              }
+          }
+          else
+          {
+              Debug.LogError($"[PlayerSpawner] PlayerManager component not found on player {playerRef}");
+          }
+      }
+      else
+      {
+          Debug.LogError($"[PlayerSpawner] No spawned character found for player {playerRef}");
+      }
+      
+      // GameUIManager에 플레이어 정보 업데이트 알림 - 안전하게 접근
+      StartCoroutine(SafeUpdateGameUI(playerRef, playerInfo.selectedCharacterIndex));
+  }
+
+  private System.Collections.IEnumerator SafeUpdateGameUI(PlayerRef playerRef, int characterIndex)
+  {
+      // GameUIManager가 준비될 때까지 기다림
+      float timeout = 5f;
+      float elapsed = 0f;
+      
+      while (elapsed < timeout)
+      {
+          if (GameUIManager.Instance != null)
+          {
+              Debug.Log($"[PlayerSpawner] GameUIManager found, updating UI for player {playerRef}");
+              GameUIManager.Instance.OnPlayerInfoUpdated(playerRef, characterIndex);
+              yield break;
+          }
+          
+          elapsed += Time.deltaTime;
+          yield return null;
+      }
+      
+      Debug.LogError($"[PlayerSpawner] GameUIManager not found within timeout for player {playerRef}");
+  }
+
+  private void UpdateCharacterSprite(PlayerRef playerRef, int characterIndex)
+  {
+    int slotIndex = _joinOrder.IndexOf(playerRef);
+    if (slotIndex >= 0 && characterIndex >= 0)
+    {
+      string path = "Characters/Character_" + characterIndex;
+      Sprite characterSprite = Resources.Load<Sprite>(path);
+      if (characterSprite != null)
+      {
+        GameUIManager.Instance.SetPlayerSlots(slotIndex, characterSprite);
+
+        if (_spawnedCharacters.TryGetValue(playerRef, out NetworkObject networkObject))
+        {
+          var pm = networkObject.GetComponent<PlayerManager>();
+          if (pm != null)
+          {
+            pm.character = characterSprite;
+          }
+        }
+      }
+    }
   }
 
   //interface 
