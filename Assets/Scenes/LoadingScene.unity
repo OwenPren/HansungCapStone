@@ -542,8 +542,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Please press any button.
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
-  m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
+  m_sharedMaterial: {fileID: -6972109053511083523, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

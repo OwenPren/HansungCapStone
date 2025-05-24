@@ -753,7 +753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3708cddf723a3d84ba485acae4e9d067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: 
+  apiKey: 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
 --- !u!1 &138803280
 GameObject:
   m_ObjectHideFlags: 0
@@ -828,7 +828,7 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1\uC6D4"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -892,7 +892,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &138803284
@@ -3641,7 +3641,7 @@ MonoBehaviour:
     \uC778\uAE30\uB97C \uB04C\uBA74\uC11C \uC18C\uBE44\uC790\uB4E4\uC758 \uC5EC\uAC00
     \uC9C0\uCD9C\uC774 \uD65C\uBC1C\uD574\uC9C0\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -3705,7 +3705,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &532113293
@@ -12099,7 +12099,7 @@ MonoBehaviour:
     \uC6D0\uC790\uC7AC \uAC00\uACA9 \uC778\uC0C1\uC73C\uB85C \uC778\uD574 \uC2DD\uB8CC\uD488
     \uBC0F \uC0DD\uD65C\uC6A9\uD488 \uAC00\uACA9\uC774 \uAE09\uB4F1\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
@@ -12163,7 +12163,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1825397548
