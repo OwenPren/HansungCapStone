@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -19,7 +19,7 @@ public class SignupManager : MonoBehaviour
     public Button checkNickButton;
     public Button backButton;
 
-    private string serverBaseUrl = "http://43.203.206.157:3000"; // ¡ç EC2 IP·Î ¼öÁ¤
+    private string serverBaseUrl = "http://43.203.206.157:3000"; // â† EC2 IPë¡œ ìˆ˜ì •
 
     private bool isIdChecked = false;
     private bool isNickChecked = false;
@@ -40,13 +40,13 @@ public class SignupManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(pw) || string.IsNullOrEmpty(nick))
         {
-            debugText.text = "¸ğµç ÇÊµå¸¦ ÀÔ·ÂÇÏ¼¼¿ä.";
+            debugText.text = "ëª¨ë“  í•„ë“œë¥¼ ì…ë ¥í•˜ì„¸ìš”.";
             return;
         }
 
         if (!isIdChecked || !isNickChecked)
         {
-            debugText.text = "Áßº¹ È®ÀÎÀ» ¿Ï·áÇÏ¼¼¿ä.";
+            debugText.text = "ì¤‘ë³µ í™•ì¸ì„ ì™„ë£Œí•˜ì„¸ìš”.";
             return;
         }
 
@@ -68,12 +68,12 @@ public class SignupManager : MonoBehaviour
 
         if (req.result == UnityWebRequest.Result.Success)
         {
-            debugText.text = "È¸¿ø°¡ÀÔ ¼º°ø!";
+            debugText.text = "íšŒì›ê°€ì… ì„±ê³µ!";
             SceneManager.LoadScene("LogInScene");
         }
         else
         {
-            debugText.text = "È¸¿ø°¡ÀÔ ½ÇÆĞ: " + req.downloadHandler.text;
+            debugText.text = "íšŒì›ê°€ì… ì‹¤íŒ¨: " + req.downloadHandler.text;
         }
     }
 
@@ -82,7 +82,7 @@ public class SignupManager : MonoBehaviour
         string id = idField.text.Trim();
         if (string.IsNullOrEmpty(id))
         {
-            debugText.text = "¾ÆÀÌµğ¸¦ ÀÔ·ÂÇÏ¼¼¿ä.";
+            debugText.text = "ì•„ì´ë””ë¥¼ ì…ë ¥í•˜ì„¸ìš”.";
             return;
         }
         StartCoroutine(CheckId(id));
@@ -98,19 +98,19 @@ public class SignupManager : MonoBehaviour
             string response = req.downloadHandler?.text;
             if (!string.IsNullOrEmpty(response) && response.Contains("\"available\":true"))
             {
-                debugText.text = "»ç¿ë °¡´ÉÇÑ ¾ÆÀÌµğÀÔ´Ï´Ù.";
+                debugText.text = "ì‚¬ìš© ê°€ëŠ¥í•œ ì•„ì´ë””ì…ë‹ˆë‹¤.";
                 isIdChecked = true;
             }
             else
             {
-                debugText.text = "ÀÌ¹Ì »ç¿ë ÁßÀÎ ¾ÆÀÌµğÀÔ´Ï´Ù.";
+                debugText.text = "ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ ì•„ì´ë””ì…ë‹ˆë‹¤.";
                 isIdChecked = false;
             }
         }
         else
         {
-            string errorMsg = req.error ?? "¼­¹ö ÀÀ´ä ¾øÀ½";
-            debugText.text = "¾ÆÀÌµğ È®ÀÎ ½ÇÆĞ: " + errorMsg;
+            string errorMsg = req.error ?? "ì„œë²„ ì‘ë‹µ ì—†ìŒ";
+            debugText.text = "ì•„ì´ë”” í™•ì¸ ì‹¤íŒ¨: " + errorMsg;
             isIdChecked = false;
         }
     }
@@ -120,7 +120,7 @@ public class SignupManager : MonoBehaviour
         string nick = nickField.text.Trim();
         if (string.IsNullOrEmpty(nick))
         {
-            debugText.text = "´Ğ³×ÀÓÀ» ÀÔ·ÂÇÏ¼¼¿ä.";
+            debugText.text = "ë‹‰ë„¤ì„ì„ ì…ë ¥í•˜ì„¸ìš”.";
             return;
         }
         StartCoroutine(CheckNick(nick));
@@ -136,19 +136,19 @@ public class SignupManager : MonoBehaviour
             string response = req.downloadHandler?.text;
             if (!string.IsNullOrEmpty(response) && response.Contains("\"available\":true"))
             {
-                debugText.text = "»ç¿ë °¡´ÉÇÑ ´Ğ³×ÀÓÀÔ´Ï´Ù.";
+                debugText.text = "ì‚¬ìš© ê°€ëŠ¥í•œ ë‹‰ë„¤ì„ì…ë‹ˆë‹¤.";
                 isNickChecked = true;
             }
             else
             {
-                debugText.text = "ÀÌ¹Ì »ç¿ë ÁßÀÎ ´Ğ³×ÀÓÀÔ´Ï´Ù.";
+                debugText.text = "ì´ë¯¸ ì‚¬ìš© ì¤‘ì¸ ë‹‰ë„¤ì„ì…ë‹ˆë‹¤.";
                 isNickChecked = false;
             }
         }
         else
         {
-            string errorMsg = req.error ?? "¼­¹ö ÀÀ´ä ¾øÀ½";
-            debugText.text = "´Ğ³×ÀÓ È®ÀÎ ½ÇÆĞ: " + errorMsg;
+            string errorMsg = req.error ?? "ì„œë²„ ì‘ë‹µ ì—†ìŒ";
+            debugText.text = "ë‹‰ë„¤ì„ í™•ì¸ ì‹¤íŒ¨: " + errorMsg;
             isNickChecked = false;
         }
     }

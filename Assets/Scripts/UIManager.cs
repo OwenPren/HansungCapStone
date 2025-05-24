@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Collections.Generic;
@@ -11,19 +11,19 @@ public class UIManager : MonoBehaviour
 {
 
     [Header("UI Panels")]
-    public GameObject gamePanel; // ±âº» °ÔÀÓ Á¤º¸ ¹× ¹öÆ° ÆĞ³Î
-    public GameObject inventoryPanel; // ÀÎº¥Åä¸® ÆĞ³Î
-    public GameObject marketPanel; // ÁÖ½Ä ½ÃÀå (Á¾¸ñ ¸ñ·Ï) ÆĞ³Î
-    public GameObject marketPanel2; // °³º° Á¾¸ñ »ó¼¼ Á¤º¸ ÆĞ³Î
-    public GameObject resultPanel; // °á°ú Á¤º¸ ÆĞ³Î
+    public GameObject gamePanel; // ê¸°ë³¸ ê²Œì„ ì •ë³´ ë° ë²„íŠ¼ íŒ¨ë„
+    public GameObject inventoryPanel; // ì¸ë²¤í† ë¦¬ íŒ¨ë„
+    public GameObject marketPanel; // ì£¼ì‹ ì‹œì¥ (ì¢…ëª© ëª©ë¡) íŒ¨ë„
+    public GameObject marketPanel2; // ê°œë³„ ì¢…ëª© ìƒì„¸ ì •ë³´ íŒ¨ë„
+    public GameObject resultPanel; // ê²°ê³¼ ì •ë³´ íŒ¨ë„
 
     [Header("Player Stats UI")]
-    public TextMeshProUGUI currentCashText; // ÇöÀç º¸À¯¾×
-    public TextMeshProUGUI currentValueText; // ÇöÀç Æò°¡¾×
+    public TextMeshProUGUI currentCashText; // í˜„ì¬ ë³´ìœ ì•¡
+    public TextMeshProUGUI currentValueText; // í˜„ì¬ í‰ê°€ì•¡
 
     [Header("Game Info UI")]
-    public TextMeshProUGUI currentTimeText; // ÇöÀç ³²Àº Ä«¿îÆ® (Ãß°¡µÊ)
-    public TextMeshProUGUI currentRoundText; // ÇöÀç ³²Àº ¶ó¿îµå (Ãß°¡µÊ)
+    public TextMeshProUGUI currentTimeText; // í˜„ì¬ ë‚¨ì€ ì¹´ìš´íŠ¸ (ì¶”ê°€ë¨)
+    public TextMeshProUGUI currentRoundText; // í˜„ì¬ ë‚¨ì€ ë¼ìš´ë“œ (ì¶”ê°€ë¨)
 
     [Header("Game Rank UI")]
     public List<TextMeshProUGUI> currentRankText = new List<TextMeshProUGUI>();
@@ -38,7 +38,7 @@ public class UIManager : MonoBehaviour
     public List<TextMeshProUGUI> currentResultValue = new List<TextMeshProUGUI>();
     public List<Image> currentRankImage = new List<Image>();
 
-    private PlayerManager localPlayerManager; // º»ÀÎÀÇ ÇÃ·¹ÀÌ¾î ¸Å´ÏÀú(Æ÷Æ®Æú¸®¿À°¡ ÀÖ´Â ½ºÅ©¸³Æ®)
+    private PlayerManager localPlayerManager; // ë³¸ì¸ì˜ í”Œë ˆì´ì–´ ë§¤ë‹ˆì €(í¬íŠ¸í´ë¦¬ì˜¤ê°€ ìˆëŠ” ìŠ¤í¬ë¦½íŠ¸)
 
 
     void Update()
@@ -56,76 +56,76 @@ public class UIManager : MonoBehaviour
 
         if (GameManager.Instance != null && currentRoundText != null)
         {
-            currentRoundText.text = GameManager.Instance.CurrentRound.ToString() + "¿ù";
+            currentRoundText.text = GameManager.Instance.CurrentRound.ToString() + "ì›”";
         }
 
         UpdateCurrentCashandValue();
     }
 
-    //¶ó¿îµå Á¾·á½Ã ÇöÀç ¶ó¿îµå °á°úÃ¢ ¾÷µ¥ÀÌÆ®
+    //ë¼ìš´ë“œ ì¢…ë£Œì‹œ í˜„ì¬ ë¼ìš´ë“œ ê²°ê³¼ì°½ ì—…ë°ì´íŠ¸
     public void UpdateResultUI()
     {
-        // °á°ú Å¸ÀÌÆ² ¾÷µ¥ÀÌÆ®
+        // ê²°ê³¼ íƒ€ì´í‹€ ì—…ë°ì´íŠ¸
         if (currentRoundText != null)
         {
-            ResultTitle.text = currentRoundText.text + " °á°ú";
+            ResultTitle.text = currentRoundText.text + " ê²°ê³¼";
         }
         else
         {
-            Debug.LogWarning("currentRoundText°¡ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù. °á°ú Å¸ÀÌÆ²À» ±âº»°ªÀ¸·Î ¼³Á¤ÇÕ´Ï´Ù.");
-            ResultTitle.text = "ÃÖÁ¾ °á°ú"; 
+            Debug.LogWarning("currentRoundTextê°€ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤. ê²°ê³¼ íƒ€ì´í‹€ì„ ê¸°ë³¸ê°’ìœ¼ë¡œ ì„¤ì •í•©ë‹ˆë‹¤.");
+            ResultTitle.text = "ìµœì¢… ê²°ê³¼"; 
         }
 
-        // UI ÅØ½ºÆ® ¸®½ºÆ®µéÀÌ Á¦´ë·Î ÇÒ´çµÇ°í ÃæºĞÇÑ Ä­ÀÌ ÀÖ´ÂÁö È®ÀÎ 
+        // UI í…ìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸ë“¤ì´ ì œëŒ€ë¡œ í• ë‹¹ë˜ê³  ì¶©ë¶„í•œ ì¹¸ì´ ìˆëŠ”ì§€ í™•ì¸ 
         if (currentResultName == null || currentResultValue == null ||
             currentResultName.Count < 4 || currentResultValue.Count < 4)
         {
-            Debug.LogError("°á°ú UI ÅØ½ºÆ® ¸®½ºÆ®°¡ Inspector¿¡ Á¦´ë·Î ÇÒ´çµÇÁö ¾Ê¾Ò°Å³ª Å©±â°¡ 4 ¹Ì¸¸ÀÔ´Ï´Ù. °á°ú¸¦ Ç¥½ÃÇÒ ¼ö ¾ø½À´Ï´Ù.");
+            Debug.LogError("ê²°ê³¼ UI í…ìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸ê°€ Inspectorì— ì œëŒ€ë¡œ í• ë‹¹ë˜ì§€ ì•Šì•˜ê±°ë‚˜ í¬ê¸°ê°€ 4 ë¯¸ë§Œì…ë‹ˆë‹¤. ê²°ê³¼ë¥¼ í‘œì‹œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
             return;
         }
 
         List<(int Rank, PlayerRef PlayerRef, PlayerManager PlayerManager)> rankedInfo = null;
         if (GameManager.Instance != null)
         {
-            rankedInfo = GameManager.Instance.GetRankedPlayersWithInfo(); // GameManager·ÎºÎÅÍ Æ©ÇÃ ¸®½ºÆ® °¡Á®¿È
-            if (rankedInfo == null) // GameManager´Â ÀÖÀ¸³ª ÇÔ¼ö ¹İÈ¯ °ªÀÌ nullÀÎ °æ¿ì Ã¼Å©
+            rankedInfo = GameManager.Instance.GetRankedPlayersWithInfo(); // GameManagerë¡œë¶€í„° íŠœí”Œ ë¦¬ìŠ¤íŠ¸ ê°€ì ¸ì˜´
+            if (rankedInfo == null) // GameManagerëŠ” ìˆìœ¼ë‚˜ í•¨ìˆ˜ ë°˜í™˜ ê°’ì´ nullì¸ ê²½ìš° ì²´í¬
             {
-                Debug.LogWarning("GameManager.GetRankedPlayersWithInfo() ÇÔ¼ö°¡ nullÀ» ¹İÈ¯Çß½À´Ï´Ù.");
-                rankedInfo = new List<(int, PlayerRef, PlayerManager)>(); // ºó ¸®½ºÆ®·Î Ã³¸®ÇÏ¿© ³ª¸ÓÁö ·ÎÁ÷ ¼öÇà
+                Debug.LogWarning("GameManager.GetRankedPlayersWithInfo() í•¨ìˆ˜ê°€ nullì„ ë°˜í™˜í–ˆìŠµë‹ˆë‹¤.");
+                rankedInfo = new List<(int, PlayerRef, PlayerManager)>(); // ë¹ˆ ë¦¬ìŠ¤íŠ¸ë¡œ ì²˜ë¦¬í•˜ì—¬ ë‚˜ë¨¸ì§€ ë¡œì§ ìˆ˜í–‰
             }
         }
         else
         {
-            Debug.LogError("GameManager.Instance°¡ nullÀÔ´Ï´Ù. ¼øÀ§ µ¥ÀÌÅÍ¸¦ °¡Á®¿Ã ¼ö ¾ø½À´Ï´Ù. UI¸¦ ±âº»°ªÀ¸·Î Ã¤¿ó´Ï´Ù.");
+            Debug.LogError("GameManager.Instanceê°€ nullì…ë‹ˆë‹¤. ìˆœìœ„ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. UIë¥¼ ê¸°ë³¸ê°’ìœ¼ë¡œ ì±„ì›ë‹ˆë‹¤.");
             rankedInfo = new List<(int, PlayerRef, PlayerManager)>();
         }
 
-        // ÃÑ 4°³ÀÇ ÅØ½ºÆ® ½½·ÔÀ» ¼øÈ¸ÇÏ¸ç ¾÷µ¥ÀÌÆ®
+        // ì´ 4ê°œì˜ í…ìŠ¤íŠ¸ ìŠ¬ë¡¯ì„ ìˆœíšŒí•˜ë©° ì—…ë°ì´íŠ¸
         for (int i = 0; i < 4; i++)
         {
-            // ÇöÀç ¼ø¹ø(i)¿¡ ÇØ´çÇÏ´Â UI ÅØ½ºÆ® °´Ã¼ °¡Á®¿À±â (¹Ì¸® null Ã¼Å©)
+            // í˜„ì¬ ìˆœë²ˆ(i)ì— í•´ë‹¹í•˜ëŠ” UI í…ìŠ¤íŠ¸ ê°ì²´ ê°€ì ¸ì˜¤ê¸° (ë¯¸ë¦¬ null ì²´í¬)
             TextMeshProUGUI valueTxt = currentResultValue[i];
             TextMeshProUGUI nameTxt = currentResultName[i];
             Image resultImage = currentRankImage[i];
 
             if (valueTxt == null || nameTxt == null)
             {
-                Debug.LogWarning($"·©Å· UI ÅØ½ºÆ® °´Ã¼ (ÀÎµ¦½º {i}) Áß ÀÏºÎ°¡ Inspector¿¡¼­ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
-                // ÇØ´ç ½½·ÔÀº °Ç³Ê¶Ù°í ´ÙÀ½ ÀÎµ¦½º·Î ³Ñ¾î°¨
+                Debug.LogWarning($"ë­í‚¹ UI í…ìŠ¤íŠ¸ ê°ì²´ (ì¸ë±ìŠ¤ {i}) ì¤‘ ì¼ë¶€ê°€ Inspectorì—ì„œ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+                // í•´ë‹¹ ìŠ¬ë¡¯ì€ ê±´ë„ˆë›°ê³  ë‹¤ìŒ ì¸ë±ìŠ¤ë¡œ ë„˜ì–´ê°
                 continue;
             }
 
             if (i < rankedInfo.Count)
             {
-                // ¼øÀ§¿¡ Æ÷ÇÔµÈ ÇÃ·¹ÀÌ¾î Á¤º¸·Î Ã¤¿ì±â 
-                var playerRankInfo = rankedInfo[i]; // Æ©ÇÃ Á¤º¸ °¡Á®¿À±â
+                // ìˆœìœ„ì— í¬í•¨ëœ í”Œë ˆì´ì–´ ì •ë³´ë¡œ ì±„ìš°ê¸° 
+                var playerRankInfo = rankedInfo[i]; // íŠœí”Œ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 
-                // PlayerManager °´Ã¼ °¡Á®¿À±â
+                // PlayerManager ê°ì²´ ê°€ì ¸ì˜¤ê¸°
                 PlayerManager player = playerRankInfo.PlayerManager;
 
-                if (player != null) // È¤½Ã PlayerManager °´Ã¼°¡ nullÀÏ °æ¿ì¸¦ ´ëºñ (±ØÈ÷ µå¹°Áö¸¸)
+                if (player != null) // í˜¹ì‹œ PlayerManager ê°ì²´ê°€ nullì¼ ê²½ìš°ë¥¼ ëŒ€ë¹„ (ê·¹íˆ ë“œë¬¼ì§€ë§Œ)
                 {
-                    // ¼øÀ§ (´ÜÀÏ ¼ıÀÚ) Ç¥½Ã
+                    // ìˆœìœ„ (ë‹¨ì¼ ìˆ«ì) í‘œì‹œ
                     valueTxt.text = player.portfolioReturn.ToString("F2") + "%";
                     nameTxt.text = player.NameField;
                     resultImage.gameObject.SetActive(true);
@@ -136,97 +136,97 @@ public class UIManager : MonoBehaviour
                     valueTxt.gameObject.SetActive(false);
                     nameTxt.gameObject.SetActive(false);
                     resultImage.gameObject.SetActive(false);
-                    Debug.LogWarning($"rankedInfo[{i}]ÀÇ PlayerManager °´Ã¼°¡ nullÀÔ´Ï´Ù.");
+                    Debug.LogWarning($"rankedInfo[{i}]ì˜ PlayerManager ê°ì²´ê°€ nullì…ë‹ˆë‹¤.");
                 }
             }
             else
             {
-                // ¼øÀ§¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº ³ª¸ÓÁö Ä­À» ºñ¿ì±â 
+                // ìˆœìœ„ì— í¬í•¨ë˜ì§€ ì•Šì€ ë‚˜ë¨¸ì§€ ì¹¸ì„ ë¹„ìš°ê¸° 
                 valueTxt.gameObject.SetActive(false);
                 nameTxt.gameObject.SetActive(false);
                 resultImage.gameObject.SetActive(false);
             }
         }
 
-        Debug.Log("·©Å· UI Ç¥½Ã ¾÷µ¥ÀÌÆ® ¿Ï·á.");
+        Debug.Log("ë­í‚¹ UI í‘œì‹œ ì—…ë°ì´íŠ¸ ì™„ë£Œ.");
     }
 
-    // ¶ó¿îµå ½ÃÀÛ½Ã ÈùÆ®Ã¢ ¾÷µ¥ÀÌÆ®
+    // ë¼ìš´ë“œ ì‹œì‘ì‹œ íŒíŠ¸ì°½ ì—…ë°ì´íŠ¸
     public void UpdateHintUI(List<string> HintData)
     {
-        // currentHintText ¹è¿­À» ÃÊ±âÈ­ (ÀÌÀü ÈùÆ® ÀÜ¿© ¹æÁö)
+        // currentHintText ë°°ì—´ì„ ì´ˆê¸°í™” (ì´ì „ íŒíŠ¸ ì”ì—¬ ë°©ì§€)
         for (int j = 0; j < currentHintText.Count; j++)
         {
             currentHintText[j].text = "";
         }
 
-        // HintDataÀÇ ±æÀÌ¿Í currentHintText ¹è¿­ÀÇ ±æÀÌ Áß ´õ ÀÛÀº °ª¸¸Å­ ¹İº¹
+        // HintDataì˜ ê¸¸ì´ì™€ currentHintText ë°°ì—´ì˜ ê¸¸ì´ ì¤‘ ë” ì‘ì€ ê°’ë§Œí¼ ë°˜ë³µ
         int count = Mathf.Min(HintData.Count, currentHintText.Count);
         for (int i = 0; i < count; i++)
         {
-            currentHintText[i].text = $"ÈùÆ® {i + 1}: {HintData[i]}";
+            currentHintText[i].text = $"íŒíŠ¸ {i + 1}: {HintData[i]}";
         }
 
-        // ¸¸¾à HintData°¡ currentHintTextº¸´Ù ¸¹´Ù¸é °æ°í (¼±ÅÃ »çÇ×)
+        // ë§Œì•½ HintDataê°€ currentHintTextë³´ë‹¤ ë§ë‹¤ë©´ ê²½ê³  (ì„ íƒ ì‚¬í•­)
         //if (HintData.Count > currentHintText.Count)
         //{
-        //    Debug.LogWarning($"¸ğµç ÈùÆ®¸¦ Ç¥½ÃÇÒ ¼ö ¾ø½À´Ï´Ù. UI ÅØ½ºÆ® ÄÄÆ÷³ÍÆ®({currentHintText.Count}°³)°¡ ÈùÆ®({HintData.Count}°³)º¸´Ù Àû½À´Ï´Ù.");
+        //    Debug.LogWarning($"ëª¨ë“  íŒíŠ¸ë¥¼ í‘œì‹œí•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤. UI í…ìŠ¤íŠ¸ ì»´í¬ë„ŒíŠ¸({currentHintText.Count}ê°œ)ê°€ íŒíŠ¸({HintData.Count}ê°œ)ë³´ë‹¤ ì ìŠµë‹ˆë‹¤.");
         //}
     }
 
-    // ¶ó¿îµå Á¾·á½Ã ÇöÀç ·©Å·Ã¢ ¾÷µ¥ÀÌÆ®
+    // ë¼ìš´ë“œ ì¢…ë£Œì‹œ í˜„ì¬ ë­í‚¹ì°½ ì—…ë°ì´íŠ¸
     public void UpdateCurrentRanking()
     {
-        // UI ÅØ½ºÆ® ¸®½ºÆ®µéÀÌ Á¦´ë·Î ÇÒ´çµÇ°í ÃÖ¼Ò 4°³ÀÇ Ä­ÀÌ ÀÖ´ÂÁö È®ÀÎ
+        // UI í…ìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸ë“¤ì´ ì œëŒ€ë¡œ í• ë‹¹ë˜ê³  ìµœì†Œ 4ê°œì˜ ì¹¸ì´ ìˆëŠ”ì§€ í™•ì¸
         if (currentRankText == null || currentRankNameText == null || currentRankText.Count < 4 || currentRankNameText.Count < 4)
         {
-            Debug.LogError("·©Å· UI ÅØ½ºÆ® ¸®½ºÆ®°¡ Inspector¿¡ Á¦´ë·Î ÇÒ´çµÇÁö ¾Ê¾Ò°Å³ª Å©±â°¡ 4 ¹Ì¸¸ÀÔ´Ï´Ù. ¼øÀ§ Ç¥½Ã¸¦ ¾÷µ¥ÀÌÆ®ÇÒ ¼ö ¾ø½À´Ï´Ù.");
-            return; // ¸®½ºÆ® »óÅÂ°¡ ¿Ã¹Ù¸£Áö ¾ÊÀ¸¸é ÇÔ¼ö Á¾·á
+            Debug.LogError("ë­í‚¹ UI í…ìŠ¤íŠ¸ ë¦¬ìŠ¤íŠ¸ê°€ Inspectorì— ì œëŒ€ë¡œ í• ë‹¹ë˜ì§€ ì•Šì•˜ê±°ë‚˜ í¬ê¸°ê°€ 4 ë¯¸ë§Œì…ë‹ˆë‹¤. ìˆœìœ„ í‘œì‹œë¥¼ ì—…ë°ì´íŠ¸í•  ìˆ˜ ì—†ìŠµë‹ˆë‹¤.");
+            return; // ë¦¬ìŠ¤íŠ¸ ìƒíƒœê°€ ì˜¬ë°”ë¥´ì§€ ì•Šìœ¼ë©´ í•¨ìˆ˜ ì¢…ë£Œ
         }
 
-        // GameManager ÀÎ½ºÅÏ½º È®ÀÎ ¹× ¼øÀ§ Á¤º¸ °¡Á®¿À±â
+        // GameManager ì¸ìŠ¤í„´ìŠ¤ í™•ì¸ ë° ìˆœìœ„ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
         List<(int Rank, PlayerRef PlayerRef, PlayerManager PlayerManager)> rankedInfo = null;
         if (GameManager.Instance != null)
         {
-            rankedInfo = GameManager.Instance.GetRankedPlayersWithInfo(); // GameManager·ÎºÎÅÍ Æ©ÇÃ ¸®½ºÆ® °¡Á®¿È
-            if (rankedInfo == null) // GameManager´Â ÀÖÀ¸³ª ÇÔ¼ö ¹İÈ¯ °ªÀÌ nullÀÎ °æ¿ì Ã¼Å©
+            rankedInfo = GameManager.Instance.GetRankedPlayersWithInfo(); // GameManagerë¡œë¶€í„° íŠœí”Œ ë¦¬ìŠ¤íŠ¸ ê°€ì ¸ì˜´
+            if (rankedInfo == null) // GameManagerëŠ” ìˆìœ¼ë‚˜ í•¨ìˆ˜ ë°˜í™˜ ê°’ì´ nullì¸ ê²½ìš° ì²´í¬
             {
-                Debug.LogWarning("GameManager.GetRankedPlayersWithInfo() ÇÔ¼ö°¡ nullÀ» ¹İÈ¯Çß½À´Ï´Ù.");
-                rankedInfo = new List<(int, PlayerRef, PlayerManager)>(); // ºó ¸®½ºÆ®·Î Ã³¸®ÇÏ¿© ³ª¸ÓÁö ·ÎÁ÷ ¼öÇà
+                Debug.LogWarning("GameManager.GetRankedPlayersWithInfo() í•¨ìˆ˜ê°€ nullì„ ë°˜í™˜í–ˆìŠµë‹ˆë‹¤.");
+                rankedInfo = new List<(int, PlayerRef, PlayerManager)>(); // ë¹ˆ ë¦¬ìŠ¤íŠ¸ë¡œ ì²˜ë¦¬í•˜ì—¬ ë‚˜ë¨¸ì§€ ë¡œì§ ìˆ˜í–‰
             }
         }
         else
         {
-            Debug.LogError("GameManager.Instance°¡ nullÀÔ´Ï´Ù. ¼øÀ§ µ¥ÀÌÅÍ¸¦ °¡Á®¿Ã ¼ö ¾ø½À´Ï´Ù. UI¸¦ ±âº»°ªÀ¸·Î Ã¤¿ó´Ï´Ù.");
+            Debug.LogError("GameManager.Instanceê°€ nullì…ë‹ˆë‹¤. ìˆœìœ„ ë°ì´í„°ë¥¼ ê°€ì ¸ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤. UIë¥¼ ê¸°ë³¸ê°’ìœ¼ë¡œ ì±„ì›ë‹ˆë‹¤.");
             rankedInfo = new List<(int, PlayerRef, PlayerManager)>(); 
         }
 
-        // ÃÑ 4°³ÀÇ ÅØ½ºÆ® ½½·ÔÀ» ¼øÈ¸ÇÏ¸ç ¾÷µ¥ÀÌÆ®
+        // ì´ 4ê°œì˜ í…ìŠ¤íŠ¸ ìŠ¬ë¡¯ì„ ìˆœíšŒí•˜ë©° ì—…ë°ì´íŠ¸
         for (int i = 0; i < 4; i++)
         {
-            // ÇöÀç ¼ø¹ø(i)¿¡ ÇØ´çÇÏ´Â UI ÅØ½ºÆ® °´Ã¼ °¡Á®¿À±â (¹Ì¸® null Ã¼Å©)
+            // í˜„ì¬ ìˆœë²ˆ(i)ì— í•´ë‹¹í•˜ëŠ” UI í…ìŠ¤íŠ¸ ê°ì²´ ê°€ì ¸ì˜¤ê¸° (ë¯¸ë¦¬ null ì²´í¬)
             TextMeshProUGUI rankTxt = currentRankText[i];
             TextMeshProUGUI nameTxt = currentRankNameText[i];
 
             if (rankTxt == null || nameTxt == null)
             {
-                Debug.LogWarning($"·©Å· UI ÅØ½ºÆ® °´Ã¼ (ÀÎµ¦½º {i}) Áß ÀÏºÎ°¡ Inspector¿¡¼­ ÇÒ´çµÇÁö ¾Ê¾Ò½À´Ï´Ù.");
-                // ÇØ´ç ½½·ÔÀº °Ç³Ê¶Ù°í ´ÙÀ½ ÀÎµ¦½º·Î ³Ñ¾î°¨
+                Debug.LogWarning($"ë­í‚¹ UI í…ìŠ¤íŠ¸ ê°ì²´ (ì¸ë±ìŠ¤ {i}) ì¤‘ ì¼ë¶€ê°€ Inspectorì—ì„œ í• ë‹¹ë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+                // í•´ë‹¹ ìŠ¬ë¡¯ì€ ê±´ë„ˆë›°ê³  ë‹¤ìŒ ì¸ë±ìŠ¤ë¡œ ë„˜ì–´ê°
                 continue;
             }
 
-            // rankedInfo ¸®½ºÆ®¿¡ ÇöÀç ¼ø¹ø(i)¿¡ ÇØ´çÇÏ´Â ÇÃ·¹ÀÌ¾î Á¤º¸°¡ ÀÖ´ÂÁö È®ÀÎ
+            // rankedInfo ë¦¬ìŠ¤íŠ¸ì— í˜„ì¬ ìˆœë²ˆ(i)ì— í•´ë‹¹í•˜ëŠ” í”Œë ˆì´ì–´ ì •ë³´ê°€ ìˆëŠ”ì§€ í™•ì¸
             if (i < rankedInfo.Count)
             {
-                // ¼øÀ§¿¡ Æ÷ÇÔµÈ ÇÃ·¹ÀÌ¾î Á¤º¸·Î Ã¤¿ì±â 
-                var playerRankInfo = rankedInfo[i]; // Æ©ÇÃ Á¤º¸ °¡Á®¿À±â
+                // ìˆœìœ„ì— í¬í•¨ëœ í”Œë ˆì´ì–´ ì •ë³´ë¡œ ì±„ìš°ê¸° 
+                var playerRankInfo = rankedInfo[i]; // íŠœí”Œ ì •ë³´ ê°€ì ¸ì˜¤ê¸°
 
-                // PlayerManager °´Ã¼ °¡Á®¿À±â
+                // PlayerManager ê°ì²´ ê°€ì ¸ì˜¤ê¸°
                 PlayerManager player = playerRankInfo.PlayerManager;
 
-                if (player != null) // È¤½Ã PlayerManager °´Ã¼°¡ nullÀÏ °æ¿ì¸¦ ´ëºñ (±ØÈ÷ µå¹°Áö¸¸)
+                if (player != null) // í˜¹ì‹œ PlayerManager ê°ì²´ê°€ nullì¼ ê²½ìš°ë¥¼ ëŒ€ë¹„ (ê·¹íˆ ë“œë¬¼ì§€ë§Œ)
                 {
-                    // ¼øÀ§ (´ÜÀÏ ¼ıÀÚ) Ç¥½Ã
+                    // ìˆœìœ„ (ë‹¨ì¼ ìˆ«ì) í‘œì‹œ
                     player.ValuationUpdate(player.portfolio);
                     player.UpdatePortfolioReturn();
                     rankTxt.text = playerRankInfo.Rank.ToString();
@@ -236,21 +236,21 @@ public class UIManager : MonoBehaviour
                 {
                     rankTxt.text = "-";
                     nameTxt.text = "";
-                    Debug.LogWarning($"rankedInfo[{i}]ÀÇ PlayerManager °´Ã¼°¡ nullÀÔ´Ï´Ù.");
+                    Debug.LogWarning($"rankedInfo[{i}]ì˜ PlayerManager ê°ì²´ê°€ nullì…ë‹ˆë‹¤.");
                 }
             }
             else
             {
-                // ¼øÀ§¿¡ Æ÷ÇÔµÇÁö ¾ÊÀº ³ª¸ÓÁö Ä­À» ºñ¿ì±â 
-                rankTxt.text = "-"; // ¼øÀ§ Ä­Àº "-"
-                nameTxt.text = ""; // ÀÌ¸§ Ä­Àº ºóÄ­
+                // ìˆœìœ„ì— í¬í•¨ë˜ì§€ ì•Šì€ ë‚˜ë¨¸ì§€ ì¹¸ì„ ë¹„ìš°ê¸° 
+                rankTxt.text = "-"; // ìˆœìœ„ ì¹¸ì€ "-"
+                nameTxt.text = ""; // ì´ë¦„ ì¹¸ì€ ë¹ˆì¹¸
             }
         }
 
-        Debug.Log("·©Å· UI Ç¥½Ã ¾÷µ¥ÀÌÆ® ¿Ï·á.");
+        Debug.Log("ë­í‚¹ UI í‘œì‹œ ì—…ë°ì´íŠ¸ ì™„ë£Œ.");
     }
 
-    // UIÀÇ º¸À¯ ±İ¾×°ú Æò°¡ ±İ¾× ¾÷µ¥ÀÌÆ®
+    // UIì˜ ë³´ìœ  ê¸ˆì•¡ê³¼ í‰ê°€ ê¸ˆì•¡ ì—…ë°ì´íŠ¸
     public void UpdateCurrentCashandValue()
     {
         if (localPlayerManager == null)
@@ -265,12 +265,12 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // ÇöÀç ·ÎÄÃ ÇÃ·¹ÀÌ¾îÀÇ Æ÷Æ®Æú¸®¿À Å½»ö
+    // í˜„ì¬ ë¡œì»¬ í”Œë ˆì´ì–´ì˜ í¬íŠ¸í´ë¦¬ì˜¤ íƒìƒ‰
     public void FindPortfolio()
     {
-        PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>(); // ¸ğµç PlayerManager Ã£±â
+        PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>(); // ëª¨ë“  PlayerManager ì°¾ê¸°
 
-        localPlayerManager = allPlayerManagers.FirstOrDefault(pm => pm != null && pm.Object != null && pm.Object.HasInputAuthority); // ¨è ·ÎÄÃ ÇÃ·¹ÀÌ¾îÀÇ ¸Å´ÏÀú ÇÊÅÍ¸µ
+        localPlayerManager = allPlayerManagers.FirstOrDefault(pm => pm != null && pm.Object != null && pm.Object.HasInputAuthority); // â‘¡ ë¡œì»¬ í”Œë ˆì´ì–´ì˜ ë§¤ë‹ˆì € í•„í„°ë§
 
         if (localPlayerManager != null)
         {
@@ -283,7 +283,7 @@ public class UIManager : MonoBehaviour
 
         if (localPlayerManager != null)
         {
-            UpdateCurrentCashandValue(); // Ã£ÀÚ¸¶ÀÚ UI ¾÷µ¥ÀÌÆ®
+            UpdateCurrentCashandValue(); // ì°¾ìë§ˆì UI ì—…ë°ì´íŠ¸
         }
         else
         {
@@ -291,13 +291,13 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    // ÆĞ³Î ÃÊ±âÈ­
+    // íŒ¨ë„ ì´ˆê¸°í™”
     public void InitializeUI()
     {
         ShowGamePanel();
     }
 
-    // ±âº» °ÔÀÓ ÆĞ³Î¸¸ º¸ÀÌ°Ô
+    // ê¸°ë³¸ ê²Œì„ íŒ¨ë„ë§Œ ë³´ì´ê²Œ
     public void ShowGamePanel()
     {
         gamePanel.SetActive(true);
@@ -311,7 +311,7 @@ public class UIManager : MonoBehaviour
         if (resultPanel != null) resultPanel.SetActive(on);
     }
 
-    // ÀÎº¥Åä¸® ÆĞ³ÎÀ» º¸ÀÌ°Ô
+    // ì¸ë²¤í† ë¦¬ íŒ¨ë„ì„ ë³´ì´ê²Œ
     public void ShowInventoryPanel()
     {
         if (inventoryPanel != null) inventoryPanel.SetActive(true);
@@ -319,7 +319,7 @@ public class UIManager : MonoBehaviour
         if (marketPanel2 != null) marketPanel2.SetActive(false);
     }
 
-    // ÁÖ½Ä ½ÃÀå (Á¾¸ñ ¸ñ·Ï) ÆĞ³ÎÀ» º¸ÀÌ°Ô
+    // ì£¼ì‹ ì‹œì¥ (ì¢…ëª© ëª©ë¡) íŒ¨ë„ì„ ë³´ì´ê²Œ
     public void ShowMarketPanel()
     {
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
@@ -327,7 +327,7 @@ public class UIManager : MonoBehaviour
         if (marketPanel2 != null) marketPanel2.SetActive(false);
     }
 
-    // °³º° Á¾¸ñ »ó¼¼ Á¤º¸ ÆĞ³ÎÀ» º¸ÀÌ°Ô ÇÏ°í Á¤º¸ ¾÷µ¥ÀÌÆ®
+    // ê°œë³„ ì¢…ëª© ìƒì„¸ ì •ë³´ íŒ¨ë„ì„ ë³´ì´ê²Œ í•˜ê³  ì •ë³´ ì—…ë°ì´íŠ¸
     public void ShowMarketPanel2(string stockName)
     {
         inventoryPanel.SetActive(false);

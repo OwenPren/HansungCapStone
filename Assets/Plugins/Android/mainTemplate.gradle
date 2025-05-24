@@ -1,30 +1,20 @@
 apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
 **APPLY_PLUGINS**
 
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.10"
+    }
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-// Android Resolver Dependencies Start
-    implementation 'com.google.android.gms:play-services-base:18.6.0' // Assets/FireBase/Editor/AppDependencies.xml:17
-    implementation 'com.google.firebase:firebase-analytics:22.4.0' // Assets/FireBase/Editor/AuthDependencies.xml:15
-    implementation 'com.google.firebase:firebase-app-unity:12.8.0' // Assets/FireBase/Editor/AppDependencies.xml:22
-    implementation 'com.google.firebase:firebase-auth:23.2.0' // Assets/FireBase/Editor/AuthDependencies.xml:13
-    implementation 'com.google.firebase:firebase-auth-unity:12.8.0' // Assets/FireBase/Editor/AuthDependencies.xml:20
-    implementation 'com.google.firebase:firebase-common:21.0.0' // Assets/FireBase/Editor/AppDependencies.xml:13
-// Android Resolver Dependencies End
 **DEPS**}
 
-// Android Resolver Exclusions Start
-android {
-  packagingOptions {
-      exclude ('/lib/arm64-v8a/*' + '*')
-      exclude ('/lib/armeabi/*' + '*')
-      exclude ('/lib/mips/*' + '*')
-      exclude ('/lib/mips64/*' + '*')
-      exclude ('/lib/x86/*' + '*')
-      exclude ('/lib/x86_64/*' + '*')
-  }
-}
-// Android Resolver Exclusions End
 android {
     namespace "com.unity3d.player"
     ndkPath "**NDKPATH**"
@@ -37,8 +27,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion **MINSDKVERSION**
-        targetSdkVersion **TARGETSDKVERSION**
+        minSdkVersion 23
+        targetSdkVersion 34
         ndk {
             abiFilters **ABIFILTERS**
         }
