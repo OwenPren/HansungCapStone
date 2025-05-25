@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using System.Security.Principal;
 using System;
 using System.Linq;
+using Fusion;
 
 public enum SectorType
 {
@@ -19,6 +20,16 @@ public enum SectorType
     Industrials,
     Materials,
     RealEstate
+}
+
+public enum AssistantStatus
+{
+    NotStarted,          // 시작 안됨
+    CreatingThread,      // 스레드 생성 중
+    GeneratingEvents,    // 이벤트 생성 중
+    ProcessingStocks,    // 주가 정보 처리 중
+    Ready,              // 준비 완료
+    Error               // 오류 발생
 }
 
 [System.Serializable]
@@ -40,7 +51,7 @@ public class RoundEventData
     }
 }
 
-public class AssistantManager : MonoBehaviour
+public class AssistantManager : NetworkBehaviour
 {
     public GameStartEventSO gameStartEvent;
     public RoundStartEventSO roundStartEvent;
@@ -65,6 +76,23 @@ public class AssistantManager : MonoBehaviour
     [SerializeField] private Dictionary<int, RoundEventData> roundEventsData = new Dictionary<int, RoundEventData>();
     [SerializeField] private int currentProcessingRound = 0;
     [SerializeField] private bool isGeneratingEvents = false;
+
+    // 네트워크 동기화 Assistant 상태 관리
+    [Networked] public AssistantStatus NetworkedStatus { get; private set; }
+    [Networked] public NetworkString<_64> NetworkedStatusMessage { get; private set; }
+    [Networked] public bool NetworkedIsRound1Ready { get; private set; }
+
+    // 로컬 상태 관리 (서버에서만 사용)
+    private AssistantStatus localStatus = AssistantStatus.NotStarted;
+    private string localStatusMessage = "";
+
+    public static AssistantManager Instance { get; private set; }
+
+    public override void Spawned()
+    {
+        Instance = this;
+        Debug.Log($"[AssistantManager] Spawned on {(Runner.IsServer ? "SERVER" : "CLIENT")}");
+    }
 
     private void OnEnable()
     {
@@ -91,6 +119,9 @@ public class AssistantManager : MonoBehaviour
         int currentRound = GameManager.Instance.CurrentRound;
         Debug.Log($"[AssistantManager] OnRoundStart called for Round {currentRound}");
 
+        // 서버에서만 실행
+        if (!Runner.IsServer) yield break;
+
         // 1. 현재 라운드 이벤트 적용 (이미 생성되어 있어야 함)
         if (roundEventsData.ContainsKey(currentRound) && roundEventsData[currentRound].isGenerated)
         {
@@ -114,35 +145,49 @@ public class AssistantManager : MonoBehaviour
 
     private void OnGameStart()
     {
-        // 게임 시작시 스레드 생성 및 첫 번째 라운드 이벤트 생성
-        StartCoroutine(GameStartRoutine());
-        GameUIManager.Instance.ToggleStartButton();
+        // 서버에서만 게임 시작 로직 실행
+        if (Runner.IsServer)
+        {
+            StartCoroutine(GameStartRoutine());
+        }
     }
 
     private void OnGameEnd()
     {
-        // 게임 종료시 발생. 스레드 제거 및 변수 초기화 진행
-        if (IsThread && !string.IsNullOrEmpty(threadID))
+        // 서버에서만 정리 작업 실행
+        if (Runner.IsServer)
         {
-            StartCoroutine(DeleteThread());
-        }
+            if (IsThread && !string.IsNullOrEmpty(threadID))
+            {
+                StartCoroutine(DeleteThread());
+            }
 
-        // 모든 데이터 초기화
-        IsThread = false;
-        threadID = "";
-        runID = "";
-        messageID = "";
-        runStatus = "";
-        functionCallID = "";
-        functionCallArguments = null;
-        runInProgress = false;
-        roundEventsData.Clear();
-        currentProcessingRound = 0;
-        isGeneratingEvents = false;
+            // 모든 데이터 초기화
+            IsThread = false;
+            threadID = "";
+            runID = "";
+            messageID = "";
+            runStatus = "";
+            functionCallID = "";
+            functionCallArguments = null;
+            runInProgress = false;
+            roundEventsData.Clear();
+            currentProcessingRound = 0;
+            isGeneratingEvents = false;
+            
+            // 상태 초기화
+            localStatus = AssistantStatus.NotStarted;
+            localStatusMessage = "";
+            
+            // 네트워크 상태 초기화
+            UpdateNetworkStatus(AssistantStatus.NotStarted, "", false);
+        }
     }
 
     private IEnumerator GameStartRoutine()
     {
+        UpdateStatus(AssistantStatus.NotStarted, "Assistant 초기화 중...");
+        
         if (!IsThread)
         {
             yield return StartCoroutine(StartThread());   
@@ -152,9 +197,11 @@ public class AssistantManager : MonoBehaviour
         yield return StartCoroutine(GenerateEventsForRound(1));
     }
 
-    // 특정 라운드의 이벤트 생성
+    // 특정 라운드의 이벤트 생성 (서버에서만)
     private IEnumerator GenerateEventsForRound(int roundNumber)
     {
+        if (!Runner.IsServer) yield break;
+
         if (isGeneratingEvents)
         {
             Debug.LogWarning($"[AssistantManager] Event generation already in progress. Skipping round {roundNumber}");
@@ -179,8 +226,20 @@ public class AssistantManager : MonoBehaviour
 
         try
         {
+            // 1라운드일 때만 UI 상태 업데이트
+            if (roundNumber == 1)
+            {
+                UpdateStatus(AssistantStatus.GeneratingEvents, "1라운드 이벤트 생성 중...");
+            }
+            
             // 이벤트 생성
             yield return StartCoroutine(GenerationEvent(roundNumber));
+            
+            if (roundNumber == 1)
+            {
+                UpdateStatus(AssistantStatus.ProcessingStocks, "주가 정보 처리 중...");
+            }
+            
             // 주가 정보 생성 (functionCallArguments 사용)
             yield return StartCoroutine(StockPriceAdjustment(roundNumber));
 
@@ -190,10 +249,20 @@ public class AssistantManager : MonoBehaviour
                 ParseAndStoreEventData(roundNumber, functionCallArguments);
                 roundEventsData[roundNumber].isGenerated = true;
                 Debug.Log($"[AssistantManager] Round {roundNumber} events generated and stored successfully");
+                
+                // 1라운드 완료 시 Ready 상태로 변경
+                if (roundNumber == 1)
+                {
+                    UpdateStatus(AssistantStatus.Ready, "준비 완료!");
+                }
             }
             else
             {
                 Debug.LogError($"[AssistantManager] Failed to generate events for round {roundNumber}");
+                if (roundNumber == 1)
+                {
+                    UpdateStatus(AssistantStatus.Error, "이벤트 생성 실패");
+                }
             }
         }
         finally
@@ -206,6 +275,8 @@ public class AssistantManager : MonoBehaviour
     // 생성된 이벤트를 현재 라운드에 적용
     private void ApplyRoundEvents(int roundNumber)
     {
+        if (!Runner.IsServer) return;
+
         if (!roundEventsData.ContainsKey(roundNumber))
         {
             Debug.LogError($"[AssistantManager] No event data found for round {roundNumber}");
@@ -282,6 +353,137 @@ public class AssistantManager : MonoBehaviour
             Debug.Log($"[Round {roundNumber}] {kv.Key} : {kv.Value}");
         }
     }
+
+    // 네트워크 상태 업데이트 (서버에서만 호출)
+    private void UpdateNetworkStatus(AssistantStatus status, string message, bool isRound1Ready)
+    {
+        if (!Runner.IsServer) return;
+
+        NetworkedStatus = status;
+        NetworkedStatusMessage = message;
+        NetworkedIsRound1Ready = isRound1Ready;
+
+        Debug.Log($"[AssistantManager] Network status updated - Status: {status}, Message: {message}, Round1Ready: {isRound1Ready}");
+
+        // RPC로 모든 클라이언트에 상태 변경 알림
+        RpcNotifyStatusChange(status, message, isRound1Ready);
+    }
+
+    // 모든 클라이언트에 상태 변경 알림
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    private void RpcNotifyStatusChange(AssistantStatus status, string message, bool isRound1Ready)
+    {
+        Debug.Log($"[AssistantManager] RpcNotifyStatusChange received - Status: {status}, Message: {message}, Round1Ready: {isRound1Ready}");
+
+        // GameUIManager에 상태 변화 알림
+        if (GameUIManager.Instance != null)
+        {
+            bool isReady = (status == AssistantStatus.Ready && isRound1Ready);
+            GameUIManager.Instance.UpdateAssistantStatus(message, isReady);
+            GameUIManager.Instance.UpdateAssistantProgress(GetProgressFromStatus(status));
+            
+            // 준비 완료 시 버튼 상태 업데이트
+            if (isReady)
+            {
+                GameUIManager.Instance.OnAssistantReady();
+            }
+        }
+    }
+
+    // 상태 관리 메서드들
+    public AssistantStatus GetCurrentStatus()
+    {
+        // 클라이언트에서는 네트워크 상태 반환, 서버에서는 로컬 상태 반환
+        return Runner.IsServer ? localStatus : NetworkedStatus;
+    }
+
+    public string GetStatusMessage()
+    {
+        // 클라이언트에서는 네트워크 메시지 반환, 서버에서는 로컬 메시지 반환
+        return Runner.IsServer ? localStatusMessage : NetworkedStatusMessage.ToString();
+    }
+
+    public float GetProgress()
+    {
+        AssistantStatus status = GetCurrentStatus();
+        return GetProgressFromStatus(status);
+    }
+
+    private float GetProgressFromStatus(AssistantStatus status)
+    {
+        switch (status)
+        {
+            case AssistantStatus.NotStarted: return 0.0f;
+            case AssistantStatus.CreatingThread: return 0.2f;
+            case AssistantStatus.GeneratingEvents: return 0.6f;
+            case AssistantStatus.ProcessingStocks: return 0.8f;
+            case AssistantStatus.Ready: return 1.0f;
+            case AssistantStatus.Error: return 0.0f;
+            default: return 0.0f;
+        }
+    }
+
+    private void UpdateStatus(AssistantStatus status, string message)
+    {
+        if (!Runner.IsServer) return; // 서버에서만 상태 업데이트
+
+        localStatus = status;
+        localStatusMessage = message;
+        
+        Debug.Log($"[AssistantManager] Local status updated - Status: {status}, Message: {message}");
+        
+        // 1라운드 준비 상태 확인
+        bool isRound1Ready = IsRoundEventsReady(1);
+        
+        // 네트워크 상태 업데이트
+        UpdateNetworkStatus(status, message, isRound1Ready);
+    }
+
+    // 디버그용 메서드들
+    public void LogRoundEventsStatus()
+    {
+        Debug.Log($"[AssistantManager] === ROUND EVENTS STATUS ===");
+        Debug.Log($"Current Status: {GetCurrentStatus()}");
+        Debug.Log($"Current Processing Round: {currentProcessingRound}");
+        Debug.Log($"Is Generating Events: {isGeneratingEvents}");
+        Debug.Log($"Total Rounds Data: {roundEventsData.Count}");
+        Debug.Log($"Is Server: {Runner?.IsServer}");
+        
+        if (Runner.IsServer)
+        {
+            foreach (var kvp in roundEventsData)
+            {
+                var data = kvp.Value;
+                Debug.Log($"Round {kvp.Key}: Generated={data.isGenerated}, Applied={data.isApplied}, Events={data.eventDescriptions.Count}, Sectors={data.sectorImpacts.Count}");
+            }
+        }
+        else
+        {
+            Debug.Log("Client - using networked status only");
+        }
+    }
+
+    public RoundEventData GetRoundEventData(int roundNumber)
+    {
+        if (!Runner.IsServer) return null; // 서버에서만 라운드 데이터 접근 가능
+        return roundEventsData.ContainsKey(roundNumber) ? roundEventsData[roundNumber] : null;
+    }
+
+    public bool IsRoundEventsReady(int roundNumber)
+    {
+        if (Runner.IsServer)
+        {
+            return roundEventsData.ContainsKey(roundNumber) && roundEventsData[roundNumber].isGenerated;
+        }
+        else
+        {
+            // 클라이언트에서는 네트워크 상태 사용
+            return roundNumber == 1 ? NetworkedIsRound1Ready : false;
+        }
+    }
+
+    // 나머지 기존 메서드들... (GenerationEvent, StockPriceAdjustment, API 관련 메서드들)
+    // 이 메서드들은 서버에서만 실행되므로 변경 없음
 
     private IEnumerator GenerationEvent(int targetRound = 0)
     {
@@ -374,34 +576,10 @@ public class AssistantManager : MonoBehaviour
         runInProgress = false;
     }
 
-    // 디버그용 메서드들
-    public void LogRoundEventsStatus()
-    {
-        Debug.Log($"[AssistantManager] === ROUND EVENTS STATUS ===");
-        Debug.Log($"Current Processing Round: {currentProcessingRound}");
-        Debug.Log($"Is Generating Events: {isGeneratingEvents}");
-        Debug.Log($"Total Rounds Data: {roundEventsData.Count}");
-        
-        foreach (var kvp in roundEventsData)
-        {
-            var data = kvp.Value;
-            Debug.Log($"Round {kvp.Key}: Generated={data.isGenerated}, Applied={data.isApplied}, Events={data.eventDescriptions.Count}, Sectors={data.sectorImpacts.Count}");
-        }
-    }
-
-    public RoundEventData GetRoundEventData(int roundNumber)
-    {
-        return roundEventsData.ContainsKey(roundNumber) ? roundEventsData[roundNumber] : null;
-    }
-
-    public bool IsRoundEventsReady(int roundNumber)
-    {
-        return roundEventsData.ContainsKey(roundNumber) && roundEventsData[roundNumber].isGenerated;
-    }
-
-    // 기존 메서드들은 그대로 유지...
     private IEnumerator StartThread()
     {
+        UpdateStatus(AssistantStatus.CreatingThread, "스레드 생성 중...");
+        
         bool isDone = false;
         //스레드 생성, 스레드 ID 저장
         yield return StartCoroutine(apiManager.PostRequest(
@@ -421,6 +599,7 @@ public class AssistantManager : MonoBehaviour
             onError: (error) =>
             {
                 Debug.LogError("Create Thread POST 실패: " + error);
+                UpdateStatus(AssistantStatus.Error, "스레드 생성 실패");
                 isDone = true;
             }
         ));
@@ -644,88 +823,6 @@ public class AssistantManager : MonoBehaviour
                 yield return new WaitForSeconds(retrieveWaitTime);
             }
         }
-    }
-
-    private IEnumerator ListMessage()
-    {
-        if (string.IsNullOrEmpty(threadID))
-        {
-            Debug.LogError("Thread ID Error");
-            yield break;
-        }
-        
-        bool isDone = false;
-
-        yield return StartCoroutine(apiManager.GetRequest(
-            APIUrls.ListMessageUrl(threadID),
-            onSuccess: (response) =>
-            {
-                Debug.Log("ListMessage GET 성공: " + response);
-
-                // 응답을 JObject로 파싱
-                JObject jObj = JObject.Parse(response);
-
-                // "first_id" 추출하여 messageId에 저장
-                messageID = jObj["first_id"]?.ToString();
-                Debug.Log("first messageId: " + messageID);
-
-                isDone = true;
-            },
-            onError: (error) =>
-            {
-                Debug.LogError("ListMessage GET 실패: " + error);
-                isDone = true;
-            }
-        ));
-
-        // 요청이 끝날 때까지 대기
-        yield return new WaitUntil(() => isDone);
-
-    }
-
-    private IEnumerator RetrieveMessage()
-    {
-        if (string.IsNullOrEmpty(threadID))
-        {
-            Debug.LogError("Thread ID Error");
-            yield break;
-        }
-
-        if (string.IsNullOrEmpty(messageID))
-        {
-            Debug.LogError("Message ID Error");
-            yield break;
-        }
-
-        bool isDone = false;
-
-        yield return StartCoroutine(apiManager.GetRequest(
-            APIUrls.RetrieveMessageUrl(threadID, messageID),
-            onSuccess: (response) =>
-            {
-                Debug.Log("RetrieveMessage GET 성공: " + response);
-
-                // 응답 JSON 파싱
-                JObject jObj = JObject.Parse(response);
-
-                // 예: role, content, etc.
-                string role = jObj["role"]?.ToString();
-                string contentObj = jObj["content"]?.ToString();
-                //string contentValue = contentObj?["value"]?.ToString();
-
-                Debug.Log($"Message Role: {role}, Content: {contentObj}");
-
-
-                isDone = true;
-            },
-            onError: (error) =>
-            {
-                Debug.LogError("RetrieveMessage GET 실패: " + error);
-                isDone = true;
-            }
-        ));
-
-        yield return new WaitUntil(() => isDone);
     }
 
     private IEnumerator SubmitToolOutputsToRun()
