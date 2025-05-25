@@ -1,8 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using Fusion; // Fusion 네임스페이스 추가
-using System.Linq; // LINQ를 사용하기 위해 추가
+using Fusion;
+using System.Linq;
+using System.Collections;
 
 public class MarketPanel2UI : MonoBehaviour
 {
@@ -16,46 +17,121 @@ public class MarketPanel2UI : MonoBehaviour
     public Button closeButton;
     public Button incrementButton; // + 버튼
     public Button decrementButton; // - 버튼
-    //public UIManager UIManager;
 
     private string currentStockName;
-
-    // 로컬 플레이어의 PlayerManager 참조
     private PlayerManager localPlayerManager;
+    private bool isSearchingForPlayer = false;
 
     // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
     void OnEnable()
     {
-        FindLocalPlayerManager();
+        StartCoroutine(FindLocalPlayerManagerCoroutine());
+    }
+
+    void OnDisable()
+    {
+        // 필요시 정리 작업
+        StopAllCoroutines();
+        isSearchingForPlayer = false;
+    }
+
+    IEnumerator FindLocalPlayerManagerCoroutine()
+    {
+        if (isSearchingForPlayer) yield break;
+
+        isSearchingForPlayer = true;
+        localPlayerManager = null;
+
+        Debug.Log("[MarketPanel2UI] Starting search for local PlayerManager...");
+
+        float timeout = 10f; // 10초 타임아웃
+        float elapsed = 0f;
+
+        while (elapsed < timeout && localPlayerManager == null)
+        {
+            yield return new WaitForSeconds(0.1f); // 0.1초마다 체크
+            elapsed += 0.1f;
+
+            FindLocalPlayerManager();
+
+            if (localPlayerManager != null && localPlayerManager.IsSpawned)
+            {
+                Debug.Log("[MarketPanel2UI] Local PlayerManager found successfully!");
+                break;
+            }
+        }
+
+        if (localPlayerManager == null)
+        {
+            Debug.LogWarning("[MarketPanel2UI] Could not find local PlayerManager within timeout period!");
+        }
+
+        isSearchingForPlayer = false;
+
+        // 초기 보유량 업데이트
+        UpdatePlayerHolding();
     }
 
     void FindLocalPlayerManager()
     {
-        // 씬에 있는 모든 PlayerManager 컴포넌트를 찾습니다.
+        if (localPlayerManager != null && localPlayerManager.IsSpawned) return;
+
+        // 방법 1: NetworkRunner를 통해 로컬 플레이어 찾기
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (runner != null && GameManager.Instance != null)
+        {
+            PlayerRef localPlayer = runner.LocalPlayer;
+            var tempManager = GameManager.Instance.GetPlayerManager(localPlayer);
+
+            if (tempManager != null && tempManager.IsSpawned)
+            {
+                localPlayerManager = tempManager;
+                Debug.Log($"[MarketPanel2UI] Local PlayerManager found via GameManager for player {localPlayer}!");
+                return;
+            }
+        }
+
+        // 방법 2: FindObjectsOfType으로 모든 PlayerManager 확인
         PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>();
 
-        // 그 중에서 현재 클라이언트의 입력 권한을 가진 PlayerManager를 찾습니다.
-        // NetworkBehaviour의 Object.HasInputAuthority를 사용합니다.
-        localPlayerManager = allPlayerManagers.FirstOrDefault(pm => pm.Object != null && pm.Object.HasInputAuthority);
+        foreach (PlayerManager pm in allPlayerManagers)
+        {
+            if (pm != null && pm.IsSpawned)
+            {
+                // 로컬 플레이어인지 확인 (Input Authority 체크)
+                if (pm.Object != null && pm.Object.HasInputAuthority)
+                {
+                    localPlayerManager = pm;
+                    Debug.Log($"[MarketPanel2UI] Local PlayerManager found via HasInputAuthority!");
+                    return;
+                }
 
-        if (localPlayerManager != null)
-        {
-            Debug.Log("Local PlayerManager found!");
-        }
-        else
-        {
-            Debug.LogWarning("Local PlayerManager not found.");
+                // Runner.LocalPlayer와 비교
+                if (runner != null && pm.PlayerRef == runner.LocalPlayer)
+                {
+                    localPlayerManager = pm;
+                    Debug.Log($"[MarketPanel2UI] Local PlayerManager found via PlayerRef comparison!");
+                    return;
+                }
+            }
         }
     }
-
 
     public void DisplayStockInfo(string name, string nameKR)
     {
         gameObject.SetActive(true);
         currentStockName = name;
+
+        // PlayerManager가 없다면 다시 찾기 시도
+        if (localPlayerManager == null || !localPlayerManager.IsSpawned)
+        {
+            StartCoroutine(FindLocalPlayerManagerCoroutine());
+        }
+
         GameManager gm = GameManager.Instance;
         if (gm == null || gm.stockMarketManager == null)
         {
+            Debug.LogError("[MarketPanel2UI] GameManager or StockMarketManager is null!");
             gameObject.SetActive(false);
             return;
         }
@@ -67,15 +143,7 @@ public class MarketPanel2UI : MonoBehaviour
             currentPriceText.text = "현재가: " + stock.currentPrice.ToString("N2");
 
             // 로컬 플레이어의 보유량 표시
-            if (localPlayerManager != null)
-            {
-                int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
-                playerHoldingText.text = "보유 현황: " + holding.ToString()+" 개 보유중";
-            }
-            else
-            {
-                playerHoldingText.text = "보유량: N/A (플레이어 정보 없음)";
-            }
+            UpdatePlayerHolding();
         }
         else
         {
@@ -85,7 +153,32 @@ public class MarketPanel2UI : MonoBehaviour
         }
 
         quantityInput.text = "1";
+    }
 
+    private void UpdatePlayerHolding()
+    {
+        if (string.IsNullOrEmpty(currentStockName))
+        {
+            playerHoldingText.text = "보유량: 선택된 종목 없음";
+            return;
+        }
+        
+        if (localPlayerManager != null && localPlayerManager.IsSpawned)
+        {
+            int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
+            playerHoldingText.text = "보유 현황: " + holding.ToString() + " 개 보유중";
+            Debug.Log($"[MarketPanel2UI] Updated holding for {currentStockName}: {holding}");
+        }
+        else
+        {
+            playerHoldingText.text = "보유량: 조회중... (플레이어 정보 로딩)";
+            
+            // PlayerManager가 없다면 다시 찾기 시도
+            if (!isSearchingForPlayer)
+            {
+                StartCoroutine(FindLocalPlayerManagerCoroutine());
+            }
+        }
     }
 
     public void OnIncrementButtonClick()
@@ -94,34 +187,29 @@ public class MarketPanel2UI : MonoBehaviour
 
         if (int.TryParse(quantityInput.text, out int currentQuantity))
         {
-            // Increment quantity
             currentQuantity++;
             quantityInput.text = currentQuantity.ToString();
             Debug.Log("Quantity incremented to: " + currentQuantity);
         }
         else
         {
-            // If parsing fails, set to default (1)
             quantityInput.text = "1";
             Debug.LogWarning("Invalid quantity input, setting to 1.");
         }
     }
 
-    // Decrement button click handler
     public void OnDecrementButtonClick()
     {
         if (quantityInput == null) return;
 
         if (int.TryParse(quantityInput.text, out int currentQuantity))
         {
-            // Decrement quantity, but not below 1
             currentQuantity = Mathf.Max(1, currentQuantity - 1);
             quantityInput.text = currentQuantity.ToString();
             Debug.Log("Quantity decremented to: " + currentQuantity);
         }
         else
         {
-            // If parsing fails, set to default (1)
             quantityInput.text = "1";
             Debug.LogWarning("Invalid quantity input, setting to 1.");
         }
@@ -129,70 +217,137 @@ public class MarketPanel2UI : MonoBehaviour
 
     public void OnBuyButtonClick()
     {
-        if (string.IsNullOrEmpty(currentStockName)) return;
-        if (localPlayerManager == null)
+        Debug.Log($"[MarketPanel2UI] Buy button clicked for stock: {currentStockName}");
+        
+        if (string.IsNullOrEmpty(currentStockName))
         {
-            Debug.LogError("Local PlayerManager not available for Buy operation.");
+            Debug.LogError("[MarketPanel2UI] No stock selected for buying");
             return;
         }
 
-        if (int.TryParse(quantityInput.text, out int quantity))
+        if (!int.TryParse(quantityInput.text, out int quantity) || quantity <= 0)
         {
-            GameManager.Instance.HandleBuyRequest(localPlayerManager.Object.InputAuthority, currentStockName, quantity);
+            Debug.LogWarning("[MarketPanel2UI] Invalid quantity entered for buying");
+            return;
         }
 
-        if (localPlayerManager != null)
+        // PlayerManager 유효성 재검사
+        if (localPlayerManager == null || !localPlayerManager.IsSpawned)
         {
-            int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
-            playerHoldingText.text = "보유 현황: " + holding.ToString() + " 개 보유중";
+            Debug.LogWarning("[MarketPanel2UI] Local PlayerManager not available, retrying...");
+            StartCoroutine(RetryAfterPlayerManagerFound(() => OnBuyButtonClick()));
+            return;
         }
 
+        // 로컬 플레이어의 PlayerRef 찾기
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (runner == null)
+        {
+            Debug.LogError("[MarketPanel2UI] NetworkRunner not found!");
+            return;
+        }
+        
+        PlayerRef myPlayerRef = runner.LocalPlayer;
+        Debug.Log($"[MarketPanel2UI] My PlayerRef: {myPlayerRef}");
+
+        // RPC를 통해 구매 요청 전송
+        if (GameManager.Instance != null)
+        {
+            Debug.Log($"[MarketPanel2UI] Sending buy request via RPC - Player: {myPlayerRef}, Stock: {currentStockName}, Quantity: {quantity}");
+            GameManager.Instance.RpcBuyStockRequest(myPlayerRef, currentStockName, quantity);
+            
+            // 즉시 UI 업데이트 (네트워크 지연 고려하여 약간의 지연)
+            StartCoroutine(DelayedUpdatePlayerHolding(0.5f));
+        }
         else
         {
-            Debug.Log("Invalid quantity entered.");
+            Debug.LogError("[MarketPanel2UI] GameManager.Instance is null!");
         }
     }
 
-
     public void OnSellButtonClick()
     {
-        if (string.IsNullOrEmpty(currentStockName)) return;
-        if (localPlayerManager == null)
+        Debug.Log($"[MarketPanel2UI] Sell button clicked for stock: {currentStockName}");
+        
+        if (string.IsNullOrEmpty(currentStockName))
         {
-            Debug.LogError("Local PlayerManager not available for Sell operation.");
+            Debug.LogError("[MarketPanel2UI] No stock selected for selling");
             return;
         }
 
-
-        if (int.TryParse(quantityInput.text, out int quantity))
+        if (!int.TryParse(quantityInput.text, out int quantity) || quantity <= 0)
         {
-            GameManager.Instance.HandleSellRequest(localPlayerManager.Object.InputAuthority, currentStockName, quantity);
+            Debug.LogWarning("[MarketPanel2UI] Invalid quantity entered for selling");
+            return;
         }
 
-        if (localPlayerManager != null)
+        // PlayerManager 유효성 재검사
+        if (localPlayerManager == null || !localPlayerManager.IsSpawned)
         {
-            int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
-            playerHoldingText.text = "보유 현황: " + holding.ToString()+" 개 보유중";
+            Debug.LogWarning("[MarketPanel2UI] Local PlayerManager not available, retrying...");
+            StartCoroutine(RetryAfterPlayerManagerFound(() => OnSellButtonClick()));
+            return;
+        }
+
+        // 보유량 체크 (클라이언트에서 미리 검증)
+        int currentHolding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
+        if (currentHolding < quantity)
+        {
+            Debug.LogWarning($"[MarketPanel2UI] Insufficient stock holding. Have: {currentHolding}, Want to sell: {quantity}");
+            return;
+        }
+
+        // 로컬 플레이어의 PlayerRef 찾기
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (runner == null)
+        {
+            Debug.LogError("[MarketPanel2UI] NetworkRunner not found!");
+            return;
+        }
+        
+        PlayerRef myPlayerRef = runner.LocalPlayer;
+        Debug.Log($"[MarketPanel2UI] My PlayerRef: {myPlayerRef}");
+
+        // RPC를 통해 판매 요청 전송
+        if (GameManager.Instance != null)
+        {
+            Debug.Log($"[MarketPanel2UI] Sending sell request via RPC - Player: {myPlayerRef}, Stock: {currentStockName}, Quantity: {quantity}");
+            GameManager.Instance.RpcSellStockRequest(myPlayerRef, currentStockName, quantity);
+            
+            // 즉시 UI 업데이트 (네트워크 지연 고려하여 약간의 지연)
+            StartCoroutine(DelayedUpdatePlayerHolding(0.5f));
         }
         else
         {
-            Debug.Log("Invalid quantity entered.");
+            Debug.LogError("[MarketPanel2UI] GameManager.Instance is null!");
         }
+    }
+
+    // PlayerManager를 찾을 때까지 대기한 후 액션 실행
+    private IEnumerator RetryAfterPlayerManagerFound(System.Action action)
+    {
+        yield return StartCoroutine(FindLocalPlayerManagerCoroutine());
+
+        if (localPlayerManager != null && localPlayerManager.IsSpawned)
+        {
+            action?.Invoke();
+        }
+        else
+        {
+            Debug.LogError("[MarketPanel2UI] Still could not find PlayerManager after retry");
+        }
+    }
+
+    // 지연된 보유량 업데이트
+    private IEnumerator DelayedUpdatePlayerHolding(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        UpdatePlayerHolding();
     }
 
     public void OnCloseButtonClick()
     {
-        //UIManager uiManager = UIManager.Instance; // UIManager.Instance는 GameManager처럼 싱글톤으로 가정합니다.
-        //if (uiManager != null)
-        //{
-        //    gameObject.SetActive(false); // 일단 이 패널만 비활성화
-        //    uiManager.ShowMarketPanel(); // UIManager에 MarketPanel (목록)을 보여주는 메서드가 있다고 가정
-        //}
-        //else
-        //{
-            //Debug.LogError("UIManager instance not found!");
-       gameObject.SetActive(false); // UIManager 없으면 일단 패널 닫기
-        //}
+        gameObject.SetActive(false);
     }
 
     void OnDestroy()
@@ -200,5 +355,13 @@ public class MarketPanel2UI : MonoBehaviour
         if (buyButton != null) buyButton.onClick.RemoveListener(OnBuyButtonClick);
         if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
         if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
+    }
+    
+    public void RefreshPlayerHolding()
+    {
+        if (!gameObject.activeInHierarchy) return;
+        
+        Debug.Log("[MarketPanel2UI] RefreshPlayerHolding called");
+        UpdatePlayerHolding();
     }
 }

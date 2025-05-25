@@ -147,9 +147,11 @@ public class AssistantManager : MonoBehaviour
         // eventSectors: 생성할 일반 이벤트의 분야 (랜덤하게 1~3개 선택됨)
 
         // 랜덤으로 1~3개 분야 선택
-        int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
-        SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
-        List<SectorType> sectorsList = new List<SectorType>(allSectors);
+        // int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
+         SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
+         List<SectorType> sectorsList = new List<SectorType>(allSectors);
+
+        int numberOfSectors = 2; // 숫자 고정
 
         // Fisher-Yates 셔플
         for (int i = sectorsList.Count - 1; i > 0; i--)

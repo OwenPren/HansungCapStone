@@ -250,6 +250,21 @@ public class PlayerInfoManager : NetworkBehaviour
         }
     }
     
+    // 플레이어 퇴장 알림 RPC (서버에서 모든 클라이언트로)
+    [Rpc(RpcSources.StateAuthority, RpcTargets.All)]
+    public void RpcNotifyPlayerLeft(PlayerRef player)
+    {
+        Debug.Log($"[PlayerInfoManager] RpcNotifyPlayerLeft - Player {player} left");
+        
+        // GameUIManager에 플레이어 퇴장 알림
+        if (GameUIManager.Instance != null)
+        {
+            GameUIManager.Instance.OnPlayerLeft(player);
+        }
+        
+        Debug.Log($"[PlayerInfoManager] Remaining players in PlayerInfos: {PlayerInfos.Count}");
+    }
+    
     // 로컬 플레이어 정보 변경 시 UI 업데이트
     private void NotifyPlayerInfoChanged(PlayerRef playerRef, NetworkPlayerInfo playerInfo)
     {

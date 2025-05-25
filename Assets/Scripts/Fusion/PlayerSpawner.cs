@@ -18,26 +18,37 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   private List<PlayerRef> _joinOrder = new();
   private Canvas canvas;
 
+  void Start()
+  {
+      // 클라이언트에서 게임 시작 후 PlayerManager 상태 체크
+      if (_runner != null && !_runner.IsServer)
+      {
+          StartCoroutine(ClientPlayerManagerCheck());
+      }
+  }
+
+
   async void StartGame(GameMode mode, string roomCode)
   {
     _runner = gameObject.AddComponent<NetworkRunner>();
     _runner.ProvideInput = true;
-  
+
     // Create the NetworkSceneInfo from the current scene
     //var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
     var scene = SceneRef.FromIndex(targetSceneIndex);
     var sceneInfo = new NetworkSceneInfo();
-    if (scene.IsValid) {
-        sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
+    if (scene.IsValid)
+    {
+      sceneInfo.AddSceneRef(scene, LoadSceneMode.Additive);
     }
 
     // Start or join (depends on gamemode) a session with a specific name
     await _runner.StartGame(new StartGameArgs()
     {
-        GameMode = mode,
-        SessionName = roomCode,
-        Scene = scene,
-        SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
+      GameMode = mode,
+      SessionName = roomCode,
+      Scene = scene,
+      SceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>()
     });
   }
 
@@ -136,29 +147,69 @@ private string GenerateRoomCode(int length)
 
   public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) 
   {
+      Debug.Log($"[PlayerSpawner] OnPlayerJoined called: {player} on {(runner.IsServer ? "SERVER" : "CLIENT")}");
+      
       if (runner.IsServer)
       {
-          Debug.Log("On Player Joined: " + player);
+          Debug.Log($"[PlayerSpawner] (SERVER) OnPlayerJoined: {player} (RawEncoded: {player.RawEncoded})");
+          
+          // PlayerRef 유효성 검사
+          if (player == default(PlayerRef))
+          {
+              Debug.LogError($"[PlayerSpawner] Invalid PlayerRef received in OnPlayerJoined!");
+              return;
+          }
           
           Vector2 spawnPosition = new Vector2((player.RawEncoded % runner.Config.Simulation.PlayerCount) * 3, 0);
           NetworkObject networkPlayerObject = runner.Spawn(_playerPrefab, spawnPosition, Quaternion.identity, player);
 
-          var pm = networkPlayerObject.GetComponent<PlayerManager>();
-          pm.SetPlayerRef(player);
-          
-          // 일단 기본값으로 초기화
-          pm.Initialize(initialCash);
+          if (networkPlayerObject == null)
+          {
+              Debug.LogError($"[PlayerSpawner] Failed to spawn network object for player {player}!");
+              return;
+          }
 
-          GameManager.Instance.RegisterPlayerManager(player, pm);
+          var pm = networkPlayerObject.GetComponent<PlayerManager>();
+          if (pm == null)
+          {
+              Debug.LogError($"[PlayerSpawner] PlayerManager component not found on spawned object for player {player}!");
+              return;
+          }
+
+          // PlayerRef 설정 (중요!)
+          pm.SetPlayerRef(player);
+          Debug.Log($"[PlayerSpawner] PlayerRef {player} set on PlayerManager");
+          
+          // 기본값으로 초기화
+          pm.Initialize(initialCash);
+          Debug.Log($"[PlayerSpawner] PlayerManager initialized for player {player}");
+
+          // GameManager에 등록
+          if (GameManager.Instance != null)
+          {
+              GameManager.Instance.RegisterPlayerManager(player, pm);
+              Debug.Log($"[PlayerSpawner] PlayerManager registered with GameManager for player {player}");
+          }
+          else
+          {
+              Debug.LogError($"[PlayerSpawner] GameManager.Instance is null! Cannot register PlayerManager for player {player}");
+          }
 
           _joinOrder.Add(player);
           _spawnedCharacters.Add(player, networkPlayerObject);
+          
+          Debug.Log($"[PlayerSpawner] Player {player} setup completed. Total players: {_joinOrder.Count}");
           
           // PlayerInfoManager가 준비되면 플레이어 정보를 기다림
           StartCoroutine(WaitForPlayerInfo(player));
           
           // 새 플레이어가 접속했으므로 기존 모든 플레이어 정보를 동기화
           StartCoroutine(SyncAllPlayersForNewJoiner());
+      }
+      else
+      {
+          // 클라이언트에서도 OnPlayerJoined가 호출된 경우 로깅
+          Debug.Log($"[PlayerSpawner] (CLIENT) OnPlayerJoined called for {player} - this should trigger automatic PlayerManager setup");
       }
   }
   
@@ -182,46 +233,92 @@ private string GenerateRoomCode(int length)
 
   private System.Collections.IEnumerator WaitForPlayerInfo(PlayerRef player)
   {
-    float timeout = 5f; // 5초 타임아웃
-    float elapsed = 0f;
+      Debug.Log($"[PlayerSpawner] WaitForPlayerInfo started for player {player}");
+      
+      float timeout = 10f; // 10초 타임아웃
+      float elapsed = 0f;
 
-    while (elapsed < timeout)
-    {
-      if (PlayerInfoManager.Instance != null)
+      while (elapsed < timeout)
       {
-        var playerInfo = PlayerInfoManager.Instance.GetPlayerInfo(player);
-        if (playerInfo.HasValue)
-        {
-          OnPlayerInfoReceived(player, playerInfo.Value);
-          yield break;
-        }
+          if (PlayerInfoManager.Instance != null)
+          {
+              var playerInfo = PlayerInfoManager.Instance.GetPlayerInfo(player);
+              if (playerInfo.HasValue)
+              {
+                  Debug.Log($"[PlayerSpawner] PlayerInfo received for {player}: '{playerInfo.Value.nickname.ToString()}'");
+                  OnPlayerInfoReceived(player, playerInfo.Value);
+                  yield break;
+              }
+          }
+
+          elapsed += Time.deltaTime;
+          yield return null;
       }
 
-      elapsed += Time.deltaTime;
-      yield return null;
-    }
-
-    Debug.LogWarning($"Player info not received for {player} within timeout");
+      Debug.LogWarning($"[PlayerSpawner] Player info not received for {player} within timeout. Creating default info...");
+      
+      // 타임아웃 시 기본 정보 생성
+      string defaultNickname = $"Player{player.RawEncoded}";
+      NetworkPlayerInfo defaultInfo = new NetworkPlayerInfo("Unknown", defaultNickname, 0);
+      OnPlayerInfoReceived(player, defaultInfo);
   }
+
 
 
   public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
   {
-    Debug.Log("On Player Left");
-    if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
-    {
-      int slotIndex = _joinOrder.IndexOf(player);
-      if (slotIndex >= 0)
+      Debug.Log($"[PlayerSpawner] Player {player} left the game");
+      
+      if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObject))
       {
-        GameUIManager.Instance.ClearPlayerSlot(slotIndex);
-        _joinOrder.RemoveAt(slotIndex);
+          // UI 슬롯 정리
+          int slotIndex = _joinOrder.IndexOf(player);
+          if (slotIndex >= 0)
+          {
+              // GameUIManager에서 슬롯 정리
+              if (GameUIManager.Instance != null)
+              {
+                  GameUIManager.Instance.OnPlayerLeft(player);
+                  Debug.Log($"[PlayerSpawner] Cleared UI slot {slotIndex} for player {player}");
+              }
+              
+              _joinOrder.RemoveAt(slotIndex);
+          }
+
+          // GameManager에서 PlayerManager 제거
+          if (GameManager.Instance != null)
+          {
+              GameManager.Instance.UnregisterPlayerManager(player);
+              Debug.Log($"[PlayerSpawner] Unregistered PlayerManager for player {player}");
+          }
+
+          // PlayerInfoManager에서 플레이어 정보 제거
+          if (PlayerInfoManager.Instance != null && PlayerInfoManager.Instance.Object.HasStateAuthority)
+          {
+              // PlayerInfos에서 제거 (서버에서만)
+              if (PlayerInfoManager.Instance.PlayerInfos.TryGet(player, out var playerInfo))
+              {
+                  PlayerInfoManager.Instance.PlayerInfos.Remove(player);
+                  Debug.Log($"[PlayerSpawner] Removed player info for {player} from PlayerInfoManager");
+                  
+                  // 모든 클라이언트에 플레이어 제거 알림
+                  PlayerInfoManager.Instance.RpcNotifyPlayerLeft(player);
+              }
+          }
+
+          // 네트워크 오브젝트 제거
+          if (runner.IsServer)
+          {
+              runner.Despawn(networkObject);
+              Debug.Log($"[PlayerSpawner] Despawned network object for player {player}");
+          }
+          
+          _spawnedCharacters.Remove(player);
       }
-
-
-      runner.Despawn(networkObject);
-      _spawnedCharacters.Remove(player);
-    }
-
+      else
+      {
+          Debug.LogWarning($"[PlayerSpawner] No spawned character found for leaving player {player}");
+      }
   }
 
   public void OnSceneLoadDone(NetworkRunner runner)
@@ -316,6 +413,127 @@ private string GenerateRoomCode(int length)
     }
   }
 
+  void Update()
+  {
+      // F1 키로 플레이어 상태 디버그
+      if (Input.GetKeyDown(KeyCode.F1))
+      {
+          Debug.Log($"[PlayerSpawner] === PLAYER SPAWNER DEBUG ===");
+          Debug.Log($"[PlayerSpawner] _joinOrder count: {_joinOrder.Count}");
+          Debug.Log($"[PlayerSpawner] _spawnedCharacters count: {_spawnedCharacters.Count}");
+          
+          for (int i = 0; i < _joinOrder.Count; i++)
+          {
+              PlayerRef player = _joinOrder[i];
+              Debug.Log($"[PlayerSpawner] Join order {i}: Player {player}");
+              
+              if (_spawnedCharacters.TryGetValue(player, out NetworkObject networkObj))
+              {
+                  var pm = networkObj.GetComponent<PlayerManager>();
+                  Debug.Log($"[PlayerSpawner]   NetworkObject: {networkObj.name}, PlayerManager: {pm != null}, IsSpawned: {pm?.IsSpawned}");
+                  
+                  if (pm != null)
+                  {
+                      Debug.Log($"[PlayerSpawner]   PlayerRef: {pm.PlayerRef}, NameField: '{pm.NameField}'");
+                  }
+              }
+          }
+          
+          // GameManager 상태도 확인
+          if (GameManager.Instance != null)
+          {
+              GameManager.Instance.DebugPlayerManagerState();
+          }
+      }
+  }
+
+
+  private System.Collections.IEnumerator ClientPlayerManagerCheck()
+  {
+      yield return new WaitForSeconds(3f); // 초기 지연
+      
+      Debug.Log("[PlayerSpawner] (CLIENT) Starting PlayerManager check...");
+      
+      float timeout = 20f;
+      float elapsed = 0f;
+      
+      while (elapsed < timeout)
+      {
+          PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>();
+          Debug.Log($"[PlayerSpawner] (CLIENT) Found {allPlayerManagers.Length} PlayerManager objects");
+          
+          bool allProcessed = true;
+          
+          foreach (PlayerManager pm in allPlayerManagers)
+          {
+              if (pm == null || !pm.IsSpawned) continue;
+              
+              // PlayerRef가 None인 경우 수정
+              if (pm.PlayerRef == default(PlayerRef))
+              {
+                  Debug.LogWarning($"[PlayerSpawner] (CLIENT) PlayerManager {pm.gameObject.name} has PlayerRef None, attempting to fix...");
+                  
+                  if (pm.Object != null)
+                  {
+                      PlayerRef correctPlayerRef = default(PlayerRef);
+                      
+                      if (pm.Object.HasInputAuthority)
+                      {
+                          correctPlayerRef = _runner.LocalPlayer;
+                          Debug.Log($"[PlayerSpawner] (CLIENT) Setting PlayerRef to LocalPlayer: {correctPlayerRef}");
+                      }
+                      else if (pm.Object.InputAuthority != default(PlayerRef))
+                      {
+                          correctPlayerRef = pm.Object.InputAuthority;
+                          Debug.Log($"[PlayerSpawner] (CLIENT) Setting PlayerRef to InputAuthority: {correctPlayerRef}");
+                      }
+                      
+                      if (correctPlayerRef != default(PlayerRef))
+                      {
+                          pm.SetPlayerRef(correctPlayerRef);
+                          
+                          // GameManager에 등록되지 않은 경우 등록
+                          if (GameManager.Instance != null)
+                          {
+                              var existingManager = GameManager.Instance.GetPlayerManager(correctPlayerRef);
+                              if (existingManager == null)
+                              {
+                                  Debug.Log($"[PlayerSpawner] (CLIENT) Registering PlayerManager for {correctPlayerRef}");
+                                  GameManager.Instance.RegisterPlayerManager(correctPlayerRef, pm);
+                                  
+                                  // 초기화 확인
+                                  if (pm.GetPlayerCash() == 0)
+                                  {
+                                      pm.Initialize(initialCash);
+                                  }
+                              }
+                          }
+                          
+                          allProcessed = false; // 변경사항이 있으므로 계속 체크
+                      }
+                  }
+              }
+          }
+          
+          if (allProcessed)
+          {
+              Debug.Log("[PlayerSpawner] (CLIENT) All PlayerManagers processed successfully");
+              break;
+          }
+          
+          yield return new WaitForSeconds(1f);
+          elapsed += 1f;
+      }
+      
+      // 최종 상태 확인
+      if (GameManager.Instance != null)
+      {
+          //Debug.Log($"[PlayerSpawner] (CLIENT) Final check - PlayerManagers registered: {GameManager.Instance.playerManagers?.Count ?? 0}");
+          
+          // UI 업데이트 요청
+          GameManager.Instance.RpcUpdateCurrentRanking();
+      }
+  }
   //interface 
 
   public void OnInput(NetworkRunner runner, NetworkInput input) { }

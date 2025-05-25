@@ -321,11 +321,20 @@ public class GameUIManager : MonoBehaviour
 
     public void OnPlayerLeft(PlayerRef player)
     {
+        Debug.Log($"[GameUIManager] OnPlayerLeft called for player {player}");
+        
         if (playerSlotMapping != null && playerSlotMapping.TryGetValue(player, out int slotIndex))
         {
             playerSlotMapping.Remove(player);
             ClearPlayerSlot(slotIndex);
             Debug.Log($"[GameUIManager] Player {player} left, cleared slot {slotIndex}");
+            
+            // 남은 플레이어들의 슬롯을 재정렬하지 않고 그대로 유지
+            // (플레이어가 나간 슬롯은 비워두고, 나머지 플레이어들은 기존 위치 유지)
+        }
+        else
+        {
+            Debug.LogWarning($"[GameUIManager] Player {player} not found in slot mapping");
         }
     }
 
@@ -351,11 +360,27 @@ public class GameUIManager : MonoBehaviour
 
         Debug.Log($"[GameUIManager] Found {PlayerInfoManager.Instance.PlayerInfos.Count} players to sync");
         
-        foreach (var kvp in PlayerInfoManager.Instance.PlayerInfos)
+        // PlayerInfos의 복사본을 만들어 안전하게 순회
+        var playerInfosCopy = new List<(PlayerRef, NetworkPlayerInfo)>();
+        
+        try
         {
-            PlayerRef player = kvp.Key;
-            NetworkPlayerInfo playerInfo = kvp.Value;
-            
+            foreach (var kvp in PlayerInfoManager.Instance.PlayerInfos)
+            {
+                playerInfosCopy.Add((kvp.Key, kvp.Value));
+            }
+        }
+        catch (System.InvalidOperationException)
+        {
+            Debug.LogWarning("[GameUIManager] PlayerInfos dictionary was modified during enumeration, retrying...");
+            // 짧은 지연 후 재시도
+            Invoke(nameof(SyncAllPlayerSlots), 0.1f);
+            return;
+        }
+        
+        // 복사본을 사용하여 UI 업데이트
+        foreach (var (player, playerInfo) in playerInfosCopy)
+        {
             int slotIndex = GetOrAssignPlayerSlot(player);
             
             string path = "Characters/Character_" + playerInfo.selectedCharacterIndex;
