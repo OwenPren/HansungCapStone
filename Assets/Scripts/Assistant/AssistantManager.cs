@@ -21,6 +21,25 @@ public enum SectorType
     RealEstate
 }
 
+[System.Serializable]
+public class RoundEventData
+{
+    public int roundNumber;
+    public List<string> eventDescriptions;
+    public Dictionary<string, string> sectorImpacts;
+    public bool isGenerated;
+    public bool isApplied;
+    
+    public RoundEventData(int round)
+    {
+        roundNumber = round;
+        eventDescriptions = new List<string>();
+        sectorImpacts = new Dictionary<string, string>();
+        isGenerated = false;
+        isApplied = false;
+    }
+}
+
 public class AssistantManager : MonoBehaviour
 {
     public GameStartEventSO gameStartEvent;
@@ -41,6 +60,11 @@ public class AssistantManager : MonoBehaviour
     private JObject functionCallArguments = null;
 
     private bool runInProgress = false;
+    
+    // 라운드별 이벤트 데이터 관리
+    [SerializeField] private Dictionary<int, RoundEventData> roundEventsData = new Dictionary<int, RoundEventData>();
+    [SerializeField] private int currentProcessingRound = 0;
+    [SerializeField] private bool isGeneratingEvents = false;
 
     private void OnEnable()
     {
@@ -58,31 +82,52 @@ public class AssistantManager : MonoBehaviour
 
     private IEnumerator OnRoundStart()
     {
-        //라운드 시작시 어시스턴트로 부터 사건 생성 요청
-        yield return StartCoroutine(GenerationEvent());
-        //생성된 사건으로부터 주가 정보 생성
-        yield return StartCoroutine(StockPriceAdjustment());
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[AssistantManager] GameManager.Instance is null!");
+            yield break;
+        }
 
-        //GameManager.Instance.UpdateStockPrice(functionCallArguments);
-        FuctionCallArgumentParseAndUpdateStockPrice(functionCallArguments);
+        int currentRound = GameManager.Instance.CurrentRound;
+        Debug.Log($"[AssistantManager] OnRoundStart called for Round {currentRound}");
+
+        // 1. 현재 라운드 이벤트 적용 (이미 생성되어 있어야 함)
+        if (roundEventsData.ContainsKey(currentRound) && roundEventsData[currentRound].isGenerated)
+        {
+            ApplyRoundEvents(currentRound);
+        }
+        else
+        {
+            Debug.LogWarning($"[AssistantManager] Round {currentRound} events not ready! Generating now...");
+            // 긴급히 현재 라운드 이벤트 생성
+            yield return StartCoroutine(GenerateEventsForRound(currentRound));
+            ApplyRoundEvents(currentRound);
+        }
+
+        // 2. 다음 라운드 이벤트 생성 시작 (백그라운드에서)
+        int nextRound = currentRound + 1;
+        if (nextRound <= 12) // 최대 라운드 체크
+        {
+            StartCoroutine(GenerateEventsForRound(nextRound));
+        }
     }
 
     private void OnGameStart()
     {
-        //게임 시작시 쓰레드 생성
+        // 게임 시작시 스레드 생성 및 첫 번째 라운드 이벤트 생성
         StartCoroutine(GameStartRoutine());
-
         GameUIManager.Instance.ToggleStartButton();
     }
 
     private void OnGameEnd()
     {
-        //게임 종료시 발생. 쓰레드 제거 및 변수 초기화 진행
+        // 게임 종료시 발생. 스레드 제거 및 변수 초기화 진행
         if (IsThread && !string.IsNullOrEmpty(threadID))
         {
             StartCoroutine(DeleteThread());
         }
 
+        // 모든 데이터 초기화
         IsThread = false;
         threadID = "";
         runID = "";
@@ -91,6 +136,9 @@ public class AssistantManager : MonoBehaviour
         functionCallID = "";
         functionCallArguments = null;
         runInProgress = false;
+        roundEventsData.Clear();
+        currentProcessingRound = 0;
+        isGeneratingEvents = false;
     }
 
     private IEnumerator GameStartRoutine()
@@ -99,20 +147,117 @@ public class AssistantManager : MonoBehaviour
         {
             yield return StartCoroutine(StartThread());   
         }
-        yield return StartCoroutine(OnRoundStart());      
+        
+        // 게임 시작 시 첫 번째 라운드 이벤트 미리 생성
+        yield return StartCoroutine(GenerateEventsForRound(1));
     }
 
-    private void FuctionCallArgumentParseAndUpdateStockPrice(JObject argument)
+    // 특정 라운드의 이벤트 생성
+    private IEnumerator GenerateEventsForRound(int roundNumber)
     {
-        Dictionary<string, string> sectorImpacts = new Dictionary<string, string>();
-        List<string> eventDescriptions = new List<string>();
-
-        if (argument == null || argument["eventInfo"] == null)
+        if (isGeneratingEvents)
         {
+            Debug.LogWarning($"[AssistantManager] Event generation already in progress. Skipping round {roundNumber}");
+            yield break;
+        }
+
+        if (roundEventsData.ContainsKey(roundNumber) && roundEventsData[roundNumber].isGenerated)
+        {
+            Debug.Log($"[AssistantManager] Events for round {roundNumber} already generated");
+            yield break;
+        }
+
+        Debug.Log($"[AssistantManager] Starting event generation for Round {roundNumber}");
+        isGeneratingEvents = true;
+        currentProcessingRound = roundNumber;
+
+        // 라운드 데이터 초기화
+        if (!roundEventsData.ContainsKey(roundNumber))
+        {
+            roundEventsData[roundNumber] = new RoundEventData(roundNumber);
+        }
+
+        try
+        {
+            // 이벤트 생성
+            yield return StartCoroutine(GenerationEvent(roundNumber));
+            // 주가 정보 생성 (functionCallArguments 사용)
+            yield return StartCoroutine(StockPriceAdjustment(roundNumber));
+
+            // 데이터 저장
+            if (functionCallArguments != null)
+            {
+                ParseAndStoreEventData(roundNumber, functionCallArguments);
+                roundEventsData[roundNumber].isGenerated = true;
+                Debug.Log($"[AssistantManager] Round {roundNumber} events generated and stored successfully");
+            }
+            else
+            {
+                Debug.LogError($"[AssistantManager] Failed to generate events for round {roundNumber}");
+            }
+        }
+        finally
+        {
+            isGeneratingEvents = false;
+            currentProcessingRound = 0;
+        }
+    }
+
+    // 생성된 이벤트를 현재 라운드에 적용
+    private void ApplyRoundEvents(int roundNumber)
+    {
+        if (!roundEventsData.ContainsKey(roundNumber))
+        {
+            Debug.LogError($"[AssistantManager] No event data found for round {roundNumber}");
             return;
         }
 
-        foreach (JToken ev in argument["eventInfo"]!)
+        var roundData = roundEventsData[roundNumber];
+        if (!roundData.isGenerated)
+        {
+            Debug.LogError($"[AssistantManager] Round {roundNumber} events not yet generated");
+            return;
+        }
+
+        if (roundData.isApplied)
+        {
+            Debug.LogWarning($"[AssistantManager] Round {roundNumber} events already applied");
+            return;
+        }
+
+        Debug.Log($"[AssistantManager] Applying events for Round {roundNumber}");
+
+        // GameManager에 데이터 전달
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ToGmSectorImpacts(roundData.sectorImpacts);
+            GameManager.Instance.ToGmHintData(roundData.eventDescriptions);
+        }
+
+        roundData.isApplied = true;
+        Debug.Log($"[AssistantManager] Round {roundNumber} events applied successfully");
+    }
+
+    // functionCallArguments에서 데이터 파싱 및 저장
+    private void ParseAndStoreEventData(int roundNumber, JObject arguments)
+    {
+        if (!roundEventsData.ContainsKey(roundNumber))
+        {
+            roundEventsData[roundNumber] = new RoundEventData(roundNumber);
+        }
+
+        var roundData = roundEventsData[roundNumber];
+        
+        Dictionary<string, string> sectorImpacts = new Dictionary<string, string>();
+        List<string> eventDescriptions = new List<string>();
+
+        if (arguments == null || arguments["eventInfo"] == null)
+        {
+            Debug.LogError($"[AssistantManager] Invalid arguments for round {roundNumber}");
+            return;
+        }
+
+        foreach (JToken ev in arguments["eventInfo"]!)
         {
             if (ev["description"] != null)
             {
@@ -126,30 +271,25 @@ public class AssistantManager : MonoBehaviour
             }
         }
 
+        // 데이터 저장
+        roundData.eventDescriptions = eventDescriptions;
+        roundData.sectorImpacts = sectorImpacts;
+
+        Debug.Log($"[AssistantManager] Stored {eventDescriptions.Count} events and {sectorImpacts.Count} sector impacts for round {roundNumber}");
+        
         foreach (var kv in sectorImpacts)
         { 
-            Debug.Log($"{kv.Key} : {kv.Value}");
-        }
-
-        if (GameManager.Instance != null)
-        {
-            GameManager.Instance.ToGmSectorImpacts(sectorImpacts);
-            GameManager.Instance.ToGmHintData(eventDescriptions);
+            Debug.Log($"[Round {roundNumber}] {kv.Key} : {kv.Value}");
         }
     }
 
-    private IEnumerator GenerationEvent()
+    private IEnumerator GenerationEvent(int targetRound = 0)
     {
-        // 구성 요소 설명:
-        // specialEventInfo: 현재 활성화된 특별 이벤트 정보 (없으면 빈 문자열)
-        // generateSpecialEvent: 이번 라운드에 특별 이벤트를 생성할지 여부
-        // generateUnexpectedEvent: 이번 라운드에 예기치 않은 이벤트를 포함할지 여부
-        // eventSectors: 생성할 일반 이벤트의 분야 (랜덤하게 1~3개 선택됨)
-
+        Debug.Log($"[AssistantManager] GenerationEvent called for round {targetRound}");
+        
         // 랜덤으로 1~3개 분야 선택
-        // int numberOfSectors = UnityEngine.Random.Range(1, 4); // 1 ~ 3
-         SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
-         List<SectorType> sectorsList = new List<SectorType>(allSectors);
+        SectorType[] allSectors = (SectorType[])Enum.GetValues(typeof(SectorType));
+        List<SectorType> sectorsList = new List<SectorType>(allSectors);
 
         int numberOfSectors = 2; // 숫자 고정
 
@@ -186,12 +326,14 @@ public class AssistantManager : MonoBehaviour
             }
         };
 
-        // 어시스턴트에게 이벤트 생성 요청 (입력 값은 JSON 문자열로 변환되어 전송됨)
+        // 어시스턴트에게 이벤트 생성 요청
         yield return StartCoroutine(GenarationRoutine("user", inputParameters.ToString(), APIUrls.EventGenerationAssistantID, toolChoiceObject));
     }
 
-    private IEnumerator StockPriceAdjustment()
+    private IEnumerator StockPriceAdjustment(int targetRound = 0)
     {
+        Debug.Log($"[AssistantManager] StockPriceAdjustment called for round {targetRound}");
+        
         if (functionCallArguments == null)
         {
             Debug.Log("function Argument is not exist");
@@ -230,24 +372,45 @@ public class AssistantManager : MonoBehaviour
         }
 
         runInProgress = false;
-        
-        //생성된 메시지의 id 조회 - RetrieveRun 단계에서 메세지 생성 대기 및 function call이 반환되므로 사용 할 필요 없음. 
-        //yield return StartCoroutine(ListMessage());
-        //yield return StartCoroutine(RetrieveMessage());
-
     }
 
+    // 디버그용 메서드들
+    public void LogRoundEventsStatus()
+    {
+        Debug.Log($"[AssistantManager] === ROUND EVENTS STATUS ===");
+        Debug.Log($"Current Processing Round: {currentProcessingRound}");
+        Debug.Log($"Is Generating Events: {isGeneratingEvents}");
+        Debug.Log($"Total Rounds Data: {roundEventsData.Count}");
+        
+        foreach (var kvp in roundEventsData)
+        {
+            var data = kvp.Value;
+            Debug.Log($"Round {kvp.Key}: Generated={data.isGenerated}, Applied={data.isApplied}, Events={data.eventDescriptions.Count}, Sectors={data.sectorImpacts.Count}");
+        }
+    }
+
+    public RoundEventData GetRoundEventData(int roundNumber)
+    {
+        return roundEventsData.ContainsKey(roundNumber) ? roundEventsData[roundNumber] : null;
+    }
+
+    public bool IsRoundEventsReady(int roundNumber)
+    {
+        return roundEventsData.ContainsKey(roundNumber) && roundEventsData[roundNumber].isGenerated;
+    }
+
+    // 기존 메서드들은 그대로 유지...
     private IEnumerator StartThread()
     {
         bool isDone = false;
-        //쓰레드 생성, 쓰레드 ID 저장
+        //스레드 생성, 스레드 ID 저장
         yield return StartCoroutine(apiManager.PostRequest(
             APIUrls.CreateThreadURL,
             "{}",
             onSuccess: (response) => {
                 Debug.Log("Create Thread POST 성공: " + response);
 
-                //쓰레드 활성 및 ID 저장
+                //스레드 활성 및 ID 저장
                 IsThread = true;
 
                 JObject jobj = JObject.Parse(response);
