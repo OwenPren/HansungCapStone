@@ -37,7 +37,26 @@ public class UIManager : MonoBehaviour
     public List<TextMeshProUGUI> currentResultValue = new List<TextMeshProUGUI>();
     public List<Image> currentRankImage = new List<Image>();
 
+    [Header("Market UI")]
+    public List<Button> currentStockCount = new List<Button>();
+    public List<Button> currentStockData = new List<Button>();
+
     private PlayerManager localPlayerManager;
+
+    private Dictionary<string, string> stockNameMapping = new Dictionary<string, string>()
+    {
+        { "Energy", "에너지" },
+        { "Technology", "기술" },
+        { "Finance", "금융" },
+        { "Healthcare", "의료" },
+        { "ConsumerDiscretionary", "임의소비재" },
+        { "Industrials", "산업재" },
+        { "Telecom", "통신" },
+        { "RealEstate", "부동산" },
+        { "Materials", "소재" },
+        { "ConsumerStaples", "필수소비재" }
+    };
+
 
     void Update()
     {
@@ -72,8 +91,73 @@ public class UIManager : MonoBehaviour
     
     private float lastUpdateTime = 0f;
 
+    // ============= 주식 창 업데이트 메서드 =====================
+
+    public void UpdateMarketStockUI()
+    {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[UIManager] GameManager.Instance is null. Cannot update market UI.");
+            return;
+        }
+
+        if (localPlayerManager == null)
+        {
+            FindPortfolio();
+            if (localPlayerManager == null)
+            {
+                Debug.LogWarning("[UIManager] Local PlayerManager not found yet. Market UI might not show accurate stock counts.");
+            }
+        }
+
+        foreach (Button stockButton in currentStockData)
+        {
+            if (stockButton == null || stockButton.GetComponentInChildren<TextMeshProUGUI>() == null) continue;
+
+            string stockTag = stockButton.tag; // 버튼의 태그를 주식 이름으로 사용
+            if (string.IsNullOrEmpty(stockTag)) continue;
+
+            string stockEnglishName = stockTag;
+            string stockKoreanName = stockNameMapping.ContainsKey(stockEnglishName) ? stockNameMapping[stockEnglishName] : stockEnglishName;
+
+            StockData currentStockData = GameManager.Instance.stockMarketManager.GetStockData(stockEnglishName);
+            if (currentStockData != null)
+            {
+                string sign = currentStockData.stockChangeRate >= 0 ? "<color=#FF0000>(+" : "<color=#0000FF>(";
+                if(currentStockData.stockChangeRate < 0.001f & currentStockData.stockChangeRate > -0.0001f)
+                {
+                    sign = "(+";    
+                }
+                stockButton.GetComponentInChildren<TextMeshProUGUI>().text =
+                    $"한성 {stockKoreanName}\n" +
+                    $"{currentStockData.currentPrice:F1}원 " +
+                    $"{sign}{currentStockData.stockChangeRate:F2}%)</color>";
+            }
+            else
+            {
+                stockButton.GetComponentInChildren<TextMeshProUGUI>().text =
+                    $"한성 {stockKoreanName}\n" +
+                    "데이터 없음";
+                Debug.LogWarning($"[UIManager] Stock data not found for: {stockEnglishName}");
+            }
+        }
+
+        foreach (Button countButton in currentStockCount)
+        {
+            if (countButton == null || countButton.GetComponentInChildren<TextMeshProUGUI>() == null) continue;
+
+            string stockTag = countButton.tag; // 버튼의 태그를 주식 이름으로 사용
+            if (string.IsNullOrEmpty(stockTag)) continue;
+
+            string stockEnglishName = stockTag;
+            int quantity = GetLocalPlayerStockQuantity(stockEnglishName);
+
+            countButton.GetComponentInChildren<TextMeshProUGUI>().text = $"{quantity}주";
+        }
+    }
+
     // ============= 구매/판매 요청 메서드 (RPC 사용) =============
-    
+
     public void RequestBuyStock(string stockName, int quantity)
     {
         Debug.Log($"[UIManager] Requesting buy stock - {stockName}, quantity: {quantity}");
@@ -276,6 +360,7 @@ public class UIManager : MonoBehaviour
         
         Debug.Log("[UIManager] Hint UI update completed");
     }
+
    public void UpdateCurrentRanking()
     {
         Debug.Log("[UIManager] UpdateCurrentRanking called");

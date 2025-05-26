@@ -38,17 +38,27 @@ public class GameUIManager : MonoBehaviour
     [Header("WatingRoomUI")]  
     [SerializeField] private GameObject watingRoomUI;
     [SerializeField] private List<Image> playerSlots;
+    [SerializeField] private List<TMP_Text> playerNames;
     [SerializeField] private Button startButton;
     [SerializeField] private TMP_Text roomCode;
 
+    [Header("Assistant Status")]
+    [SerializeField] private GameObject assistantStatusPanel;
+    [SerializeField] private TMP_Text assistantStatusText;
+    [SerializeField] private Image assistantStatusIcon;
+    [SerializeField] private Slider assistantProgressBar;
+
     [Header("Player Management")]
     private Dictionary<PlayerRef, int> playerSlotMapping;
+
+    // Assistant 상태 관리
+    private bool isAssistantReady = false;
+    private bool isCheckingAssistantStatus = false;
 
     private void Awake()
     {
         Debug.Log("[GameUIManager] Awake() called");
         
-        // 싱글톤 패턴 구현
         if (_instance != null && _instance != this)
         {
             Debug.Log($"[GameUIManager] Destroying duplicate instance. Existing: {_instance.name}, This: {this.name}");
@@ -57,13 +67,7 @@ public class GameUIManager : MonoBehaviour
         }
 
         _instance = this;
-        
-        // playerSlotMapping 초기화
         playerSlotMapping = new Dictionary<PlayerRef, int>();
-        
-        // DontDestroyOnLoad는 필요한 경우에만 사용
-        // 현재 씬에만 있어야 할 UI라면 주석 처리
-        // DontDestroyOnLoad(gameObject);
         
         Debug.Log("[GameUIManager] Instance set successfully");
     }
@@ -92,19 +96,30 @@ public class GameUIManager : MonoBehaviour
         if (gameUI == null) Debug.LogError("[GameUIManager] gameUI is not assigned!");
         if (watingRoomUI == null) Debug.LogError("[GameUIManager] watingRoomUI is not assigned!");
         if (playerSlots == null || playerSlots.Count == 0) Debug.LogError("[GameUIManager] playerSlots is not properly assigned!");
+        if (playerNames == null || playerNames.Count == 0) Debug.LogError("[GameUIManager] playerNames is not properly assigned!");
         if (startButton == null) Debug.LogError("[GameUIManager] startButton is not assigned!");
         if (roomCode == null) Debug.LogError("[GameUIManager] roomCode is not assigned!");
+        if (assistantStatusPanel == null) Debug.LogError("[GameUIManager] assistantStatusPanel is not assigned!");
+        if (assistantStatusText == null) Debug.LogError("[GameUIManager] assistantStatusText is not assigned!");
         
         // 초기 UI 설정
         if (gameUI != null) HideUI(gameUI);
         if (watingRoomUI != null) ShowUI(watingRoomUI);
         
         isStartGame = false;
+        isAssistantReady = false;
         
+        // Assistant 상태 패널 초기 설정
+        UpdateAssistantStatus("Assistant 초기화 중...", false);
+        
+        // 시작 버튼 초기 비활성화
         if (startButton != null)
         {
             startButton.interactable = false;
         }
+        
+        // 모든 플레이어 슬롯과 이름 초기화
+        ClearAllSlots();
         
         // PlayerInfoManager가 준비되면 동기화 시작
         StartCoroutine(WaitForInitialSync());
@@ -116,13 +131,145 @@ public class GameUIManager : MonoBehaviour
     {
         // PlayerInfoManager와 네트워크 준비까지 대기
         yield return new WaitUntil(() => PlayerInfoManager.Instance != null);
-        yield return new WaitForSeconds(2.0f); // 충분한 지연으로 모든 플레이어 정보가 준비될 때까지 대기
+        yield return new WaitForSeconds(2.0f);
         
         Debug.Log("[GameUIManager] Performing initial sync");
         SyncAllPlayerSlots();
         
-        // 시작 버튼 설정
+        // Assistant 상태 체크 시작
+        StartCoroutine(CheckAssistantStatus());
+        
+        // 시작 버튼 설정 (Assistant 준비 상태에 따라)
         ToggleStartButton();
+    }
+
+    // Assistant 상태 체크 코루틴 (클라이언트/서버 모두에서 실행)
+    private IEnumerator CheckAssistantStatus()
+    {
+        if (isCheckingAssistantStatus) yield break;
+        
+        isCheckingAssistantStatus = true;
+        Debug.Log("[GameUIManager] Starting Assistant status check");
+        
+        UpdateAssistantStatus("스레드 생성 중...", false);
+        
+        // AssistantManager가 준비될 때까지 대기
+        yield return new WaitUntil(() => AssistantManager.Instance != null);
+        
+        if (AssistantManager.Instance == null)
+        {
+            Debug.LogError("[GameUIManager] AssistantManager.Instance not found!");
+            UpdateAssistantStatus("Assistant 오류", false);
+            yield break;
+        }
+        
+        // 네트워크 러너 확인
+        var runner = FindObjectOfType<NetworkRunner>();
+        if (runner == null)
+        {
+            Debug.LogError("[GameUIManager] NetworkRunner not found!");
+            UpdateAssistantStatus("네트워크 오류", false);
+            yield break;
+        }
+        
+        Debug.Log($"[GameUIManager] Starting status monitoring on {(runner.IsServer ? "SERVER" : "CLIENT")}");
+        
+        // Assistant 상태를 주기적으로 체크
+        float timeout = 60f; // 60초 타임아웃
+        float elapsed = 0f;
+        
+        while (elapsed < timeout)
+        {
+            // 서버와 클라이언트 모두에서 동일한 방식으로 상태 확인
+            AssistantStatus status = AssistantManager.Instance.GetCurrentStatus();
+            string message = AssistantManager.Instance.GetStatusMessage();
+            float progress = AssistantManager.Instance.GetProgress();
+            bool isRound1Ready = AssistantManager.Instance.IsRoundEventsReady(1);
+            
+            Debug.Log($"[GameUIManager] Status check - Status: {status}, Message: '{message}', Round1Ready: {isRound1Ready}, Progress: {progress:F2}");
+            
+            // UI 업데이트
+            UpdateAssistantStatus(message, status == AssistantStatus.Ready && isRound1Ready);
+            UpdateAssistantProgress(progress);
+            
+            // 준비 완료 체크
+            if (status == AssistantStatus.Ready && isRound1Ready)
+            {
+                Debug.Log("[GameUIManager] Assistant is ready!");
+                isAssistantReady = true;
+                ToggleStartButton(); // 버튼 상태 업데이트
+                break;
+            }
+            
+            yield return new WaitForSeconds(1f); // 1초마다 체크
+            elapsed += 1f;
+        }
+        
+        if (elapsed >= timeout)
+        {
+            Debug.LogError("[GameUIManager] Assistant status check timeout!");
+            UpdateAssistantStatus("시간 초과 (계속 진행 가능)", false);
+            isAssistantReady = true; // 타임아웃 시에도 게임 진행 허용
+            ToggleStartButton();
+        }
+        
+        isCheckingAssistantStatus = false;
+        
+        // 5초 후에 Assistant 상태 패널 숨기기
+        if (isAssistantReady)
+        {
+            yield return new WaitForSeconds(5f);
+            if (assistantStatusPanel != null)
+            {
+                assistantStatusPanel.SetActive(false);
+            }
+        }
+    }
+
+    // AssistantManager RPC에서 호출되는 메서드
+    public void OnAssistantReady()
+    {
+        Debug.Log("[GameUIManager] OnAssistantReady called");
+        isAssistantReady = true;
+        ToggleStartButton();
+    }
+
+    // Assistant 상태 업데이트
+    public void UpdateAssistantStatus(string statusText, bool isReady)
+    {
+        Debug.Log($"[GameUIManager] UpdateAssistantStatus: {statusText}, Ready: {isReady}");
+        
+        if (assistantStatusText != null)
+        {
+            assistantStatusText.text = statusText;
+        }
+        
+        if (assistantStatusIcon != null)
+        {
+            // 준비 상태에 따라 아이콘 색상 변경
+            assistantStatusIcon.color = isReady ? Color.green : Color.yellow;
+        }
+        
+        if (assistantStatusPanel != null)
+        {
+            assistantStatusPanel.SetActive(true);
+        }
+
+        // 준비 완료 시 isAssistantReady 상태 업데이트
+        if (isReady && !isAssistantReady)
+        {
+            isAssistantReady = true;
+            ToggleStartButton();
+        }
+    }
+
+    // Assistant 진행률 업데이트
+    public void UpdateAssistantProgress(float progress)
+    {
+        if (assistantProgressBar != null)
+        {
+            assistantProgressBar.value = progress;
+        }
     }
 
     #region UI Control Methods
@@ -155,10 +302,14 @@ public class GameUIManager : MonoBehaviour
         var runner = FindObjectOfType<NetworkRunner>();
         if (startButton != null && runner != null)
         {
-            startButton.interactable = runner.IsServer;
+            // 서버이면서 Assistant가 준비된 경우에만 버튼 활성화
+            bool shouldEnable = runner.IsServer && isAssistantReady;
+            startButton.interactable = shouldEnable;
+            
+            Debug.Log($"[GameUIManager] Start button state - IsServer: {runner.IsServer}, AssistantReady: {isAssistantReady}, ButtonEnabled: {shouldEnable}");
             
             // 버튼 클릭 이벤트 연결 (서버에서만)
-            if (runner.IsServer)
+            if (runner.IsServer && isAssistantReady)
             {
                 startButton.onClick.RemoveAllListeners();
                 startButton.onClick.AddListener(OnStartButtonClicked);
@@ -173,10 +324,14 @@ public class GameUIManager : MonoBehaviour
         Debug.Log("[GameUIManager] Start button clicked on server");
         
         var runner = FindObjectOfType<NetworkRunner>();
-        if (runner != null && runner.IsServer)
+        if (runner != null && runner.IsServer && isAssistantReady)
         {
             // 모든 클라이언트에 게임 시작 알림
             RequestGameStart();
+        }
+        else
+        {
+            Debug.LogWarning("[GameUIManager] Cannot start game - conditions not met");
         }
     }
 
@@ -212,12 +367,6 @@ public class GameUIManager : MonoBehaviour
 
         isStartGame = true;
         
-        // 이벤트 발생 (다른 시스템들에게 알림)
-        // if (roundStartEvent != null)
-        // {
-        //     roundStartEvent.Invoke();
-        // }
-
         Debug.Log("[GameUIManager] Game started successfully");
     }
 
@@ -231,9 +380,10 @@ public class GameUIManager : MonoBehaviour
     #endregion
 
     #region Player Slot Management
-    public void SetPlayerSlots(int slotIndex, Sprite characterSprite)
+    // 수정된 메서드: 캐릭터 스프라이트와 이름을 함께 설정
+    public void SetPlayerSlots(int slotIndex, Sprite characterSprite, string playerName = "")
     {
-        Debug.Log($"[GameUIManager] SetPlayerSlots called - slotIndex: {slotIndex}, sprite: {characterSprite?.name}");
+        Debug.Log($"[GameUIManager] SetPlayerSlots called - slotIndex: {slotIndex}, sprite: {characterSprite?.name}, name: {playerName}");
         
         if (playerSlots == null)
         {
@@ -247,6 +397,7 @@ public class GameUIManager : MonoBehaviour
             return;
         }
 
+        // 캐릭터 이미지 설정
         var img = playerSlots[slotIndex];
         if (img != null)
         {
@@ -258,18 +409,47 @@ public class GameUIManager : MonoBehaviour
         {
             Debug.LogError($"[GameUIManager] Image component at slot {slotIndex} is null!");
         }
+
+        // 플레이어 이름 설정
+        if (playerNames != null && slotIndex < playerNames.Count)
+        {
+            var nameText = playerNames[slotIndex];
+            if (nameText != null)
+            {
+                nameText.text = string.IsNullOrEmpty(playerName) ? $"name{slotIndex + 1}" : playerName;
+                nameText.gameObject.SetActive(true);
+                Debug.Log($"[GameUIManager] Successfully set player name {slotIndex} to: {nameText.text}");
+            }
+            else
+            {
+                Debug.LogError($"[GameUIManager] Text component at slot {slotIndex} is null!");
+            }
+        }
     }
 
     public void ClearPlayerSlot(int slotIndex)
     {
         if (playerSlots == null || slotIndex < 0 || slotIndex >= playerSlots.Count) return;
 
+        // 캐릭터 이미지 초기화
         var img = playerSlots[slotIndex];
         if (img != null)
         {
             img.sprite = null;
             img.enabled = false;
             Debug.Log($"[GameUIManager] Cleared player slot {slotIndex}");
+        }
+
+        // 플레이어 이름 초기화
+        if (playerNames != null && slotIndex < playerNames.Count)
+        {
+            var nameText = playerNames[slotIndex];
+            if (nameText != null)
+            {
+                nameText.text = $"name{slotIndex + 1}";
+                nameText.gameObject.SetActive(false);
+                Debug.Log($"[GameUIManager] Cleared player name {slotIndex}");
+            }
         }
     }
 
@@ -286,18 +466,59 @@ public class GameUIManager : MonoBehaviour
         int slotIndex = GetOrAssignPlayerSlot(player);
         Debug.Log($"[GameUIManager] Assigned slot {slotIndex} to player {player}");
         
+        // 캐릭터 스프라이트 로드
         string path = "Characters/Character_" + characterIndex;
         Sprite characterSprite = Resources.Load<Sprite>(path);
         
+        // 플레이어 이름 가져오기
+        string playerName = GetPlayerName(player);
+        
         if (characterSprite != null)
         {
-            SetPlayerSlots(slotIndex, characterSprite);
-            Debug.Log($"[GameUIManager] Successfully updated slot {slotIndex} with character {characterIndex}");
+            SetPlayerSlots(slotIndex, characterSprite, playerName);
+            Debug.Log($"[GameUIManager] Successfully updated slot {slotIndex} with character {characterIndex} and name {playerName}");
         }
         else
         {
             Debug.LogError($"[GameUIManager] Failed to load character sprite at path: {path}");
         }
+    }
+
+    // 플레이어 이름을 가져오는 헬퍼 메서드
+    private string GetPlayerName(PlayerRef player)
+    {
+        string playerName = "";
+        
+        // PlayerInfoManager에서 플레이어 정보 가져오기
+        if (PlayerInfoManager.Instance != null)
+        {
+            var playerInfo = PlayerInfoManager.Instance.GetPlayerInfo(player);
+            if (playerInfo.HasValue)
+            {
+                playerName = playerInfo.Value.nickname.ToString();
+                Debug.Log($"[GameUIManager] Found player name from PlayerInfoManager: {playerName}");
+            }
+        }
+        
+        // PlayerInfoManager에서 못 찾았으면 GameManager를 통해 PlayerManager에서 찾기
+        if (string.IsNullOrEmpty(playerName) && GameManager.Instance != null)
+        {
+            var playerManager = GameManager.Instance.GetPlayerManager(player);
+            if (playerManager != null)
+            {
+                playerName = playerManager.NameField;
+                Debug.Log($"[GameUIManager] Found player name from PlayerManager: {playerName}");
+            }
+        }
+        
+        // 여전히 없으면 기본값 사용
+        if (string.IsNullOrEmpty(playerName))
+        {
+            playerName = $"Player{player.RawEncoded}";
+            Debug.Log($"[GameUIManager] Using default player name: {playerName}");
+        }
+        
+        return playerName;
     }
 
     private int GetOrAssignPlayerSlot(PlayerRef player)
@@ -328,9 +549,6 @@ public class GameUIManager : MonoBehaviour
             playerSlotMapping.Remove(player);
             ClearPlayerSlot(slotIndex);
             Debug.Log($"[GameUIManager] Player {player} left, cleared slot {slotIndex}");
-            
-            // 남은 플레이어들의 슬롯을 재정렬하지 않고 그대로 유지
-            // (플레이어가 나간 슬롯은 비워두고, 나머지 플레이어들은 기존 위치 유지)
         }
         else
         {
@@ -385,11 +603,12 @@ public class GameUIManager : MonoBehaviour
             
             string path = "Characters/Character_" + playerInfo.selectedCharacterIndex;
             Sprite characterSprite = Resources.Load<Sprite>(path);
+            string playerName = playerInfo.nickname.ToString();
             
             if (characterSprite != null)
             {
-                SetPlayerSlots(slotIndex, characterSprite);
-                Debug.Log($"[GameUIManager] Synced player {player} ('{playerInfo.nickname.ToString()}') to slot {slotIndex} with character {playerInfo.selectedCharacterIndex}");
+                SetPlayerSlots(slotIndex, characterSprite, playerName);
+                Debug.Log($"[GameUIManager] Synced player {player} ('{playerName}') to slot {slotIndex} with character {playerInfo.selectedCharacterIndex}");
             }
             else
             {
@@ -415,31 +634,22 @@ public class GameUIManager : MonoBehaviour
         {
             Debug.Log($"[GameUIManager] === UI DEBUG INFO ===");
             Debug.Log($"[GameUIManager] Instance: {(_instance != null ? "EXISTS" : "NULL")}");
+            Debug.Log($"[GameUIManager] isAssistantReady: {isAssistantReady}");
             Debug.Log($"[GameUIManager] playerSlotMapping: {(playerSlotMapping != null ? $"EXISTS (Count: {playerSlotMapping.Count})" : "NULL")}");
             Debug.Log($"[GameUIManager] playerSlots: {(playerSlots != null ? $"EXISTS (Count: {playerSlots.Count})" : "NULL")}");
+            Debug.Log($"[GameUIManager] playerNames: {(playerNames != null ? $"EXISTS (Count: {playerNames.Count})" : "NULL")}");
             
-            if (playerSlotMapping != null)
+            // Assistant 상태 체크
+            if (AssistantManager.Instance != null)
             {
-                foreach (var kvp in playerSlotMapping)
-                {
-                    Debug.Log($"[GameUIManager] Player {kvp.Key} -> Slot {kvp.Value}");
-                }
+                Debug.Log($"[GameUIManager] Assistant Status: {AssistantManager.Instance.GetCurrentStatus()}");
+                Debug.Log($"[GameUIManager] Assistant Message: '{AssistantManager.Instance.GetStatusMessage()}'");
+                Debug.Log($"[GameUIManager] Round 1 Events Ready: {AssistantManager.Instance.IsRoundEventsReady(1)}");
+                AssistantManager.Instance.LogRoundEventsStatus();
             }
-            
-            if (playerSlots != null)
+            else
             {
-                for (int i = 0; i < playerSlots.Count; i++)
-                {
-                    var slot = playerSlots[i];
-                    if (slot != null)
-                    {
-                        Debug.Log($"[GameUIManager] Slot {i}: enabled={slot.enabled}, sprite={slot.sprite?.name ?? "null"}");
-                    }
-                    else
-                    {
-                        Debug.Log($"[GameUIManager] Slot {i}: NULL IMAGE COMPONENT");
-                    }
-                }
+                Debug.LogWarning("[GameUIManager] AssistantManager.Instance is null");
             }
             
             Debug.Log("[GameUIManager] Triggering manual sync...");
@@ -450,14 +660,37 @@ public class GameUIManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.G))
         {
             var runner = FindObjectOfType<NetworkRunner>();
-            if (runner != null && runner.IsServer)
+            if (runner != null && runner.IsServer && isAssistantReady)
             {
                 Debug.Log("[GameUIManager] Manual game start triggered (G key)");
                 RequestGameStart();
             }
             else
             {
-                Debug.Log("[GameUIManager] G key pressed but not server or no runner");
+                Debug.Log("[GameUIManager] G key pressed but conditions not met");
+            }
+        }
+        
+        // Assistant 상태 강제 체크 (A키)
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            if (AssistantManager.Instance != null)
+            {
+                AssistantStatus status = AssistantManager.Instance.GetCurrentStatus();
+                bool round1Ready = AssistantManager.Instance.IsRoundEventsReady(1);
+                string message = AssistantManager.Instance.GetStatusMessage();
+                Debug.Log($"[GameUIManager] Manual Assistant check - Status: {status}, Message: '{message}', Round 1 Ready: {round1Ready}");
+                
+                if (status == AssistantStatus.Ready && round1Ready && !isAssistantReady)
+                {
+                    UpdateAssistantStatus("준비 완료!", true);
+                    isAssistantReady = true;
+                    ToggleStartButton();
+                }
+            }
+            else
+            {
+                Debug.LogWarning("[GameUIManager] AssistantManager.Instance is null");
             }
         }
     }

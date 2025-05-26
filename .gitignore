@@ -79,3 +79,5 @@ crashlytics-build.properties
 *.cs text eol=lf encoding=UTF-8
 *.meta text eol=lf encoding=UTF-8
 *.unity text eol=lf encoding=UTF-8
+Assets/Font/paybooc Bold SDF2.asset.meta
+Assets/Font/paybooc Bold SDF2.asset

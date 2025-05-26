@@ -1,11 +1,25 @@
-// StockListPanelUI.cs
+
 using UnityEngine;
 using UnityEngine.UI; // Button 사용을 위해 필요
 using System.Collections.Generic; // List 사용을 위해 필요
 using TMPro;
 
-public class StockListPanelUI : MonoBehaviour
-{
+public class MarketPanelUI : MonoBehaviour { 
+
+    private Dictionary<string, string> stockNameMapping = new Dictionary<string, string>()
+    {
+        { "Energy", "에너지" },
+        { "Technology", "기술" },
+        { "Finance", "금융" },
+        { "Healthcare", "의료" },
+        { "ConsumerDiscretionary", "임의소비재" },
+        { "Industrials", "산업재" },
+        { "Telecom", "통신" },
+        { "RealEstate", "부동산" },
+        { "Materials", "소재" },
+        { "ConsumerStaples", "필수소비재" }
+    };
+
     [Header("주식 목록 버튼들")]
     // Inspector에서 주식별 버튼들을 여기에 드래그하여 할당합니다.
     public List<Button> stockButtons;
@@ -41,26 +55,26 @@ public class StockListPanelUI : MonoBehaviour
     public void OnStockButtonClick(Button clickedButton)
     {
         // 클릭된 버튼의 Tag 값을 가져옵니다. Tag에 주식 이름이 설정되어 있어야 합니다.
-        string stockName = clickedButton.tag;
+        string stockTag = clickedButton.tag; // 버튼의 태그를 주식 이름으로
 
-        TextMeshProUGUI buttonTextComponent = clickedButton.GetComponentInChildren<TextMeshProUGUI>();
+        string stockEnglishName = stockTag;
+        string stockKoreanName = stockNameMapping.ContainsKey(stockEnglishName) ? ("한성 " + stockNameMapping[stockEnglishName]) : stockEnglishName;
 
-        string stockNameKR = buttonTextComponent.text;
 
-        if (string.IsNullOrEmpty(stockName))
+        if (string.IsNullOrEmpty(stockKoreanName))
         {
             Debug.LogWarning($"Clicked button '{clickedButton.name}' has no Tag (stock name) assigned!");
             return;
         }
 
-        Debug.Log($"'{stockName}' 주식 버튼 클릭됨. 상세 정보 패널 표시 요청.");
+        Debug.Log($"'{stockKoreanName}' 주식 버튼 클릭됨. 상세 정보 패널 표시 요청.");
 
 
         // 상세 정보 패널을 활성화하고 주식 정보를 표시하도록 요청합니다.
         if (stockDetailPanelUI != null)
         {
             stockDetailPanelObject.SetActive(true); // 상세 패널 오브젝트 활성화
-            stockDetailPanelUI.DisplayStockInfo(stockName, stockNameKR); // MarketPanel2UI 스크립트의 정보 표시 메서드 호출
+            stockDetailPanelUI.DisplayStockInfo(stockEnglishName, stockKoreanName); // MarketPanel2UI 스크립트의 정보 표시 메서드 호출
         }
         else
         {
