@@ -369,7 +369,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -80.1, y: -60}
-  m_SizeDelta: {x: 21.09, y: 40.73}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &72073723
 MonoBehaviour:
@@ -820,7 +820,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 62.77, y: 49.37}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &138803282
 MonoBehaviour:
@@ -858,8 +858,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "1\uC6D4"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
-  m_sharedMaterial: {fileID: -6972109053511083523, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1360,9 +1360,9 @@ RectTransform:
   - {fileID: 1970193595}
   m_Father: {fileID: 1876898445}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 550, y: -50}
   m_SizeDelta: {x: 300, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &214621488
@@ -2017,7 +2017,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &315689747
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2030,12 +2030,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2064075896}
+  m_Father: {fileID: 1696931216}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 383, y: 167}
-  m_SizeDelta: {x: 201.10568, y: -35.000023}
+  m_SizeDelta: {x: -618.8943, y: -535.00006}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &315689748
 MonoBehaviour:
@@ -2168,9 +2168,9 @@ RectTransform:
   - {fileID: 1424075474}
   m_Father: {fileID: 1876898445}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 950, y: -50}
   m_SizeDelta: {x: 300, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &315968562
@@ -2359,7 +2359,7 @@ GameObject:
   - component: {fileID: 340536755}
   m_Layer: 5
   m_Name: 10p
-  m_TagString: Energy
+  m_TagString: ConsumerStaples
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -3787,7 +3787,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -100, y: 27}
-  m_SizeDelta: {x: 170, y: 37.03}
+  m_SizeDelta: {x: 170, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &511293269
 MonoBehaviour:
@@ -3936,7 +3936,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 86, y: -27}
-  m_SizeDelta: {x: 210, y: 37.03}
+  m_SizeDelta: {x: 210, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &529686742
 MonoBehaviour:
@@ -4110,8 +4110,8 @@ MonoBehaviour:
     \uC778\uAE30\uB97C \uB04C\uBA74\uC11C \uC18C\uBE44\uC790\uB4E4\uC758 \uC5EC\uAC00
     \uC9C0\uCD9C\uC774 \uD65C\uBC1C\uD574\uC9C0\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
-  m_sharedMaterial: {fileID: -6972109053511083523, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -4422,7 +4422,7 @@ GameObject:
   - component: {fileID: 609455564}
   m_Layer: 5
   m_Name: 7p
-  m_TagString: Energy
+  m_TagString: Telecom
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5108,8 +5108,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
-  m_sharedMaterial: {fileID: -6972109053511083523, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -5732,7 +5732,7 @@ GameObject:
   - component: {fileID: 804097094}
   m_Layer: 5
   m_Name: 3p
-  m_TagString: Energy
+  m_TagString: Finance
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -6402,6 +6402,28 @@ MonoBehaviour:
   - {fileID: 1451805614}
   - {fileID: 49024328}
   - {fileID: 762407591}
+  currentStockCount:
+  - {fileID: 2119779765}
+  - {fileID: 1395959711}
+  - {fileID: 804097094}
+  - {fileID: 941689094}
+  - {fileID: 1712550559}
+  - {fileID: 1967051863}
+  - {fileID: 609455564}
+  - {fileID: 1032188879}
+  - {fileID: 1230520322}
+  - {fileID: 340536755}
+  currentStockData:
+  - {fileID: 1291353199}
+  - {fileID: 1383334490}
+  - {fileID: 1569487838}
+  - {fileID: 1175934876}
+  - {fileID: 985950629}
+  - {fileID: 1831650033}
+  - {fileID: 536181909}
+  - {fileID: 324578176}
+  - {fileID: 498542011}
+  - {fileID: 1515577357}
   rankingNameTexts:
   - {fileID: 1846090466}
   - {fileID: 1309964788}
@@ -6461,7 +6483,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -100, y: -27}
-  m_SizeDelta: {x: 170, y: 37.03}
+  m_SizeDelta: {x: 170, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &879898635
 MonoBehaviour:
@@ -6610,7 +6632,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -80.1, y: 60}
-  m_SizeDelta: {x: 21.09, y: 40.73}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &882330323
 MonoBehaviour:
@@ -7005,7 +7027,7 @@ GameObject:
   - component: {fileID: 941689094}
   m_Layer: 5
   m_Name: 4p
-  m_TagString: Energy
+  m_TagString: Healthcare
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -7884,7 +7906,7 @@ GameObject:
   - component: {fileID: 1032188879}
   m_Layer: 5
   m_Name: 8p
-  m_TagString: Energy
+  m_TagString: RealEstate
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -8154,7 +8176,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1033772115
 RectTransform:
   m_ObjectHideFlags: 0
@@ -8167,12 +8189,12 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2064075896}
+  m_Father: {fileID: 1696931216}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: -358, y: 165}
-  m_SizeDelta: {x: 201.10568, y: -35.000023}
+  m_SizeDelta: {x: -618.8943, y: -535.00006}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1033772116
 MonoBehaviour:
@@ -8530,9 +8552,9 @@ RectTransform:
   - {fileID: 1608362813}
   m_Father: {fileID: 1876898445}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 1350, y: -50}
   m_SizeDelta: {x: 300, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1105804588
@@ -9566,7 +9588,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -260}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 161.38, y: 55.53}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1213275266
 MonoBehaviour:
@@ -9827,7 +9849,7 @@ GameObject:
   - component: {fileID: 1230520322}
   m_Layer: 5
   m_Name: 9p
-  m_TagString: Energy
+  m_TagString: Materials
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -11436,7 +11458,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 92.58, y: 55.53}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1409832307
 MonoBehaviour:
@@ -11718,7 +11740,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -259.99997}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 161.38, y: 55.53}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1424075475
 MonoBehaviour:
@@ -12148,7 +12170,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1473464204
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12962,7 +12984,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -259.99997}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 161.38, y: 55.53}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1608362814
 MonoBehaviour:
@@ -13186,7 +13208,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -80.1, y: 0}
-  m_SizeDelta: {x: 21.09, y: 40.73}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1643283735
 MonoBehaviour:
@@ -13469,7 +13491,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: -80.1, y: -120}
-  m_SizeDelta: {x: 21.09, y: 40.73}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1693017099
 MonoBehaviour:
@@ -13601,7 +13623,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1696931214
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13665,6 +13687,8 @@ RectTransform:
   - {fileID: 324578175}
   - {fileID: 498542010}
   - {fileID: 1515577356}
+  - {fileID: 315689747}
+  - {fileID: 1033772115}
   m_Father: {fileID: 2064075896}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -13746,7 +13770,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 27, y: 371}
-  m_SizeDelta: {x: 102.4, y: 61.7}
+  m_SizeDelta: {x: 102.4, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1710330439
 MonoBehaviour:
@@ -13873,7 +13897,7 @@ GameObject:
   - component: {fileID: 1712550559}
   m_Layer: 5
   m_Name: 5p
-  m_TagString: Energy
+  m_TagString: ConsumerDiscretionary
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -14443,9 +14467,9 @@ RectTransform:
   - {fileID: 1213275265}
   m_Father: {fileID: 1876898445}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 150, y: -50}
   m_SizeDelta: {x: 300, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1742164787
@@ -14967,8 +14991,8 @@ MonoBehaviour:
     \uC6D0\uC790\uC7AC \uAC00\uACA9 \uC778\uC0C1\uC73C\uB85C \uC778\uD574 \uC2DD\uB8CC\uD488
     \uBC0F \uC0DD\uD65C\uC6A9\uD488 \uAC00\uACA9\uC774 \uAE09\uB4F1\uD558\uACE0 \uC788\uC2B5\uB2C8\uB2E4."
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
-  m_sharedMaterial: {fileID: -6972109053511083523, guid: 2b34f71dd542b4fc49d6a3949e93ceaa, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -15350,7 +15374,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 70}
-  m_SizeDelta: {x: 0, y: 100}
+  m_SizeDelta: {x: 1400, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1876898446
 MonoBehaviour:
@@ -16140,7 +16164,7 @@ GameObject:
   - component: {fileID: 1967051863}
   m_Layer: 5
   m_Name: 6p
-  m_TagString: Energy
+  m_TagString: Industrials
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -16295,7 +16319,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: -260}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 161.38, y: 55.53}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1970193596
 MonoBehaviour:
@@ -16632,7 +16656,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2064075896
 RectTransform:
   m_ObjectHideFlags: 0
@@ -16651,8 +16675,6 @@ RectTransform:
   - {fileID: 299752414}
   - {fileID: 583732236}
   - {fileID: 1696931216}
-  - {fileID: 315689747}
-  - {fileID: 1033772115}
   - {fileID: 1880461999}
   - {fileID: 1145091024}
   - {fileID: 501191789}
@@ -16885,7 +16907,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 86, y: 27}
-  m_SizeDelta: {x: 210, y: 37.03}
+  m_SizeDelta: {x: 210, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2095310401
 MonoBehaviour:

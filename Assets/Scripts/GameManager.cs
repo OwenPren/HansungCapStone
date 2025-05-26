@@ -89,6 +89,7 @@ public class GameManager : NetworkBehaviour
         {
             // 모든 클라이언트에 랭킹 업데이트 알림
             RpcUpdateCurrentRanking();
+            
         }
 
         // 모든 클라이언트에 UI 업데이트 알림
