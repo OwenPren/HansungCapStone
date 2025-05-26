@@ -123,11 +123,15 @@ public class UIManager : MonoBehaviour
             StockData currentStockData = GameManager.Instance.stockMarketManager.GetStockData(stockEnglishName);
             if (currentStockData != null)
             {
-                string sign = currentStockData.stockChangeRate >= 0 ? "<color=#FF0000>+" : "<color=#0000FF>-";
+                string sign = currentStockData.stockChangeRate >= 0 ? "<color=#FF0000>(+" : "<color=#0000FF>(";
+                if(currentStockData.stockChangeRate < 0.001f & currentStockData.stockChangeRate > -0.0001f)
+                {
+                    sign = "(+";    
+                }
                 stockButton.GetComponentInChildren<TextMeshProUGUI>().text =
                     $"한성 {stockKoreanName}\n" +
-                    $"현재가: {currentStockData.currentPrice:N0}" +
-                    $"변동률: {sign}{currentStockData.stockChangeRate:F2}%</color>";
+                    $"{currentStockData.currentPrice:F1}원 " +
+                    $"{sign}{currentStockData.stockChangeRate:F2}%)</color>";
             }
             else
             {

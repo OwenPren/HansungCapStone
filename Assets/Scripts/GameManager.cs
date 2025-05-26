@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
 using System.Linq;
+using Photon.Realtime;
 
 public enum GameState
 {
@@ -93,6 +94,7 @@ public class GameManager : NetworkBehaviour
         }
 
         // 모든 클라이언트에 UI 업데이트 알림
+        Rpc_UpdatePlayerUI();
         RpcShowGamePanel();
         RpcShowResultPanel(false);
         RpcUpdateHintUI();
@@ -439,6 +441,7 @@ public class GameManager : NetworkBehaviour
 
             // PlayerManager의 BuyStock 로직 실행
             bool success = playerManager.BuyStock(stockName, quantity);
+
             Debug.Log($"[GameManager] Buy Request from {sender}: {(success ? "SUCCESS" : "FAILED")}");
 
             // 성공 여부와 관계없이 UI 업데이트는 클라이언트에서 처리
@@ -447,6 +450,8 @@ public class GameManager : NetworkBehaviour
         {
             Debug.LogError($"[GameManager] PlayerManager not found for sender {sender} during Buy Request.");
         }
+
+        Rpc_UpdatePlayerUI(sender);
     }
 
     public void HandleSellRequest(PlayerRef sender, string stockName, int quantity)
@@ -480,6 +485,45 @@ public class GameManager : NetworkBehaviour
         {
             Debug.LogError($"[GameManager] PlayerManager not found for sender {sender} during Sell Request.");
         }
+
+        Rpc_UpdatePlayerUI(sender);
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.StateAuthority)] 
+    public void Rpc_UpdatePlayerUI(PlayerRef targetPlayer)
+    {
+        // 이 RPC는 targetPlayer에 해당하는 클라이언트에서만 실행됩니다.
+        if (Runner.LocalPlayer == targetPlayer)
+        {
+            var uiManager = FindObjectOfType<UIManager>();
+            if (uiManager != null)
+            {
+                uiManager.UpdateCurrentCashandValue(); // 현금/가치 업데이트
+                uiManager.UpdateMarketStockUI(); // 시장 UI 업데이트 (보유 주식 수량 포함)
+                Debug.Log($"[GameManager] {targetPlayer} UI Update Success");
+            }
+            else
+            {
+                Debug.LogError($"[GameManager] Client {targetPlayer} no found for UI Update");
+            }
+        }
+    }
+
+    [Rpc(RpcSources.All, RpcTargets.All)]
+    public void Rpc_UpdatePlayerUI()
+    {
+        var uiManager = FindObjectOfType<UIManager>();
+        if (uiManager != null)
+        {
+            uiManager.UpdateCurrentCashandValue(); // 현금/가치 업데이트
+            uiManager.UpdateMarketStockUI(); // 시장 UI 업데이트 (보유 주식 수량 포함)
+            Debug.Log($"[GameManager] ALL player Market UI Update Success");
+        }
+        else
+        {
+            Debug.LogError($"[GameManager] Client ALL Player Market no found for UI Update");
+        }
+      
     }
 
     // 클라이언트용 강제 동기화 메서드
