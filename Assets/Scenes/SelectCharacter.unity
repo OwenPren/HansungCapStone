@@ -626,6 +626,7 @@ GameObject:
   - component: {fileID: 243586828}
   - component: {fileID: 243586827}
   - component: {fileID: 243586826}
+  - component: {fileID: 243586829}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -683,6 +684,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &243586829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 243586825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7926a342dcdb59345aeb7814d3491e52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuPanel: {fileID: 797341677}
 --- !u!1 &256830827
 GameObject:
   m_ObjectHideFlags: 0
@@ -2320,7 +2334,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1233838189}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 243586829}
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: ToggleMenu
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1233838189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3207,6 +3233,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1554584199}
   - component: {fileID: 1554584200}
+  - component: {fileID: 1554584201}
   m_Layer: 5
   m_Name: Slider
   m_TagString: Untagged
@@ -3287,6 +3314,19 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1554584201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1554584198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd79f6e4862683c429a663113e6b8165, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slider: {fileID: 1554584200}
 --- !u!1 &1724678834
 GameObject:
   m_ObjectHideFlags: 0

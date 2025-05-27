@@ -39,5 +39,10 @@ public class SoundManager : MonoBehaviour
     {
         sfxSource.PlayOneShot(buttonClick2Clip);
     }
+
+    public void SetBGMVolume(float volume)
+    {
+        bgmSource.volume = volume;
+    }
 }
 
