@@ -19,9 +19,13 @@ public class LobbyManager : MonoBehaviour
     public Button cancelChangeButton;
     public Button IdDuplicatesButton;
     public Button NameDuplicatesButton;
+
+    public AudioClip clickSound;
+    private AudioSource audioSource;
     // Start is called before the first frame update
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         if (PlayerData.instance != null)
         {
             nicknameText.text = PlayerData.instance.nickname;
@@ -61,11 +65,21 @@ public class LobbyManager : MonoBehaviour
 
     public void OnClickCheckIdDuplicate()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         StartCoroutine(CheckDuplicate("id", idInput.text.Trim()));
     }
 
     public void OnClickCheckNicknameDuplicate()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         StartCoroutine(CheckDuplicate("nickname", nicknameInput.text.Trim()));
     }
 
@@ -109,11 +123,21 @@ public class LobbyManager : MonoBehaviour
     // 확인 버튼 클릭 시 서버로 요청하기
     public void OnClickApplyChange()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         StartCoroutine(UpdateUserInfo());
         changeInfoPanel.SetActive(false);  // 성공 시 패널 닫기
     }
     public void OnClickCancelChange()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         changeInfoPanel.SetActive(false);
     }
 
@@ -166,8 +190,14 @@ public class LobbyManager : MonoBehaviour
 
             if (newID != oldID)
             {
-                SceneManager.LoadScene("LogInScene");
+                // 소리 끝나기 전에 씬이 바뀌지 않도록 딜레이
+                StartCoroutine(DelayedSceneLoad());
             }
         }
+    }
+    IEnumerator DelayedSceneLoad()
+    {
+        yield return new WaitForSeconds(0.3f); // 사운드 재생 시간에 따라 조정
+        SceneManager.LoadScene("LogInScene");
     }
 }

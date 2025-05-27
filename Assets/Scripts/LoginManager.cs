@@ -15,10 +15,14 @@ public class LoginManager : MonoBehaviour
     public Button signupButton;
     public Button backButton;
 
+    public AudioClip clickSound;
+    private AudioSource audioSource;
+
     private string serverBaseUrl = "http://43.203.206.157:3000";
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         loginButton.onClick.AddListener(OnLoginClicked);
         signupButton.onClick.AddListener(OnSignupClicked);
         backButton.onClick.AddListener(OnBackClicked);
@@ -26,6 +30,11 @@ public class LoginManager : MonoBehaviour
 
     public void OnLoginClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         string id = idField.text.Trim();
         string pw = pwField.text.Trim();
 
@@ -40,12 +49,25 @@ public class LoginManager : MonoBehaviour
 
     public void OnSignupClicked()
     {
-        SceneManager.LoadScene("SignUpScene");
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
+
+        // 소리 끝나기 전에 씬이 바뀌지 않도록 딜레이
+        StartCoroutine(DelayedSceneLoad());
     }
 
     public void OnBackClicked()
     {
-        SceneManager.LoadScene("LoadingScene");
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
+        // 소리 끝나기 전에 씬이 바뀌지 않도록 딜레이
+        StartCoroutine(DelayedSceneLoad2());
     }
 
     IEnumerator LoginRequest(string id, string pw)
@@ -82,6 +104,18 @@ public class LoginManager : MonoBehaviour
             string errorMsg = req.downloadHandler?.text ?? "오류 발생";
             debugText.text = "로그인 실패: " + errorMsg;
         }
+    }
+
+    IEnumerator DelayedSceneLoad()
+    {
+        yield return new WaitForSeconds(0.3f); // 사운드 재생 시간에 따라 조정
+        SceneManager.LoadScene("SignUpScene");
+    }
+
+    IEnumerator DelayedSceneLoad2()
+    {
+        yield return new WaitForSeconds(0.3f); // 사운드 재생 시간에 따라 조정
+        SceneManager.LoadScene("LoadingScene");
     }
     string ExtractNickname(string json)
     {

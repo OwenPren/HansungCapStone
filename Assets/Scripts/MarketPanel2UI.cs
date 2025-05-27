@@ -22,8 +22,17 @@ public class MarketPanel2UI : MonoBehaviour
     private PlayerManager localPlayerManager;
     private bool isSearchingForPlayer = false;
 
-    // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
-    void OnEnable()
+    public AudioClip sellclickSound;    // 매수 버튼 클릭음
+    public AudioClip buyclickSound;    // 매수 버튼 클릭음
+    private AudioSource audioSource;
+
+    void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
+
+        // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
+        void OnEnable()
     {
         StartCoroutine(FindLocalPlayerManagerCoroutine());
     }
@@ -217,6 +226,11 @@ public class MarketPanel2UI : MonoBehaviour
 
     public void OnBuyButtonClick()
     {
+        // 클릭 사운드 재생
+        if (buyclickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(buyclickSound);
+        }
         Debug.Log($"[MarketPanel2UI] Buy button clicked for stock: {currentStockName}");
         
         if (string.IsNullOrEmpty(currentStockName))
@@ -267,6 +281,12 @@ public class MarketPanel2UI : MonoBehaviour
 
     public void OnSellButtonClick()
     {
+        // 클릭 사운드 재생
+        if (sellclickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(sellclickSound);
+        }
+
         Debug.Log($"[MarketPanel2UI] Sell button clicked for stock: {currentStockName}");
         
         if (string.IsNullOrEmpty(currentStockName))

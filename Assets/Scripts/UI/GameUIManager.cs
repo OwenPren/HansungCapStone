@@ -32,6 +32,9 @@ public class GameUIManager : MonoBehaviour
     public RoundStartEventSO roundStartEvent;
     private bool isStartGame;
 
+    public AudioClip clickSound;
+    private AudioSource audioSource;
+
     [Header("GameUI")]
     [SerializeField] private GameObject gameUI;
 
@@ -90,6 +93,7 @@ public class GameUIManager : MonoBehaviour
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         Debug.Log("[GameUIManager] Start() called");
         
         // UI 컴포넌트들 null 체크
@@ -321,6 +325,11 @@ public class GameUIManager : MonoBehaviour
     // 게임 시작 버튼 클릭 시 호출 (서버에서만)
     public void OnStartButtonClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         Debug.Log("[GameUIManager] Start button clicked on server");
         
         var runner = FindObjectOfType<NetworkRunner>();

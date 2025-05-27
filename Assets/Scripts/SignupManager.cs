@@ -24,8 +24,11 @@ public class SignupManager : MonoBehaviour
     private bool isIdChecked = false;
     private bool isNickChecked = false;
 
+    public AudioClip clickSound;
+    private AudioSource audioSource;
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         signupButton.onClick.AddListener(OnSignupButtonClicked);
         checkIdButton.onClick.AddListener(OnCheckIdClicked);
         checkNickButton.onClick.AddListener(OnCheckNickClicked);
@@ -34,6 +37,12 @@ public class SignupManager : MonoBehaviour
 
     public void OnSignupButtonClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
+
         string id = idField.text.Trim();
         string pw = pwField.text.Trim();
         string nick = nickField.text.Trim();
@@ -75,10 +84,17 @@ public class SignupManager : MonoBehaviour
         {
             debugText.text = "회원가입 실패: " + req.downloadHandler.text;
         }
+        Debug.Log("회원가입 데이터 → " + id + " / " + pw + " / " + nick);
+        Debug.Log("JSON → " + json);
     }
 
     public void OnCheckIdClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         string id = idField.text.Trim();
         if (string.IsNullOrEmpty(id))
         {
@@ -117,6 +133,11 @@ public class SignupManager : MonoBehaviour
 
     public void OnCheckNickClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         string nick = nickField.text.Trim();
         if (string.IsNullOrEmpty(nick))
         {
@@ -154,6 +175,11 @@ public class SignupManager : MonoBehaviour
     }
     public void OnBackClicked()
     {
+        // 클릭 사운드 재생
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound);
+        }
         SceneManager.LoadScene("LogInScene");
     }
 
