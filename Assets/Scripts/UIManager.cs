@@ -130,8 +130,8 @@ public class UIManager : MonoBehaviour
                 }
                 stockButton.GetComponentInChildren<TextMeshProUGUI>().text =
                     $"한성 {stockKoreanName}\n" +
-                    $"{currentStockData.currentPrice:F1}원 " +
-                    $"{sign}{currentStockData.stockChangeRate:F2}%)</color>";
+                    $"{sign}{currentStockData.stockChangeRate:F2}%)</color> " +
+                    $"{currentStockData.currentPrice:F1}원";
             }
             else
             {
@@ -215,14 +215,13 @@ public class UIManager : MonoBehaviour
     public void UpdateResultUI()
     {
         // 결과 타이틀 업데이트
-        if (currentRoundText != null)
+        if (currentRoundText != null && GameManager.Instance.CurrentRound != 12)
         {
             ResultTitle.text = currentRoundText.text + " 결과";
         }
         else
         {
-            Debug.LogWarning("currentRoundText가 할당되지 않았습니다. 결과 타이틀을 기본값으로 설정합니다.");
-            ResultTitle.text = "게임 결과"; 
+            ResultTitle.text = "최종 결과"; 
         }
 
         // UI 텍스트 리스트들이 올바로 할당되고 충분한 칸이 있는지 확인 
@@ -270,10 +269,13 @@ public class UIManager : MonoBehaviour
                 if (player != null && player.IsSpawned)
                 {
                     // 플레이어 이름을 PlayerInfoManager에서 가져오기
-                    string playerName = GetPlayerDisplayName(playerRankInfo.PlayerRef);
-                    
-                    valueTxt.text = player.GetPortfolioReturn().ToString("F2") + "%";
-                    nameTxt.text = playerName;
+                    string sign = player.GetPortfolioReturn() >= 0 ? "<color=#FF0000>( +" : "<color=#0000FF>( ";
+                    if (player.GetPortfolioReturn() < 0.001f & player.GetPortfolioReturn() > -0.0001f)
+                    {
+                        sign = "(+";
+                    }
+                    valueTxt.text = sign + player.GetPortfolioReturn().ToString("F2") + "% )";
+                    nameTxt.text = player.NameField;
                     if (resultImage != null) resultImage.gameObject.SetActive(true);
                 }
                 else
@@ -732,5 +734,10 @@ public class UIManager : MonoBehaviour
         if (inventoryPanel != null) inventoryPanel.SetActive(false);
         if (marketPanel != null) marketPanel.SetActive(true);
         if (marketPanel2 != null) marketPanel2.SetActive(true);
+    }
+
+    public void OnCloseButtonClick(GameObject targetGameObject)
+    {
+        targetGameObject.SetActive(false);
     }
 }

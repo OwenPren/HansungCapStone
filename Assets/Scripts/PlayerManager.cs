@@ -540,13 +540,9 @@ public class PlayerManager : NetworkBehaviour
 
         if (Object.HasStateAuthority)
         {
-            if (previousValue > 0)
+            if (playerValue > 0)
             {
-                portfolioReturn = (100 * (playerValue / previousValue)) - 100.00f;
-            }
-            else
-            {
-                portfolioReturn = 0.0f;
+                portfolioReturn = (100 * (playerValue / 5000000.0f)) - 100.00f;
             }
         }
     }
@@ -613,6 +609,7 @@ public class PlayerManager : NetworkBehaviour
             }
 
             StockValuation += stockValue;
+            UpdatePortfolioReturn();
         }
 
         if (Object.HasStateAuthority)

@@ -13,6 +13,7 @@ public enum GameState
     InProgress, // 라운드 진행중
     Started, // 라운드 시작
     Ended, // 라운드 종료
+    Finished, // 게임 종료
 }
 
 public class GameManager : NetworkBehaviour
@@ -72,6 +73,15 @@ public class GameManager : NetworkBehaviour
                 if (waitTimer <= 0f)
                 {
                     EndRound(true);
+                }
+                break;
+
+            case GameState.Finished:
+                waitTimer -= Runner.DeltaTime;
+
+                if (waitTimer <= 0f)
+                {
+                    Runner.LoadScene("LobbyScene");
                 }
                 break;
         }
@@ -134,6 +144,8 @@ public class GameManager : NetworkBehaviour
         {
             Debug.Log("Final Round Ended");
             gameEndEvent.Raise();
+            waitTimer = 20.0f;
+            State = GameState.Finished;
         }
         else if (start)
         {

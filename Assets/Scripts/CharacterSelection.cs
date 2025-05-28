@@ -15,6 +15,7 @@ public class CharacterSelection : MonoBehaviour
     public int maxCharacters = 4;
     private int currentIndex = 0;
     public Button backButton;
+    Color veryDarkGrey = new Color(0.2f, 0.2f, 0.2f);
 
     void Start()
     {
@@ -45,7 +46,7 @@ public class CharacterSelection : MonoBehaviour
             Image image = characterObjects[i].GetComponentInChildren<Image>();
             if (image != null)
             {
-                image.color = (i == currentIndex) ? Color.black : Color.white;
+                image.color = (i == currentIndex) ? Color.white : veryDarkGrey;
             }
         }
         /*
