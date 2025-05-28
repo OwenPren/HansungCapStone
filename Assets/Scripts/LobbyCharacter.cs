@@ -4,15 +4,18 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Collections;
 
 public class LobbyCharacter : MonoBehaviour
 {
     public Image characterImage;
     public Button backButton;
     // Start is called before the first frame update
+
     void Start()
     {
         backButton.onClick.AddListener(OnBackClicked);
+
         if (PhotonNetwork.LocalPlayer.CustomProperties.ContainsKey("character"))
         {
             int charIndex = (int)PhotonNetwork.LocalPlayer.CustomProperties["character"];
