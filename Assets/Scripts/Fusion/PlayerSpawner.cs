@@ -7,6 +7,7 @@ using Fusion.Sockets;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 
 public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
@@ -32,10 +33,11 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
   {
     _runner = gameObject.AddComponent<NetworkRunner>();
     _runner.ProvideInput = true;
+    _runner.AddCallbacks(this);
 
     // Create the NetworkSceneInfo from the current scene
-    //var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
-    var scene = SceneRef.FromIndex(targetSceneIndex);
+        //var scene = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
+        var scene = SceneRef.FromIndex(targetSceneIndex);
     var sceneInfo = new NetworkSceneInfo();
     if (scene.IsValid)
     {
@@ -534,11 +536,20 @@ private string GenerateRoomCode(int length)
           GameManager.Instance.RpcUpdateCurrentRanking();
       }
   }
+
   //interface 
 
-  public void OnInput(NetworkRunner runner, NetworkInput input) { }
+    public void OnInput(NetworkRunner runner, NetworkInput input) { }
   public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-  public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { }
+    public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+    { 
+            Debug.Log($"[PlayerSpawner] OnShutdown – {shutdownReason}");
+
+            if (SceneManager.GetActiveScene().name == "LobbyScene")
+                return;
+
+            SceneManager.LoadScene("LobbyScene");   // ← 바로 호출
+    }
   public void OnConnectedToServer(NetworkRunner runner) { }
   public void OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason) { }
   public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
