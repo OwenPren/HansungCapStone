@@ -524,6 +524,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(RpcSources.All, RpcTargets.All)]
     public void Rpc_UpdatePlayerUI()
     {
+        var uiManager = FindObjectOfType<UIManager>();
         if (uiManager != null)
         {
             uiManager.UpdateCurrentCashandValue(); // 현금/가치 업데이트
