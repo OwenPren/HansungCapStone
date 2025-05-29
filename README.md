@@ -41,7 +41,7 @@
 가벼운 투자 경험: 리스크 없는 게임 환경에서 주식 투자를 간접적으로 경험함으로써, 실제 투자에 대한 막연한 두려움을 줄이고 친숙함을 느낄 수 있습니다. 이는 특히 주식 투자를 처음 시작하는 초보자들에게 유의미한 첫 경험을 제공할 것입니다.
 
 ## 시연 영상
-youtube ( need url! )
+youtube ( [need url!](https://youtu.be/kPh8Z8OqIJ8?si=uBm0swLUV7efTKBU) )
 
   
 
