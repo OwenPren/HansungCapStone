@@ -37,6 +37,7 @@ public class PlayerManager : NetworkBehaviour
     [Networked] public float portfolioReturn { get; private set; }
     public PlayerRef PlayerRef { get; private set; }
     public string NameField;
+    public int ImageIndex;
     public List<PlayerStock> portfolio = new List<PlayerStock>();
     // OnChanged 콜백을 사용하여 포트폴리오 변경 감지
     [Networked, Capacity(10), OnChangedRender(nameof(OnPortfolioChanged))]
@@ -281,6 +282,7 @@ public class PlayerManager : NetworkBehaviour
             {
                 // 권한과 관계없이 로컬 필드는 업데이트
                 NameField = playerInfo.Value.nickname.ToString();
+                
 
                 // State Authority가 있는 경우에만 네트워크 변수 업데이트
                 if (Object.HasStateAuthority)
@@ -470,6 +472,7 @@ public class PlayerManager : NetworkBehaviour
         }
 
         NameField = PlayerData.instance?.nickname ?? "Unknown";
+        ImageIndex = PlayerData.instance?.selectedCharacterIndex ?? (int)0;
 
         // 포트폴리오 초기화
         portfolio.Clear();

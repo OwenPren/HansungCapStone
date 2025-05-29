@@ -301,12 +301,20 @@ public class UIManager : MonoBehaviour
                 {
                     // 플레이어 이름을 PlayerInfoManager에서 가져오기
                     string sign = player.GetPortfolioReturn() >= 0 ? "<color=#FF0000>( +" : "<color=#0000FF>( ";
-                    if (player.GetPortfolioReturn() < 0.001f & player.GetPortfolioReturn() > -0.0001f)
+                    if (player.GetPortfolioReturn() < 0.001f && player.GetPortfolioReturn() > -0.0001f)
                     {
                         sign = "(+";
                     }
                     valueTxt.text = sign + player.GetPortfolioReturn().ToString("F2") + "% )";
                     nameTxt.text = player.NameField;
+                    string resourcePath = "Characters/Character_" + player.NetworkedCharacterIndex.ToString();
+                    Sprite loadedSprite = Resources.Load<Sprite>(resourcePath);
+                    if (loadedSprite != null)
+                    {
+                        // resultImage 컴포넌트의 sprite 속성을 로드된 Sprite로 변경합니다.
+                        resultImage.sprite = loadedSprite;
+                        Debug.Log($"Successfully changed character image to: {resourcePath}");
+                    }
                     if (resultImage != null) resultImage.gameObject.SetActive(true);
                 }
                 else

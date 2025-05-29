@@ -28,6 +28,7 @@ public class GameManager : NetworkBehaviour
     //Network Object
     [Networked] public GameState State { get; private set; }
     [Networked, OnChangedRender(nameof(OnTimerChanged))] public float Timer { get; private set; }
+    [Networked, OnChangedRender(nameof(OnTimerChanged))] public float waitTimer { get; private set; }
     [Networked] public int CurrentRound { get; private set; }
 
     [Header("Persistent Manager")]
@@ -40,7 +41,6 @@ public class GameManager : NetworkBehaviour
     public Dictionary<string, string> SectorImpacts = new Dictionary<string, string>();
 
     private bool isWaiting = false;
-    public float waitTimer = 10.0f;
     private bool firstrun = false;
 
     public override void FixedUpdateNetwork()
@@ -123,6 +123,7 @@ public class GameManager : NetworkBehaviour
         }
         State = GameState.InProgress;
         Timer = timeLimit;
+        waitTimer = 10.0f;
 
         roundStartEvent.Raise(this);
     }
@@ -186,6 +187,7 @@ public class GameManager : NetworkBehaviour
     private void OnTimerChanged()          // 모든 피어의 렌더 단계에서 실행
     {
         TimerChanged?.Invoke(Timer);       // 정적 이벤트로 UI에 알림
+        TimerChanged?.Invoke(waitTimer);
     }
     public static event System.Action<float> TimerChanged;
 
