@@ -19,7 +19,7 @@ public struct NetworkPlayerStock : INetworkStruct
     public int quantity;
     public float usedMoney;
     public float stockReturn;
-    
+
     public NetworkPlayerStock(string name, int qty, float money, float returnVal)
     {
         stockName = name;
@@ -53,7 +53,7 @@ public class PlayerManager : NetworkBehaviour
     public override void Spawned()
     {
         IsSpawned = true;
-        
+
         // PlayerRef 자동 설정
         if (PlayerRef == default(PlayerRef))
         {
@@ -68,15 +68,15 @@ public class PlayerManager : NetworkBehaviour
                 Debug.Log($"[PlayerManager] Auto-assigned PlayerRef to InputAuthority: {PlayerRef}");
             }
         }
-        
+
         Debug.Log($"[PlayerManager] PlayerManager spawned for player {PlayerRef} on {(Runner.IsServer ? "SERVER" : "CLIENT")}");
-        
+
         // 클라이언트에서 약간의 지연 후 네트워크 포트폴리오 동기화
         if (!Runner.IsServer)
         {
             Invoke(nameof(SyncPortfolioFromNetwork), 2f);
         }
-        
+
         StartCoroutine(RegisterWithGameManagerDelayed());
     }
     public override void Despawned(NetworkRunner runner, bool hasState)
@@ -272,7 +272,6 @@ public class PlayerManager : NetworkBehaviour
         SyncPortfolioFromNetwork();
         UpdateInventoryUI();
     }
-
     private void SyncPlayerInfo()
     {
         if (PlayerInfoManager.Instance != null)
@@ -280,11 +279,19 @@ public class PlayerManager : NetworkBehaviour
             var playerInfo = PlayerInfoManager.Instance.GetPlayerInfo(PlayerRef);
             if (playerInfo.HasValue)
             {
-                UpdatePlayerInfo(
-                    playerInfo.Value.userID.ToString(),
-                    playerInfo.Value.nickname.ToString(),
-                    playerInfo.Value.selectedCharacterIndex
-                );
+                // 권한과 관계없이 로컬 필드는 업데이트
+                NameField = playerInfo.Value.nickname.ToString();
+
+                // State Authority가 있는 경우에만 네트워크 변수 업데이트
+                if (Object.HasStateAuthority)
+                {
+                    UpdatePlayerInfo(
+                        playerInfo.Value.userID.ToString(),
+                        playerInfo.Value.nickname.ToString(),
+                        playerInfo.Value.selectedCharacterIndex
+                    );
+                }
+
                 Debug.Log($"[PlayerManager] Synced player info for {PlayerRef}: '{playerInfo.Value.nickname.ToString()}'");
             }
             else
@@ -496,6 +503,7 @@ public class PlayerManager : NetworkBehaviour
         Debug.Log($"[PlayerManager] UpdatePlayerInfo called - UserID: '{userID}', Nickname: '{nickname}', CharIndex: {characterIndex}");
         Debug.Log($"[PlayerManager] HasStateAuthority: {Object.HasStateAuthority}, HasInputAuthority: {Object.HasInputAuthority}");
 
+        // State Authority가 있는 경우에만 네트워크 변수 업데이트
         if (Object.HasStateAuthority)
         {
             Debug.Log($"[PlayerManager] Has state authority, updating networked variables...");
@@ -506,9 +514,10 @@ public class PlayerManager : NetworkBehaviour
         }
         else
         {
-            Debug.LogWarning($"[PlayerManager] Does NOT have state authority, cannot update networked variables");
+            Debug.Log($"[PlayerManager] Does NOT have state authority, only updating local field");
         }
 
+        // 로컬 필드는 항상 업데이트 (모든 클라이언트에서)
         NameField = nickname;
         Debug.Log($"[PlayerManager] NameField set to: '{NameField}'");
 
@@ -612,7 +621,7 @@ public class PlayerManager : NetworkBehaviour
             }
 
             StockValuation += stockValue;
-            
+
         }
         UpdatePortfolioReturn();
         if (Object.HasStateAuthority)
@@ -667,9 +676,13 @@ public class PlayerManager : NetworkBehaviour
                 // 네트워크 포트폴리오 동기화 (이것이 OnPortfolioChanged 콜백을 트리거함)
                 SyncPortfolioToNetwork();
 
+                // 포트폴리오 가치 업데이트
                 ValuationUpdate(portfolio);
 
                 Debug.Log($"[PlayerManager] Portfolio synced to network after buy");
+
+                // 네트워크 동기화 완료 후 UI 업데이트 요청
+                StartCoroutine(RequestUIUpdateAfterSync());
             }
             return true;
         }
@@ -725,9 +738,13 @@ public class PlayerManager : NetworkBehaviour
             // 네트워크 포트폴리오 동기화
             SyncPortfolioToNetwork();
 
+            // 포트폴리오 가치 업데이트
             ValuationUpdate(portfolio);
 
             Debug.Log($"[PlayerManager] Portfolio synced to network after sell");
+
+            // 네트워크 동기화 완료 후 UI 업데이트 요청
+            StartCoroutine(RequestUIUpdateAfterSync());
 
             return true;
         }
@@ -737,11 +754,27 @@ public class PlayerManager : NetworkBehaviour
             return false;
         }
     }
-    
-private void UpdateInventoryUI()
+
+    private System.Collections.IEnumerator RequestUIUpdateAfterSync()
+    {
+        // 네트워크 동기화가 완료될 시간을 주기 위해 짧은 지연
+        yield return new WaitForSeconds(0.05f);
+
+        // 로컬 UI 직접 업데이트
+        UpdateInventoryUI();
+
+        // MarketPanel2UI가 열려있다면 새로고침
+        MarketPanel2UI marketPanel = FindObjectOfType<MarketPanel2UI>();
+        if (marketPanel != null && marketPanel.gameObject.activeInHierarchy)
+        {
+            marketPanel.RefreshPlayerHolding();
+        }
+    }
+
+    private void UpdateInventoryUI()
     {
         Debug.Log("[PlayerManager] UpdateInventoryUI called");
-        
+
         // MarketPanel2UI가 활성화되어 있다면 업데이트
         MarketPanel2UI marketPanel = FindObjectOfType<MarketPanel2UI>();
         if (marketPanel != null && marketPanel.gameObject.activeInHierarchy)
@@ -749,7 +782,7 @@ private void UpdateInventoryUI()
             Debug.Log("[PlayerManager] Refreshing MarketPanel2UI");
             marketPanel.RefreshPlayerHolding();
         }
-        
+
         Debug.Log("[PlayerManager] Inventory UI update completed");
     }
 

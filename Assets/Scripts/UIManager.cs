@@ -78,7 +78,7 @@ public class UIManager : MonoBehaviour
                 }
                 else finishTimer.gameObject.SetActive(true);
             }
-            else 
+            else
             {
                 int remainingTime = (int)GameManager.Instance.Timer;
                 currentTimeText.text = remainingTime.ToString();
@@ -100,13 +100,15 @@ public class UIManager : MonoBehaviour
             lastUpdateTime = Time.time;
         }
     }
-    
+
     private float lastUpdateTime = 0f;
 
     // ============= 주식 창 업데이트 메서드 =====================
 
     public void UpdateMarketStockUI()
     {
+        Debug.Log("[UIManager] UpdateMarketStockUI called");
+
         if (GameManager.Instance == null)
         {
             Debug.LogError("[UIManager] GameManager.Instance is null. Cannot update market UI.");
@@ -122,11 +124,12 @@ public class UIManager : MonoBehaviour
             }
         }
 
+        // 주가 정보 업데이트 (개선된 로직)
         foreach (Button stockButton in currentStockData)
         {
             if (stockButton == null || stockButton.GetComponentInChildren<TextMeshProUGUI>() == null) continue;
 
-            string stockTag = stockButton.tag; // 버튼의 태그를 주식 이름으로 사용
+            string stockTag = stockButton.tag;
             if (string.IsNullOrEmpty(stockTag)) continue;
 
             string stockEnglishName = stockTag;
@@ -135,15 +138,25 @@ public class UIManager : MonoBehaviour
             StockData currentStockData = GameManager.Instance.stockMarketManager.GetStockData(stockEnglishName);
             if (currentStockData != null)
             {
-                string sign = currentStockData.stockChangeRate >= 0 ? "<color=#FF0000>(+" : "<color=#0000FF>(";
-                if(currentStockData.stockChangeRate < 0.001f & currentStockData.stockChangeRate > -0.0001f)
+                // 클라이언트에서도 변동률 계산 (서버에서 계산되지 않은 경우)
+                if (Mathf.Abs(currentStockData.stockChangeRate) < 0.001f && currentStockData.previousPrice > 0)
                 {
-                    sign = "(+";    
+                    currentStockData.stockChangeRate = (100.0f * currentStockData.currentPrice) / currentStockData.previousPrice - 100.0f;
+                    Debug.Log($"[UIManager] Recalculated change rate for {stockEnglishName}: {currentStockData.stockChangeRate:F2}%");
                 }
+
+                string sign = currentStockData.stockChangeRate >= 0 ? "<color=#FF0000>(+" : "<color=#0000FF>(";
+                if (currentStockData.stockChangeRate < 0.001f && currentStockData.stockChangeRate > -0.001f)
+                {
+                    sign = "(+";
+                }
+
                 stockButton.GetComponentInChildren<TextMeshProUGUI>().text =
                     $"한성 {stockKoreanName}\n" +
                     $"{sign}{currentStockData.stockChangeRate:F2}%)</color> " +
                     $"{currentStockData.currentPrice:F1}원";
+
+                Debug.Log($"[UIManager] Updated {stockEnglishName} display: {currentStockData.stockChangeRate:F2}%, {currentStockData.currentPrice:F1}원");
             }
             else
             {
@@ -154,26 +167,32 @@ public class UIManager : MonoBehaviour
             }
         }
 
+        // 보유량 정보 업데이트
         foreach (Button countButton in currentStockCount)
         {
             if (countButton == null || countButton.GetComponentInChildren<TextMeshProUGUI>() == null) continue;
 
-            string stockTag = countButton.tag; // 버튼의 태그를 주식 이름으로 사용
+            string stockTag = countButton.tag;
             if (string.IsNullOrEmpty(stockTag)) continue;
 
             string stockEnglishName = stockTag;
             int quantity = GetLocalPlayerStockQuantity(stockEnglishName);
 
-            countButton.GetComponentInChildren<TextMeshProUGUI>().text = $"{quantity}주";
+            var tmpComponent = countButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (tmpComponent != null)
+            {
+                tmpComponent.text = $"{quantity}주";
+            }
         }
-    }
 
+        Debug.Log("[UIManager] Market UI update completed");
+    }
     // ============= 구매/판매 요청 메서드 (RPC 사용) =============
 
     public void RequestBuyStock(string stockName, int quantity)
     {
         Debug.Log($"[UIManager] Requesting buy stock - {stockName}, quantity: {quantity}");
-        
+
         // 로컬 플레이어의 PlayerRef 찾기
         var runner = FindObjectOfType<NetworkRunner>();
         if (runner == null)
@@ -181,10 +200,10 @@ public class UIManager : MonoBehaviour
             Debug.LogError("[UIManager] NetworkRunner not found!");
             return;
         }
-        
+
         PlayerRef myPlayerRef = runner.LocalPlayer;
         Debug.Log($"[UIManager] My PlayerRef: {myPlayerRef}");
-        
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RpcBuyStockRequest(myPlayerRef, stockName, quantity);
@@ -195,11 +214,11 @@ public class UIManager : MonoBehaviour
             Debug.LogError("[UIManager] GameManager.Instance is null!");
         }
     }
-    
+
     public void RequestSellStock(string stockName, int quantity)
     {
         Debug.Log($"[UIManager] Requesting sell stock - {stockName}, quantity: {quantity}");
-        
+
         // 로컬 플레이어의 PlayerRef 찾기
         var runner = FindObjectOfType<NetworkRunner>();
         if (runner == null)
@@ -207,10 +226,10 @@ public class UIManager : MonoBehaviour
             Debug.LogError("[UIManager] NetworkRunner not found!");
             return;
         }
-        
+
         PlayerRef myPlayerRef = runner.LocalPlayer;
         Debug.Log($"[UIManager] My PlayerRef: {myPlayerRef}");
-        
+
         if (GameManager.Instance != null)
         {
             GameManager.Instance.RpcSellStockRequest(myPlayerRef, stockName, quantity);
@@ -233,7 +252,7 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            ResultTitle.text = "최종 결과"; 
+            ResultTitle.text = "최종 결과";
         }
 
         // UI 텍스트 리스트들이 올바로 할당되고 충분한 칸이 있는지 확인 
@@ -313,27 +332,27 @@ public class UIManager : MonoBehaviour
     public void UpdateHintUI(List<string> hintData)
     {
         Debug.Log($"[UIManager] UpdateHintUI called with {hintData.Count} hints");
-        
+
         // 각 힌트 내용 로깅
         for (int i = 0; i < hintData.Count; i++)
         {
             Debug.Log($"[UIManager] Hint {i + 1}: '{hintData[i]}'");
         }
-        
+
         // hint_1과 hint_2 컴포넌트 찾기
         TextMeshProUGUI hint1Text = GameObject.Find("hint_1")?.GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI hint2Text = GameObject.Find("hint_2")?.GetComponent<TextMeshProUGUI>();
-        
+
         if (hint1Text == null)
         {
             Debug.LogError("[UIManager] hint_1 TextMeshProUGUI component not found!");
         }
-        
+
         if (hint2Text == null)
         {
             Debug.LogError("[UIManager] hint_2 TextMeshProUGUI component not found!");
         }
-        
+
         // 힌트 1 업데이트
         if (hint1Text != null)
         {
@@ -349,7 +368,7 @@ public class UIManager : MonoBehaviour
                 Debug.Log("[UIManager] Cleared hint_1 (no hint data)");
             }
         }
-        
+
         // 힌트 2 업데이트
         if (hint2Text != null)
         {
@@ -365,20 +384,20 @@ public class UIManager : MonoBehaviour
                 Debug.Log("[UIManager] Cleared hint_2 (no second hint)");
             }
         }
-        
+
         // 3개 이상의 힌트가 있는 경우 경고
         if (hintData.Count > 2)
         {
             Debug.LogWarning($"[UIManager] Received {hintData.Count} hints, but only displaying first 2");
         }
-        
+
         Debug.Log("[UIManager] Hint UI update completed");
     }
 
-   public void UpdateCurrentRanking()
+    public void UpdateCurrentRanking()
     {
         Debug.Log("[UIManager] UpdateCurrentRanking called");
-        
+
         if (GameManager.Instance == null)
         {
             Debug.LogWarning("[UIManager] GameManager.Instance is null in UpdateCurrentRanking");
@@ -388,9 +407,9 @@ public class UIManager : MonoBehaviour
         try
         {
             var rankedPlayers = GameManager.Instance.GetRankedPlayersWithInfo();
-            
+
             Debug.Log($"[UIManager] Retrieved {rankedPlayers.Count} ranked players for display");
-            
+
             if (rankedPlayers.Count == 0)
             {
                 Debug.LogWarning("[UIManager] No ranked players available for display");
@@ -408,18 +427,18 @@ public class UIManager : MonoBehaviour
             Debug.LogError($"[UIManager] Error in UpdateCurrentRanking: {e.Message}\n{e.StackTrace}");
         }
     }
-    
+
     private void ClearAllRankingSlots()
     {
         Debug.Log("[UIManager] Clearing all ranking slots");
-        
+
         TextMeshProUGUI name1 = GameObject.Find("name 1")?.GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI name2 = GameObject.Find("name 2")?.GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI name3 = GameObject.Find("name 3")?.GetComponent<TextMeshProUGUI>();
         TextMeshProUGUI name4 = GameObject.Find("name 4")?.GetComponent<TextMeshProUGUI>();
-        
+
         TextMeshProUGUI[] nameTexts = { name1, name2, name3, name4 };
-        
+
         for (int i = 0; i < nameTexts.Length; i++)
         {
             if (nameTexts[i] != null)
@@ -428,7 +447,7 @@ public class UIManager : MonoBehaviour
             }
         }
     }
-    
+
     private void UpdateRankingDisplay(List<(PlayerRef playerRef, PlayerManager manager, NetworkPlayerInfo info)> rankedPlayers)
     {
         Debug.Log($"[UIManager] UpdateRankingDisplay called with {rankedPlayers.Count} players");
@@ -483,12 +502,12 @@ public class UIManager : MonoBehaviour
                 {
                     var (playerRef, manager, playerInfo) = rankedPlayers[i];
                     string playerName = playerInfo.nickname.ToString();
-                    
+
                     rankingNameTexts[i].text = playerName;
                     Debug.Log($"[UIManager] Updated cached rank {i + 1} to: '{playerName}'");
                 }
             }
-            
+
             // 남은 슬롯들 초기화
             for (int i = rankedPlayers.Count; i < rankingNameTexts.Length; i++)
             {
@@ -541,7 +560,7 @@ public class UIManager : MonoBehaviour
             //     valueText[i].text = "";
             //     cashText[i].text = "";
             // }
-            
+
             Debug.Log("[UIManager] Ranking display cleared");
         }
         catch (System.Exception e)
@@ -557,7 +576,7 @@ public class UIManager : MonoBehaviour
             // "플레이어 정보 로딩 중..." 또는 "플레이어 없음" 메시지 표시
             // noPlayersMessage.SetActive(true);
             // noPlayersMessage.GetComponent<Text>().text = "플레이어 정보 로딩 중...";
-            
+
             Debug.Log("[UIManager] Displaying no players message");
         }
         catch (System.Exception e)
@@ -611,16 +630,16 @@ public class UIManager : MonoBehaviour
         // 너무 자주 호출되지 않도록 제한
         if (Time.time - lastFindTime < 2f) return;
         lastFindTime = Time.time;
-        
+
         Debug.Log("[UIManager] Searching for local PlayerManager...");
-        
+
         // 방법 1: NetworkRunner를 통해 로컬 플레이어 찾기
         var runner = FindObjectOfType<NetworkRunner>();
         if (runner != null && GameManager.Instance != null)
         {
             PlayerRef localPlayer = runner.LocalPlayer;
             var foundManager = GameManager.Instance.GetPlayerManager(localPlayer);
-            
+
             if (foundManager != null && foundManager.IsSpawned)
             {
                 localPlayerManager = foundManager;
@@ -628,12 +647,12 @@ public class UIManager : MonoBehaviour
                 return;
             }
         }
-        
+
         // 방법 2: FindObjectsOfType으로 모든 PlayerManager 확인 (성능상 최후 수단)
         try
         {
             PlayerManager[] allPlayerManagers = FindObjectsOfType<PlayerManager>();
-            
+
             foreach (PlayerManager pm in allPlayerManagers)
             {
                 if (pm != null && pm.IsSpawned && pm.Object != null)
@@ -645,7 +664,7 @@ public class UIManager : MonoBehaviour
                         Debug.Log($"[UIManager] Local PlayerManager found via HasInputAuthority!");
                         return;
                     }
-                    
+
                     // Runner.LocalPlayer와 비교
                     if (runner != null && pm.PlayerRef == runner.LocalPlayer)
                     {
@@ -663,7 +682,7 @@ public class UIManager : MonoBehaviour
 
         Debug.LogWarning("[UIManager] Local PlayerManager not found.");
     }
-    
+
     private float lastFindTime = 0f;
 
     // 로컬 플레이어의 주식 보유량 조회
@@ -673,15 +692,15 @@ public class UIManager : MonoBehaviour
         {
             FindPortfolio();
         }
-        
+
         if (localPlayerManager != null && localPlayerManager.IsSpawned)
         {
             return localPlayerManager.GetPlayerStockQuantity(stockName);
         }
-        
+
         return 0;
     }
-    
+
     // 플레이어 이름 가져오기 (PlayerInfoManager에서)
     private string GetPlayerDisplayName(PlayerRef playerRef)
     {
@@ -693,7 +712,7 @@ public class UIManager : MonoBehaviour
                 return playerInfo.Value.nickname.ToString();
             }
         }
-        
+
         // PlayerInfoManager에서 정보를 못 찾으면 PlayerManager에서 가져오기
         if (GameManager.Instance != null)
         {
@@ -703,7 +722,7 @@ public class UIManager : MonoBehaviour
                 return playerManager.NameField;
             }
         }
-        
+
         return $"Player {playerRef}"; // 기본값
     }
 

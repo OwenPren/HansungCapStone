@@ -38,7 +38,7 @@ public class StockMarketManager : MonoBehaviour
 
     void InitializeStocks()
     {
-        allStocks.Clear(); // ���� ������ �ʱ�ȭ
+        allStocks.Clear(); // 기존 데이터 초기화
 
         foreach (string stockName in stockNames)
         {
@@ -47,13 +47,15 @@ public class StockMarketManager : MonoBehaviour
             allStocks.Add(new StockData
             {
                 stockName = stockName,
-                currentPrice = randomPrice, 
-                previousPrice = randomPrice, 
+                currentPrice = randomPrice,
+                previousPrice = randomPrice,
                 stockChangeRate = 0.0f
             });
 
-            Debug.Log($"Initialized Stock: {stockName} with price {randomPrice:N2}"); 
+            Debug.Log($"[StockMarketManager] Initialized Stock: {stockName} with price {randomPrice:N2}");
         }
+
+        Debug.Log($"[StockMarketManager] All stocks initialized. Total: {allStocks.Count}");
     }
 
     public StockData GetStockData(string name)
@@ -63,10 +65,10 @@ public class StockMarketManager : MonoBehaviour
         {
             return stock;
         }
-        return null; 
+        return null;
     }
 
-    
+
     public void PriceChange(string affectedSectors, string impactDirection)
     {
         if (affectedSectors != null)
@@ -82,6 +84,7 @@ public class StockMarketManager : MonoBehaviour
         if (allStocks == null)
         {
             Debug.LogError("allStocks is null!");
+            return;
         }
 
         foreach (StockData currentStockData in allStocks)
@@ -92,7 +95,75 @@ public class StockMarketManager : MonoBehaviour
                 continue;
             }
 
-            currentStockData.stockChangeRate = (100.0f * currentStockData.currentPrice) / currentStockData.previousPrice - 100.0f;
+            // 변동률 계산 전에 이전 가격 업데이트
+            if (currentStockData.previousPrice > 0)
+            {
+                currentStockData.stockChangeRate = (100.0f * currentStockData.currentPrice) / currentStockData.previousPrice - 100.0f;
+            }
+            else
+            {
+                currentStockData.stockChangeRate = 0.0f;
+            }
+
+            Debug.Log($"[StockMarketManager] Server updated {currentStockData.stockName}: Change Rate: {currentStockData.stockChangeRate:F2}%, Current: {currentStockData.currentPrice:F1}, Previous: {currentStockData.previousPrice:F1}");
         }
+    }
+
+    public void ClientPriceUpdate()
+    {
+        if (allStocks == null)
+        {
+            Debug.LogError("allStocks is null!");
+            return;
+        }
+
+        foreach (StockData currentStockData in allStocks)
+        {
+            if (currentStockData == null)
+            {
+                Debug.LogWarning($"Stock data is null. Skipping.");
+                continue;
+            }
+
+            // 이전 가격이 0이 아닌 경우에만 변동률 계산
+            if (currentStockData.previousPrice > 0)
+            {
+                currentStockData.stockChangeRate = (100.0f * currentStockData.currentPrice) / currentStockData.previousPrice - 100.0f;
+            }
+            else
+            {
+                currentStockData.stockChangeRate = 0.0f;
+            }
+
+            Debug.Log($"[StockMarketManager] Client updated {currentStockData.stockName}: {currentStockData.stockChangeRate:F2}%");
+        }
+    }
+
+    public void SetStockData(string stockName, float currentPrice, float previousPrice, float changeRate)
+    {
+        StockData stock = allStocks.Find(s => s.stockName == stockName);
+        if (stock != null)
+        {
+            stock.currentPrice = currentPrice;
+            stock.previousPrice = previousPrice;
+            stock.stockChangeRate = changeRate;
+            Debug.Log($"[StockMarketManager] Client stock data set: {stockName} = {currentPrice:F1}원, {changeRate:F2}%");
+        }
+        else
+        {
+            Debug.LogError($"[StockMarketManager] Stock not found: {stockName}");
+        }
+    }
+
+    public List<(string name, float currentPrice, float previousPrice, float changeRate)> GetAllStockData()
+    {
+        var stockDataList = new List<(string, float, float, float)>();
+
+        foreach (var stock in allStocks)
+        {
+            stockDataList.Add((stock.stockName, stock.currentPrice, stock.previousPrice, stock.stockChangeRate));
+        }
+
+        return stockDataList;
     }
 }

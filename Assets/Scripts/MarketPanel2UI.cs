@@ -31,10 +31,13 @@ public class MarketPanel2UI : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
 
-        // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
-        void OnEnable()
+    // MarketPanel2UI가 활성화될 때마다 로컬 플레이어의 PlayerManager를 찾습니다.
+    void OnEnable()
     {
         StartCoroutine(FindLocalPlayerManagerCoroutine());
+
+        // 주기적으로 UI 업데이트 (네트워크 지연 대응)
+        StartCoroutine(PeriodicUpdate());
     }
 
     void OnDisable()
@@ -171,17 +174,33 @@ public class MarketPanel2UI : MonoBehaviour
             playerHoldingText.text = "보유량: 선택된 종목 없음";
             return;
         }
-        
+
+        // PlayerManager가 없거나 Spawn되지 않은 경우 재검색
+        if (localPlayerManager == null || !localPlayerManager.IsSpawned)
+        {
+            FindLocalPlayerManager(); // 즉시 재검색 시도
+        }
+
         if (localPlayerManager != null && localPlayerManager.IsSpawned)
         {
             int holding = localPlayerManager.GetPlayerStockQuantity(currentStockName);
             playerHoldingText.text = "보유 현황: " + holding.ToString() + " 개 보유중";
             Debug.Log($"[MarketPanel2UI] Updated holding for {currentStockName}: {holding}");
+
+            // 추가: 현재 주가도 함께 업데이트
+            if (GameManager.Instance?.stockMarketManager != null)
+            {
+                StockData stock = GameManager.Instance.stockMarketManager.GetStockData(currentStockName);
+                if (stock != null)
+                {
+                    currentPriceText.text = "현재가: " + stock.currentPrice.ToString("N2");
+                }
+            }
         }
         else
         {
             playerHoldingText.text = "보유량: 조회중... (플레이어 정보 로딩)";
-            
+
             // PlayerManager가 없다면 다시 찾기 시도
             if (!isSearchingForPlayer)
             {
@@ -232,7 +251,7 @@ public class MarketPanel2UI : MonoBehaviour
             audioSource.PlayOneShot(buyclickSound);
         }
         Debug.Log($"[MarketPanel2UI] Buy button clicked for stock: {currentStockName}");
-        
+
         if (string.IsNullOrEmpty(currentStockName))
         {
             Debug.LogError("[MarketPanel2UI] No stock selected for buying");
@@ -260,7 +279,7 @@ public class MarketPanel2UI : MonoBehaviour
             Debug.LogError("[MarketPanel2UI] NetworkRunner not found!");
             return;
         }
-        
+
         PlayerRef myPlayerRef = runner.LocalPlayer;
         Debug.Log($"[MarketPanel2UI] My PlayerRef: {myPlayerRef}");
 
@@ -269,7 +288,7 @@ public class MarketPanel2UI : MonoBehaviour
         {
             Debug.Log($"[MarketPanel2UI] Sending buy request via RPC - Player: {myPlayerRef}, Stock: {currentStockName}, Quantity: {quantity}");
             GameManager.Instance.RpcBuyStockRequest(myPlayerRef, currentStockName, quantity);
-            
+
             // 즉시 UI 업데이트 (네트워크 지연 고려하여 약간의 지연)
             StartCoroutine(DelayedUpdatePlayerHolding(0.5f));
         }
@@ -288,7 +307,7 @@ public class MarketPanel2UI : MonoBehaviour
         }
 
         Debug.Log($"[MarketPanel2UI] Sell button clicked for stock: {currentStockName}");
-        
+
         if (string.IsNullOrEmpty(currentStockName))
         {
             Debug.LogError("[MarketPanel2UI] No stock selected for selling");
@@ -324,7 +343,7 @@ public class MarketPanel2UI : MonoBehaviour
             Debug.LogError("[MarketPanel2UI] NetworkRunner not found!");
             return;
         }
-        
+
         PlayerRef myPlayerRef = runner.LocalPlayer;
         Debug.Log($"[MarketPanel2UI] My PlayerRef: {myPlayerRef}");
 
@@ -333,7 +352,7 @@ public class MarketPanel2UI : MonoBehaviour
         {
             Debug.Log($"[MarketPanel2UI] Sending sell request via RPC - Player: {myPlayerRef}, Stock: {currentStockName}, Quantity: {quantity}");
             GameManager.Instance.RpcSellStockRequest(myPlayerRef, currentStockName, quantity);
-            
+
             // 즉시 UI 업데이트 (네트워크 지연 고려하여 약간의 지연)
             StartCoroutine(DelayedUpdatePlayerHolding(0.5f));
         }
@@ -376,12 +395,34 @@ public class MarketPanel2UI : MonoBehaviour
         if (sellButton != null) sellButton.onClick.RemoveListener(OnSellButtonClick);
         if (closeButton != null) closeButton.onClick.RemoveListener(OnCloseButtonClick);
     }
-    
+
     public void RefreshPlayerHolding()
     {
         if (!gameObject.activeInHierarchy) return;
-        
+
         Debug.Log("[MarketPanel2UI] RefreshPlayerHolding called");
+
+        // 약간의 지연 후 업데이트 (네트워크 동기화 대기)
+        StartCoroutine(DelayedRefresh());
+    }
+
+    private System.Collections.IEnumerator DelayedRefresh()
+    {
+        yield return new WaitForSeconds(0.1f); // 네트워크 동기화 대기
         UpdatePlayerHolding();
     }
+    private System.Collections.IEnumerator PeriodicUpdate()
+    {
+        while (gameObject.activeInHierarchy)
+        {
+            yield return new WaitForSeconds(0.5f); // 0.5초마다 업데이트
+
+            if (!string.IsNullOrEmpty(currentStockName))
+            {
+                UpdatePlayerHolding();
+            }
+        }
+    }
+
+
 }
