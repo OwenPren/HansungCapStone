@@ -79,9 +79,9 @@ public class GameManager : NetworkBehaviour
             case GameState.Finished:
                 waitTimer -= Runner.DeltaTime;
 
-                if (waitTimer <= 0f)
+                if (waitTimer <= 0f && Runner.IsServer)
                 {
-                    Runner.LoadScene("LobbyScene");
+                    _ = Runner.Shutdown();   // 세션 전체를 깨끗하게 종료
                 }
                 break;
         }

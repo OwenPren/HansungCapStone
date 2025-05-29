@@ -365,6 +365,9 @@ public class PlayerManager : NetworkBehaviour
             Debug.LogWarning("[PlayerManager] Attempting to access portfolioReturn before spawned");
             return 0f;
         }
+
+        UpdatePortfolioReturn();
+
         return portfolioReturn;
     }
 
@@ -609,9 +612,9 @@ public class PlayerManager : NetworkBehaviour
             }
 
             StockValuation += stockValue;
-            UpdatePortfolioReturn();
+            
         }
-
+        UpdatePortfolioReturn();
         if (Object.HasStateAuthority)
         {
             playerValue = StockValuation + this.playerCash;

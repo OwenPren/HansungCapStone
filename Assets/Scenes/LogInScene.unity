@@ -994,7 +994,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "*********************\u200B"
+  m_text: "Please enter your PW.\u200B"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
   m_sharedMaterial: {fileID: -2686573910030630005, guid: bd4d91192f8aa174eaf4957668dd26bc, type: 2}
@@ -2174,6 +2174,7 @@ GameObject:
   - component: {fileID: 1075564807}
   - component: {fileID: 1075564806}
   - component: {fileID: 1075564805}
+  - component: {fileID: 1075564808}
   m_Layer: 5
   m_Name: InputField (PW)
   m_TagString: Untagged
@@ -2249,8 +2250,8 @@ MonoBehaviour:
   m_VerticalScrollbarEventHandler: {fileID: 0}
   m_LayoutGroup: {fileID: 0}
   m_ScrollSensitivity: 1
-  m_ContentType: 7
-  m_InputType: 2
+  m_ContentType: 0
+  m_InputType: 0
   m_AsteriskChar: 42
   m_KeyboardType: 0
   m_LineType: 0
@@ -2337,6 +2338,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1075564803}
   m_CullTransparentMesh: 1
+--- !u!114 &1075564808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1075564803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a2b37955f80a3a4d97cc54bca05e9fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  passwordInputField: {fileID: 1075564805}
 --- !u!1 &1163645101
 GameObject:
   m_ObjectHideFlags: 0

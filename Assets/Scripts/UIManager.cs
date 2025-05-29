@@ -24,6 +24,10 @@ public class UIManager : MonoBehaviour
     public TextMeshProUGUI currentTimeText;
     public TextMeshProUGUI currentRoundText;
 
+    [Header("Timer Data")]
+    public TextMeshProUGUI nextTimer;
+    public TextMeshProUGUI finishTimer;
+
     [Header("Game Rank UI")]
     public List<TextMeshProUGUI> currentRankText = new List<TextMeshProUGUI>();
     public List<TextMeshProUGUI> currentRankNameText = new List<TextMeshProUGUI>();
@@ -63,15 +67,23 @@ public class UIManager : MonoBehaviour
         // 타이머 업데이트
         if (GameManager.Instance != null && currentTimeText != null)
         {
-            if (GameManager.Instance.State == GameState.Ended)
+            if (GameManager.Instance.State == GameState.Ended || GameManager.Instance.State == GameState.Finished)
             {
                 int remainingTime = (int)GameManager.Instance.waitTimer;
                 currentTimeText.text = remainingTime.ToString();
+
+                if (GameManager.Instance.State == GameState.Ended)
+                {
+                    nextTimer.gameObject.SetActive(true);
+                }
+                else finishTimer.gameObject.SetActive(true);
             }
             else 
             {
                 int remainingTime = (int)GameManager.Instance.Timer;
                 currentTimeText.text = remainingTime.ToString();
+                finishTimer.gameObject.SetActive(false);
+                nextTimer.gameObject.SetActive(false);
             }
         }
 
