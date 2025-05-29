@@ -102,7 +102,19 @@ public class LoginManager : MonoBehaviour
         else
         {
             string errorMsg = req.downloadHandler?.text ?? "오류 발생";
-            debugText.text = "로그인 실패: " + errorMsg;
+            string parsedMessage;
+
+            try
+            {
+                var error = JsonUtility.FromJson<ErrorResponse>(errorMsg);
+                parsedMessage = error.message;
+            }
+            catch
+            {
+                parsedMessage = "서버 오류";
+            }
+
+            debugText.text = "로그인 실패: " + parsedMessage;
         }
     }
 
@@ -132,5 +144,9 @@ public class LoginManager : MonoBehaviour
     public class NicknameWrapper
     {
         public string nickname;
+    }
+    public class ErrorResponse
+    {
+        public string message;
     }
 }
