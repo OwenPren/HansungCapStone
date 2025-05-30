@@ -74,8 +74,13 @@ public class StockMarketManager : MonoBehaviour
         if (affectedSectors != null)
         {
             StockData stock = allStocks.Find(s => s.stockName == affectedSectors);
-            if (impactDirection == "+") stock.currentPrice = stock.currentPrice * 1.1f;
-            else stock.currentPrice = stock.currentPrice * 0.9f;
+            if (impactDirection == "+") stock.currentPrice = stock.currentPrice * Random.Range(1.1f, 1.3f);
+            else stock.currentPrice = stock.currentPrice * Random.Range(0.7f, 0.9f);
+        }
+
+        foreach (StockData stock in allStocks)
+        {
+            stock.currentPrice += (stock.currentPrice * Random.Range(-0.03f, 0.03f));
         }
     }
 
